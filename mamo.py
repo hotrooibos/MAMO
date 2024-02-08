@@ -24,26 +24,34 @@ client = ovh.Client(
 	consumer_key = config["token"]["consumer_key"],
 )
 
-action = input("0 : show active redirections\n1 : create redir\n2 : mod redir\n3 : remove redir\nAction ? ")
+redirs = {}
 
-if (action == "0"):
-	redirs = client.get('/email/domain/tical.fr/redirection/')
+while (True):
+	print(len(redirs))
+	action = input("0 : show active redirections\n1 : create redir\n2 : mod redir\n3 : remove redir\nAction ? ")
 
-	for id in redirs:
-		redir = client.get(f'/email/domain/tical.fr/redirection/{id}')
-		print(f'{redir["from"]} -> {redir["to"]}')
-		# print (type(json.dumps(redir, indent=4)))
+	if (action == "0"):
+		print(len(redirs))
+		if (len(redirs) < 1):
+			redirs = client.get('/email/domain/tical.fr/redirection/')
 
-elif (action == "1"):
-	print("Create a new redirection")
-	website = input("Website (format : website.com) ? ")
-elif (action == "2"):
-	print("mod...")
-elif (action == "3"):
-	print("rm...")
-else :
-	print("Unknown action")
+		for id in redirs:
+			redir = client.get(f'/email/domain/tical.fr/redirection/{id}')
+			# redirs[redir["id"]] = [redir["from"], redir["to"]]
+			print(f'{redir["id"]} : {redir["from"]} -> {redir["to"]}')
+		print (redirs)
 
+	elif (action == "1"):
+		print("Create a new redirection")
+		website = input("Website (format : website.com) ? ")
+	elif (action == "2"):
+		print("mod...")
+	elif (action == "3"):
+		print("rm...")
+	else :
+		print("Unknown action")
+
+	print(len(redirs))
 
 # Listing des applications/tokens API OVH en cours de validité
 # result = client.get("/me/api/application")
