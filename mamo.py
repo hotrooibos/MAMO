@@ -24,22 +24,23 @@ client = ovh.Client(
 	consumer_key = config["token"]["consumer_key"],
 )
 
+redirs_remote = client.get(f'/email/domain/tical.fr/redirection')
 redirs = {}
 
 while (True):
-	print(len(redirs))
 	action = input("0 : show active redirections\n1 : create redir\n2 : mod redir\n3 : remove redir\nAction ? ")
 
 	if (action == "0"):
-		print(len(redirs))
 		if (len(redirs) < 1):
-			redirs = client.get('/email/domain/tical.fr/redirection/')
+			print("Please wait, downloading redirections from OVH")
+			for id in redirs_remote:
+				r = client.get(f'/email/domain/tical.fr/redirection/{id}')
+				redirs[r["id"]] = [r["from"], r["to"]]
+		
 
-		for id in redirs:
-			redir = client.get(f'/email/domain/tical.fr/redirection/{id}')
-			# redirs[redir["id"]] = [redir["from"], redir["to"]]
-			print(f'{redir["id"]} : {redir["from"]} -> {redir["to"]}')
-		print (redirs)
+		for k, v in redirs.items():
+			print(f'{v[0]} -> {v[1]}')
+		# print (redirs)
 
 	elif (action == "1"):
 		print("Create a new redirection")
