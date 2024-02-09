@@ -1,0 +1,17 @@
+{
+    "token": {
+        "endpoint": "ovh-eu",
+        "app_key": "123456789abcdefg",
+        "app_secret": "123456789abcdefghijklmnopqrstuvw",
+        "consumer_key": "123456789abcdefghijklmnopqrstuvw"
+    },
+
+    "redirection": {
+        "0": {
+            "name": "website.com",
+            "date": "1707407691",
+            "alias": "spamalias877bef7",
+            "to": "myrealsecret@mail.com"
+        }
+    }
+}
