@@ -226,7 +226,7 @@ Copyright(c) 2024 Antoine Marzin
 		print("Edit an existing redirection")
 		id = input("ID of the redir to edit ? ")
 
-		for k, v in redirs_remote.items():
+		for k, v in redirs_config.items():
 			if (k == id):
 				id = k
 				fm = v[0]
