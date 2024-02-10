@@ -46,7 +46,7 @@ def syncheck(redirs_remote: list, redirs_config: list):
 		try:
 			compare(id, redirs_config[id], redirs_remote[id])
 		except KeyError:
-			action = input(f" Redirection [{v['alias']}@{domain} -> {v['to']}] unknown in remote config. Create it ? [y/N]")
+			action = input(f" Redirection {id} [{v['alias']}@{domain} -> {v['to']}] unknown in remote config. Create it ? [y/N]")
 			if action == "y":
 				print("TODO create a remote entry")
 				continue
@@ -59,7 +59,7 @@ def syncheck(redirs_remote: list, redirs_config: list):
 		try:
 			compare(id, redirs_config[id], redirs_remote[id])
 		except KeyError:
-			action = input(f" Redirection [{v['alias']}@{domain} -> {v['to']}] unknown in local config. Create it ? [y/N]")
+			action = input(f" Redirection {id} [{v['alias']}@{domain} -> {v['to']}] unknown in local config. Create it ? [y/N]")
 			if action == "y":
 				print("TODO create a local entry")
 				continue
@@ -105,10 +105,6 @@ def create_redir(name:str, alias: str, to: str):
 	'''
 		Create a new redirection
 	'''
-	print("CREATE REDIR")
-	print(f"from: {alias}{domain}")
-	print(f"to: {to}")
-
 	# Create redir in remote config
 	# result = client.post(f'/email/domain/{domain}/redirection', 
 	# 					 f'{{"from":"{alias}{domain}", "localCopy":false, "to":"{to}"}}')
@@ -120,7 +116,7 @@ def create_redir(name:str, alias: str, to: str):
 						localCopy=False,
 						to=to
 						)
-	print(f"creation result :\n{result}")
+	print(f"Creation result :\n{result}")
 
 	# # Local config : add the local infos (name/date)
 	# # of the newly created redirection
@@ -137,6 +133,17 @@ def create_redir(name:str, alias: str, to: str):
 	# 		encoding='utf-8') as json_file:
 	# 	json.dump(redirs_remote, json_file, indent=4)
 
+
+def remove_redir(id: int):
+	'''
+		Create a new redirection
+	'''
+	try:
+		result = client.delete(f'/email/domain/{domain}/redirection/{id}')
+		print(f"Deletion result :\n{result}")
+	
+	except ovh.APIError as e:
+		print(e)
 
 # Read config file
 with open(file=CONFIG,
@@ -241,7 +248,9 @@ Copyright(c) 2024 Antoine Marzin
 
 	elif (action == "3"):
 		print("Remove a redirection")
-		print("To be implemented...")
+		id = input("ID of the redir to remove ? ")
+		remove_redir(int(id))
+
 	elif (action == "4"):
 		print("Check and synchronize local configuration <-> OVH configuration")
 		syncheck(redirs_remote=get_redirs_remote(),
