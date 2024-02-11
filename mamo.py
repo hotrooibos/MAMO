@@ -2,6 +2,7 @@
 import json
 import os
 import ovh
+import readline
 import time
 
 ROOTDIR = os.path.dirname(os.path.abspath(__file__))
@@ -55,8 +56,9 @@ def syncheck(redirs_remote: list, redirs_config: list):
 	for id, v in redirs_config.items():
 		try:
 			compare(id, redirs_config[id], redirs_remote[id])
+
 		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']}@{domain} -> {v['to']}] unknown in remote config. Create it ? [y/N]")
+			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}] unknown in remote config. Create it ? [y/N]")
 			if action == "y":
 				print("TODO create a remote entry")
 				continue
@@ -69,7 +71,7 @@ def syncheck(redirs_remote: list, redirs_config: list):
 		try:
 			compare(id, redirs_config[id], redirs_remote[id])
 		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']}@{domain} -> {v['to']}] unknown in local config. Create it ? [y/N]")
+			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}] unknown in local config. Create it ? [y/N]")
 			if action == "y":
 				print("TODO create a local entry")
 				continue
@@ -99,65 +101,69 @@ def compare(id: int, config_data: dict, remote_data: dict) -> int:
 	
 	return result
 
-	# for k, v in redirs_config.items():
-	# 	if k == id:
-	# 		if k in redirs_remote:
-	# 			print(k + " :")
-	# 			print("    config " + redirs_config[k]["alias"])
-	# 			print("    remote " + redirs_remote[k]["alias"])
-	# 			# print(f"yes -> {k} -> {v}")
-	# 		else:
-	# 			print(f"no -> {k} -> {v}")
-	
-
 
 def create_redir(name:str, alias: str, to: str):
 	'''
 		Create a new redirection
 	'''
-	# Create redir in remote config
-	# result = client.post(f'/email/domain/{domain}/redirection', 
-	# 					 f'{{"from":"{alias}{domain}", "localCopy":false, "to":"{to}"}}')
-	
 	try:
-		result = client.post(
-							'/email/domain/tical.fr/redirection',
-							_from=alias + domain,
-							localCopy=False,
-							to=to
-							)
+		result = client.post('/email/domain/tical.fr/redirection',
+							 _from=alias,
+							 localCopy=False,
+							 to=to)
 		
 		# If successfuly created, get ID
 		if result:
-			id = get_remote_id_by_alias(alias + domain)
+			id = get_remote_id_by_alias(alias)
 
+			new_redir = {
+				"name": name,
+				"date": int(time.time()),
+				"alias": alias,
+				"to": to
+			}
+
+			redirs_config[id] = new_redir
+			write_config(redirs_config)
+			print(f" Created id {id} : {redirs_config[id]['alias']} -> {redirs_config[id]['to']}")
 
 	except ovh.APIError as e:
 		print(e)
 
-	new_redir = {
-		"name": name,
-		"date": time.time(),
-		"alias": alias,
-		"to": to
-    }
 
-	redirs_config[id] = new_redir
-	print(f" Created id {id} : {redirs_config[id]['alias']} -> {redirs_config[id]['to']}")
-	# # Local config : add the local infos (name/date)
-	# # of the newly created redirection
-	# if r["from"] == alias:
-	# 	redirs_remote[r["id"]] = {
-	# 		"name": name,
-	# 		"date": time.time(),
-	# 		"alias": alias,
-	# 		"to": to,
-	# 	}
+def edit_redir(id: int, name: str, alias: str, to: str):
+	'''
+		Edit an existing redirection
+	'''
+	# Check in config what element is to be modified :
+	# - If alias is, the API does NOT allows edition, so we have
+	#   to remove and recreate the redirection
+	# - If name is, it's only local so just edit config
+	# - If "to" address, the API allows direct edition
+	for k, v in redirs_config.items():
+		if k == id:
+			if v['alias'] != alias:
+				remove_redir(alias)
+				create_redir(name=name,
+				 			 alias=alias,
+							 to=to)
+				
+			if v['name'] != name:
+				redirs_config[id]['name'] = name
+				write_config(redirs_config)
 
-	# with open(file=CONFIG,
-	# 		mode='w',
-	# 		encoding='utf-8') as json_file:
-	# 	json.dump(redirs_remote, json_file, indent=4)
+			if v['to'] != to:
+				try:
+					result = client.post('/email/domain/tical.fr/redirection/{id}/changeRedirection',
+										to=to)
+					if result:
+						redirs_config[id]['to'] = to
+						write_config(redirs_config)
+
+				except ovh.APIError as e:
+					print(e)
+			
+			break
 
 
 def remove_redir(alias: str):
@@ -172,19 +178,41 @@ def remove_redir(alias: str):
 			id = k
 	
 	if id == None:
-		id = get_remote_id_by_alias(alias + domain)
+		id = get_remote_id_by_alias(alias)
 
 	# Delete remote, and then local if success
 	try:
 		result = client.delete(f'/email/domain/{domain}/redirection/{id}')
 		if result:
 			del redirs_config[id]
-			print(f" {id} removed")
+			write_config(redirs_config)
+			print(f" {alias} alias removed.")
 
 	except ovh.APIError as e:
 		print(e)
 
-	# TODO Delete local
+
+def write_config(redirs_config: dict):
+	'''
+		Write local configuration changes into config.json
+	'''
+	config['redirection'] = redirs_config
+
+	with open(file=CONFIG,
+			mode='w',
+			encoding='utf-8') as json_file:
+		json.dump(config, json_file, indent=4)
+
+
+def input_with_prefill(prompt, text):
+	def hook():
+		readline.insert_text(text)
+		readline.redisplay()
+	readline.set_pre_input_hook(hook)
+	result = input(prompt)
+	readline.set_pre_input_hook()
+	return result
+
 
 # Read config file
 with open(file=CONFIG,
@@ -194,14 +222,14 @@ with open(file=CONFIG,
 
 # Instantiate an OVH Client
 client = ovh.Client(
-	endpoint = config["token"]["endpoint"],
-	application_key = config["token"]["app_key"],
-	application_secret = config["token"]["app_secret"],
-	consumer_key = config["token"]["consumer_key"],
+	endpoint = config['token']['endpoint'],
+	application_key = config['token']['app_key'],
+	application_secret = config['token']['app_secret'],
+	consumer_key = config['token']['consumer_key'],
 )
 
-redirs_config = config["redirection"]
-general_config = config["general"]
+redirs_config = config['redirection']
+general_config = config['general']
 
 # If local config is empty, try to retrieve
 # an existing remote redirections
@@ -215,7 +243,7 @@ if len(redirs_config) < 1:
 # Main loop
 while (True):
 	print("""======================================
-Mail Alias Manager for OVH - MAMO v0.1
+Mail Alias Manager for OVH - MAMO v0.2
 Copyright(c) 2024 Antoine Marzin
 ======================================
  Menu :
@@ -272,30 +300,40 @@ Copyright(c) 2024 Antoine Marzin
 
 	elif (action == "2"):
 		print("Edit an existing redirection")
-		id = input("ID of the redir to edit ? ")
+		alias = input("Alias to edit (ex: spam24@tical.fr) ? ")
+		id = get_remote_id_by_alias(alias)
 
 		for k, v in redirs_config.items():
 			if (k == id):
-				id = k
-				fm = v[0]
-				to = v[1]
-				break
+				name = input_with_prefill("(optional) Label/name/website ? (ex: amazin.com) >> ",
+							  			  v['name'])
+				hashq = input("Replace with a generated a hash (0) or edit alias manually (1) ? [0/1]")
+				if hashq == "0":
+					print("hash ! (not implemented yet)")
+					# TODO alias = randomize something
+					# break
+				elif hashq == "1":
+					alias = input_with_prefill("Alias ? (ex: john@spam2024. for john@spam2024@{domain}) >> ",
+							  				 v['alias'])
+				to = input_with_prefill("Destination ? (ex: john@doe.com) >> ",
+										 v['to'])
+				
+		edit_redir(id, name, alias, to)
 
-		dest = input("New destination (ex: john@doe.com) ? ")
 		# desc = input(f"Description ?\nCurrent description : {}")
-		epoch = time.time()
 		# TODO Mod la redir via l'api
 		# TODO Mod la conf à l'id : date, from, to
 
 	elif (action == "3"):
 		print("Remove a redirection")
-		alias = input("Alias to remove (ex: spam24@) ? ")
+		alias = input("Alias to remove (ex: spam24@tical.fr) ? ")
 		remove_redir(alias)
 
 	elif (action == "4"):
 		print("Check and synchronize local configuration <-> OVH configuration")
 		syncheck(redirs_remote=get_redirs_remote(),
 	   		 	 redirs_config=redirs_config)
+	
 	elif (action == "q"):
 		quit()
 	else :
