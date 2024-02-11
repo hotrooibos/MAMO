@@ -13,7 +13,6 @@ def get_redirs_remote() -> dict:
 	'''
 		Download remote redirections and return it as a dict
 	'''
-	print("Retrieving redirections from OVH...")
 	redir_remote_ids = client.get(f'/email/domain/{domain}/redirection')
 	redirs_remote = {}
 
@@ -29,6 +28,17 @@ def get_redirs_remote() -> dict:
 		}
 
 	return redirs_remote
+
+
+def get_remote_id_by_alias(alias: str) -> int:
+	'''
+		Get a remove redirection ID by its alias
+	'''
+	redirs_remote = get_redirs_remote()
+
+	for id, v in redirs_remote.items():
+		if v['alias'] == alias:
+			return id
 
 
 def syncheck(redirs_remote: list, redirs_config: list):
@@ -109,15 +119,31 @@ def create_redir(name:str, alias: str, to: str):
 	# result = client.post(f'/email/domain/{domain}/redirection', 
 	# 					 f'{{"from":"{alias}{domain}", "localCopy":false, "to":"{to}"}}')
 	
-	
-	result = client.post(
-						'/email/domain/tical.fr/redirection',
-					   	_from=alias + domain,
-						localCopy=False,
-						to=to
-						)
-	print(f"Creation result :\n{result}")
+	try:
+		result = client.post(
+							'/email/domain/tical.fr/redirection',
+							_from=alias + domain,
+							localCopy=False,
+							to=to
+							)
+		
+		# If successfuly created, get ID
+		if result:
+			id = get_remote_id_by_alias(alias + domain)
 
+
+	except ovh.APIError as e:
+		print(e)
+
+	new_redir = {
+		"name": name,
+		"date": time.time(),
+		"alias": alias,
+		"to": to
+    }
+
+	redirs_config[id] = new_redir
+	print(f" Created id {id} : {redirs_config[id]['alias']} -> {redirs_config[id]['to']}")
 	# # Local config : add the local infos (name/date)
 	# # of the newly created redirection
 	# if r["from"] == alias:
@@ -134,16 +160,31 @@ def create_redir(name:str, alias: str, to: str):
 	# 	json.dump(redirs_remote, json_file, indent=4)
 
 
-def remove_redir(id: int):
+def remove_redir(alias: str):
 	'''
 		Create a new redirection
 	'''
+	id = None
+
+	# Look for ID in local config, else query remote
+	for k, v in redirs_config.items():
+		if v['alias'] == alias:
+			id = k
+	
+	if id == None:
+		id = get_remote_id_by_alias(alias + domain)
+
+	# Delete remote, and then local if success
 	try:
 		result = client.delete(f'/email/domain/{domain}/redirection/{id}')
-		print(f"Deletion result :\n{result}")
-	
+		if result:
+			del redirs_config[id]
+			print(f" {id} removed")
+
 	except ovh.APIError as e:
 		print(e)
+
+	# TODO Delete local
 
 # Read config file
 with open(file=CONFIG,
@@ -248,8 +289,8 @@ Copyright(c) 2024 Antoine Marzin
 
 	elif (action == "3"):
 		print("Remove a redirection")
-		id = input("ID of the redir to remove ? ")
-		remove_redir(int(id))
+		alias = input("Alias to remove (ex: spam24@) ? ")
+		remove_redir(alias)
 
 	elif (action == "4"):
 		print("Check and synchronize local configuration <-> OVH configuration")
