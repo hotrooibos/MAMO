@@ -39,7 +39,7 @@ def get_remote_id_by_alias(alias: str) -> int:
 
 	for id, v in redirs_remote.items():
 		if v['alias'] == alias:
-			return id
+			return int(id)
 
 
 def syncheck(redirs_remote: list, redirs_config: list):
@@ -143,10 +143,12 @@ def edit_redir(id: int, name: str, alias: str, to: str):
 	for k, v in redirs_config.items():
 		if k == id:
 			if v['alias'] != alias:
-				remove_redir(alias)
+				old_alias = v['alias']
+				remove_redir(old_alias)
 				create_redir(name=name,
 				 			 alias=alias,
 							 to=to)
+				break
 				
 			if v['name'] != name:
 				redirs_config[id]['name'] = name
@@ -154,8 +156,8 @@ def edit_redir(id: int, name: str, alias: str, to: str):
 
 			if v['to'] != to:
 				try:
-					result = client.post('/email/domain/tical.fr/redirection/{id}/changeRedirection',
-										to=to)
+					result = client.post(f'/email/domain/tical.fr/redirection/{id}/changeRedirection',
+										 to=to)
 					if result:
 						redirs_config[id]['to'] = to
 						write_config(redirs_config)
@@ -301,7 +303,15 @@ Copyright(c) 2024 Antoine Marzin
 	elif (action == "2"):
 		print("Edit an existing redirection")
 		alias = input("Alias to edit (ex: spam24@tical.fr) ? ")
-		id = get_remote_id_by_alias(alias)
+		id = None
+
+		for k, v in redirs_config.items():
+			if v['alias'] == alias:
+				id = k
+				break
+		
+		if id == None:
+			id = get_remote_id_by_alias(alias)
 
 		for k, v in redirs_config.items():
 			if (k == id):
@@ -317,6 +327,7 @@ Copyright(c) 2024 Antoine Marzin
 							  				 v['alias'])
 				to = input_with_prefill("Destination ? (ex: john@doe.com) >> ",
 										 v['to'])
+				break
 				
 		edit_redir(id, name, alias, to)
 
