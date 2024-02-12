@@ -15,32 +15,49 @@ def get_redirs_remote() -> dict:
 	'''
 		Download remote redirections and return it as a dict
 	'''
-	redir_remote_ids = client.get(f'/email/domain/{domain}/redirection')
-	redirs_remote = {}
+	try:
+		redir_remote_ids = client.get(f'/email/domain/{domain}/redirection')
+		redirs_remote = {}
 
-	for id in redir_remote_ids:
-		r = client.get(f'/email/domain/{domain}/redirection/{id}')
-		
-		# Dict format standardized for local use (empty name/date)
-		redirs_remote[r["id"]] = {
-			"name": "",
-			"date": "",
-			"alias": r["from"],
-			"to": r["to"]
-		}
+		for id in redir_remote_ids:
+			r = client.get(f'/email/domain/{domain}/redirection/{id}')
+			
+			# Dict format standardized for local use (empty name/date)
+			redirs_remote[r["id"]] = {
+				"name": "",
+				"date": "",
+				"alias": r["from"],
+				"to": r["to"]
+			}
 
-	return redirs_remote
+		return redirs_remote
+	
+	except ovh.APIError as e:
+		print(e)
 
 
-def get_remote_id_by_alias(alias: str) -> int:
+def find_id_by_alias(alias: str) -> str:
 	'''
 		Get a remove redirection ID by its alias
+		Return 0 if ID doesn't exists
 	'''
-	redirs_remote = get_redirs_remote()
+	id = None
 
-	for id, v in redirs_remote.items():
+	# Try to get id from local config
+	for k, v in redirs_config.items():
 		if v['alias'] == alias:
-			return int(id)
+			id = k
+			break
+
+	# Try to get id from OVH
+	if id == None:
+		redirs_remote = get_redirs_remote()
+
+		for k, v in redirs_remote.items():
+			if v['alias'] == alias:
+				id = k
+
+	return id
 
 
 def syncheck(redirs_remote: list, redirs_config: list):
@@ -82,7 +99,7 @@ def syncheck(redirs_remote: list, redirs_config: list):
 				continue
 
 
-def compare(id: int, config_data: dict, remote_data: dict) -> int:
+def compare(id: str, config_data: dict, remote_data: dict) -> int:
 	'''
 		Compare the given local and remote datas
 		
@@ -119,7 +136,7 @@ def create_redir(name:str, alias: str, to: str):
 		
 		# If successfuly created, get ID
 		if result:
-			id = get_remote_id_by_alias(alias)
+			id = find_id_by_alias(alias)
 
 			new_redir = {
 				"name": name,
@@ -137,7 +154,7 @@ def create_redir(name:str, alias: str, to: str):
 		print(e)
 
 
-def edit_redir(id: int, name: str, alias: str, to: str):
+def edit_redir(id: str, name: str, alias: str, to: str):
 	'''
 		Edit an existing redirection
 	'''
@@ -152,6 +169,7 @@ def edit_redir(id: int, name: str, alias: str, to: str):
 				old_alias = v['alias']
 				remove_redir(old_alias)
 				create_redir(name=name,
+				 			 time=int(time.time()),
 				 			 alias=alias,
 							 to=to)
 				break
@@ -185,9 +203,10 @@ def remove_redir(alias: str):
 	for k, v in redirs_config.items():
 		if v['alias'] == alias:
 			id = k
+			break
 	
 	if id == None:
-		id = get_remote_id_by_alias(alias)
+		id = find_id_by_alias(alias)
 
 	# Delete remote, and then local if success
 	try:
@@ -234,6 +253,8 @@ def is_valid_email(email: str) -> bool:
 		return True
 	else:
 		return False
+
+
 
 
 # Read config file
@@ -310,7 +331,7 @@ while (True):
 		while True:
 			if general_config['default_dest_addr']:
 				to = input_w_prefill(" Destination e-mail address ? ",
-							  	     v[general_config['default_dest_addr']])
+							  	     general_config['default_dest_addr'])
 			else :
 				to = input(" Destination e-mail address ? ")
 
@@ -323,24 +344,15 @@ while (True):
 	elif (action == "2"):
 		print("Edit an existing redirection")
 		alias = input(" Alias e-mail address to edit ? ")
-		id = None
 
-		# Try to get id from config
-		for k, v in redirs_config.items():
-			if v['alias'] == alias:
-				id = k
-				break
-		
-		# If ID not in local config, make an API call
-		if id == None:
-			id = get_remote_id_by_alias(alias)
+		id = find_id_by_alias(alias)
 
-		if id == None:
-			print(" Could not find {alias} alias.")
+		if id == 0:
+			print(f" Could not find alias \"{alias}\".")
 		
 		else:
 			for k, v in redirs_config.items():
-				if (k == id):
+				if k == id:
 					name = input_w_prefill("(optional) Name/description ? ",
 											v['name'])
 					hashq = input("Replace with a generated hash (0)"
@@ -353,15 +365,15 @@ while (True):
 						alias = input_w_prefill(" Alias e-mail address ? ",
 												v['alias'])
 					to = input_w_prefill(" Destination e-mail address ? ",
-											v['to'])
+										 v['to'])
 					break
 			
-			if is_valid_email(alias) and is_valid_email(alias):
+			if is_valid_email(alias) and is_valid_email(to):
 				edit_redir(id, name, alias, to)
 
 	elif (action == "3"):
 		print("Remove a redirection")
-		alias = input(" Alias to remove (ex: spam24@tical.fr) ? ")
+		alias = input(" Alias to remove ? ")
 		remove_redir(alias)
 
 	elif (action == "4"):
