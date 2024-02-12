@@ -2,6 +2,7 @@
 import json
 import os
 import ovh
+import re
 import readline
 import time
 
@@ -49,31 +50,33 @@ def syncheck(redirs_remote: list, redirs_config: list):
 	'''
 
 	if (len(redirs_config) != len(redirs_remote)):
-		print("WARNING : local config length DIFFERS from remote !")
+		print(" WARNING : local config length DIFFERS from remote !")
 
 	# Loop in the local config
-	print("\nCheck config...")
+	print("\n Check config...")
 	for id, v in redirs_config.items():
 		try:
 			compare(id, redirs_config[id], redirs_remote[id])
 
 		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}] unknown in remote config. Create it ? [y/N]")
+			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
+				  		    " unknown in remote config. Create it ? [y/N]")
 			if action == "y":
-				print("TODO create a remote entry")
+				print(" TODO create a remote entry")
 				continue
 			else:
 				continue
 
 	# Loop in the remote config
-	print("\nCheck remote...")
+	print("\n Check remote...")
 	for id, v in redirs_remote.items():
 		try:
 			compare(id, redirs_config[id], redirs_remote[id])
 		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}] unknown in local config. Create it ? [y/N]")
+			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
+				  		 	" unknown in local config. Create it ? [y/N]")
 			if action == "y":
-				print("TODO create a local entry")
+				print(" TODO create a local entry")
 				continue
 			else:
 				continue
@@ -92,11 +95,13 @@ def compare(id: int, config_data: dict, remote_data: dict) -> int:
 	result = 0
 
 	if config_data['alias'] + domain != remote_data['alias']:
-		print(f" Compare {id}: alias differs (local {config_data['alias']} <> remote {remote_data['alias']})")
+		print(f" Compare {id}: alias differs (local {config_data['alias']}"
+			  f" <> remote {remote_data['alias']})")
 		result += 1
 
 	if config_data['to'] != remote_data['to']:
-		print(f" Compare {id}: to differs (local {config_data['to']} <> remote {remote_data['to']})")
+		print(f" Compare {id}: to differs (local {config_data['to']}"
+			  f" <> remote {remote_data['to']})")
 		result += 2
 	
 	return result
@@ -125,7 +130,8 @@ def create_redir(name:str, alias: str, to: str):
 
 			redirs_config[id] = new_redir
 			write_config(redirs_config)
-			print(f" Created id {id} : {redirs_config[id]['alias']} -> {redirs_config[id]['to']}")
+			print(f" Created id {id} : {redirs_config[id]['alias']}"
+		 		  f" -> {redirs_config[id]['to']}")
 
 	except ovh.APIError as e:
 		print(e)
@@ -156,7 +162,8 @@ def edit_redir(id: int, name: str, alias: str, to: str):
 
 			if v['to'] != to:
 				try:
-					result = client.post(f'/email/domain/tical.fr/redirection/{id}/changeRedirection',
+					result = client.post("/email/domain/tical.fr/redirection"
+						  				 f"/{id}/changeRedirection",
 										 to=to)
 					if result:
 						redirs_config[id]['to'] = to
@@ -201,19 +208,32 @@ def write_config(redirs_config: dict):
 	config['redirection'] = redirs_config
 
 	with open(file=CONFIG,
-			mode='w',
-			encoding='utf-8') as json_file:
+			  mode='w',
+			  encoding='utf-8') as json_file:
 		json.dump(config, json_file, indent=4)
 
 
-def input_with_prefill(prompt, text):
+def input_w_prefill(prompt: str, text: str) -> input:
 	def hook():
 		readline.insert_text(text)
 		readline.redisplay()
+
 	readline.set_pre_input_hook(hook)
 	result = input(prompt)
 	readline.set_pre_input_hook()
 	return result
+
+
+def is_valid_email(email: str) -> bool:
+	'''
+		Verify if email format is valid
+	'''
+	pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+	
+	if re.match(pattern, email):
+		return True
+	else:
+		return False
 
 
 # Read config file
@@ -241,10 +261,7 @@ if len(redirs_config) < 1:
 # redirs_remote = get_redirs_remote()
 # init_check(redirs_remote, redirs_config)
 
-
-# Main loop
-while (True):
-	print("""======================================
+print("""======================================
 Mail Alias Manager for OVH - MAMO v0.2
 Copyright(c) 2024 Antoine Marzin
 ======================================
@@ -255,46 +272,49 @@ Copyright(c) 2024 Antoine Marzin
   [3] Remove a redirection
   [4] Check/synchronize local configuration with remote (OVH) redirections
   [q] Exit""")
+
+# Main loop
+while (True):
 	action = input(">> ")
 
 
 	if (action == "0"):
 		for k, v in redirs_config.items():
 			print(f'{k} -> {v}')
-			# TODO tri : date de création > ordre alphab du domaine > ordre alphab mail
+			# TODO tri : date de création > ordre alphab 
+			# 			 du domaine > ordre alphab mail
 
-
-		# redirs_remote = get_redirs_remote()
-		# for k, v in redirs_remote.items():
-		# 	print(f'{k} -> {v}')
 
 	elif (action == "1"):
 		print("Create a new redirection")
-		name = input("(optional) Label/name/website ? (ex: amazin.com) >> ")
+		name = input(" (optional) Name/description ? ")
 
 		while True:
-			hashq = input("Use a hash (0) or readable (1) redir adress ? [0/1]")
+			hashq = input(" Use a hash (0) or readable (1)"
+				 		  " redir address ? [0/1] ")
 			if hashq == "0":
-				print("hash ! (not implemented yet)")
+				print(" Hash ! (not implemented yet)")
 				# TODO alias = randomize something
 				# break
 			elif hashq == "1":
-				alias = input(f"Alias ? (ex: john@spam2024. for john@spam2024@{domain}) >> ")
-				break
+				alias = input(" Alias e-mail address ? ")
 			else :
-				print("Error, type is 0 (use a hashed/unreadable address) or 1 (use a readable redirection address)")
-		
+				print(" Error, type is 0 (use a hashed/unreadable address)"
+		  			  " or 1 (use a readable redirection address)")
+
+			if alias and is_valid_email(alias) == True:
+				break
+			else:
+				print(f" {alias} is not a valid e-mail format.")
 
 		while True:
 			if general_config['default_dest_addr']:
-				to = input(f"Destination ? [{general_config['default_dest_addr']}] >> ")
-				if to == "":
-					to = general_config['default_dest_addr']
-					break
+				to = input_w_prefill(" Destination e-mail address ? ",
+							  	     v[general_config['default_dest_addr']])
 			else :
-				to = input("Destination ? (ex: john@doe.com) >> ")
+				to = input(" Destination e-mail address ? ")
 
-			if to:
+			if to and is_valid_email(to) == True:
 				break
 
 		create_redir(name, alias, to)
@@ -302,46 +322,50 @@ Copyright(c) 2024 Antoine Marzin
 
 	elif (action == "2"):
 		print("Edit an existing redirection")
-		alias = input("Alias to edit (ex: spam24@tical.fr) ? ")
+		alias = input(" Alias e-mail address to edit ? ")
 		id = None
 
+		# Try to get id from config
 		for k, v in redirs_config.items():
 			if v['alias'] == alias:
 				id = k
 				break
 		
+		# If ID not in local config, make an API call
 		if id == None:
 			id = get_remote_id_by_alias(alias)
 
-		for k, v in redirs_config.items():
-			if (k == id):
-				name = input_with_prefill("(optional) Label/name/website ? (ex: amazin.com) >> ",
-							  			  v['name'])
-				hashq = input("Replace with a generated a hash (0) or edit alias manually (1) ? [0/1]")
-				if hashq == "0":
-					print("hash ! (not implemented yet)")
-					# TODO alias = randomize something
-					# break
-				elif hashq == "1":
-					alias = input_with_prefill("Alias ? (ex: john@spam2024. for john@spam2024@{domain}) >> ",
-							  				 v['alias'])
-				to = input_with_prefill("Destination ? (ex: john@doe.com) >> ",
-										 v['to'])
-				break
-				
-		edit_redir(id, name, alias, to)
-
-		# desc = input(f"Description ?\nCurrent description : {}")
-		# TODO Mod la redir via l'api
-		# TODO Mod la conf à l'id : date, from, to
+		if id == None:
+			print(" Could not find {alias} alias.")
+		
+		else:
+			for k, v in redirs_config.items():
+				if (k == id):
+					name = input_w_prefill("(optional) Name/description ? ",
+											v['name'])
+					hashq = input("Replace with a generated hash (0)"
+				   				  "or edit alias manually (1) ? [0/1] ")
+					if hashq == "0":
+						print("hash ! (not implemented yet)")
+						# TODO alias = randomize something
+						# break
+					elif hashq == "1":
+						alias = input_w_prefill(" Alias e-mail address ? ",
+												v['alias'])
+					to = input_w_prefill(" Destination e-mail address ? ",
+											v['to'])
+					break
+			
+			if is_valid_email(alias) and is_valid_email(alias):
+				edit_redir(id, name, alias, to)
 
 	elif (action == "3"):
 		print("Remove a redirection")
-		alias = input("Alias to remove (ex: spam24@tical.fr) ? ")
+		alias = input(" Alias to remove (ex: spam24@tical.fr) ? ")
 		remove_redir(alias)
 
 	elif (action == "4"):
-		print("Check and synchronize local configuration <-> OVH configuration")
+		print("Check+synchronize local configuration <-> OVH configuration")
 		syncheck(redirs_remote=get_redirs_remote(),
 	   		 	 redirs_config=redirs_config)
 	
