@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 PROMPT_NAME = " (optional) Name/description ? "
-PROMPT_HASH = " Use a hash (0) or readable (1) redir address ? [0/1] "
+PROMPT_UUID = " Alias format : random UUID (0) or manual (1) ? [0/1] "
 PROMPT_ALIAS = " Alias address ? "
 PROMPT_DEST = " Destination address ? "
 

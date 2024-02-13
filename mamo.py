@@ -7,6 +7,7 @@ import readline
 import strings
 import time
 import utils
+import uuid
 
 ROOTDIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG = ROOTDIR + "/config.json"
@@ -243,6 +244,9 @@ def write_config(config_redir: dict):
 
 
 def input_w_prefill(prompt: str, text: str) -> input:
+	'''
+		Generate an input with prefilled text
+	'''
 	def hook():
 		readline.insert_text(text)
 		readline.redisplay()
@@ -251,8 +255,6 @@ def input_w_prefill(prompt: str, text: str) -> input:
 	result = input(prompt)
 	readline.set_pre_input_hook()
 	return result
-
-
 
 
 
@@ -312,19 +314,17 @@ while (True):
 		name = input(strings.PROMPT_NAME)
 
 		while True:
-			hashq = input(strings.PROMPT_HASH)
+			uuidq = input(strings.PROMPT_UUID)
 			
-			if hashq in ("0","1"):
+			if uuidq in ("0","1"):
 				break
 			else:
 				print(strings.ERR_HASH)
 
-		if hashq == "0":
-			print(" Not implemented yet, using custom alias")
-			hashq = "1"
-			# TODO alias = randomize something
+		if uuidq == "0":
+			alias = uuid.uuid4().hex + f"@{domain}"
 		
-		if hashq == "1":
+		if uuidq == "1":
 			while True:
 				alias = input(strings.PROMPT_ALIAS)
 				if alias and utils.is_valid_email(alias) == True:
@@ -371,19 +371,17 @@ while (True):
 		name = input_w_prefill(strings.PROMPT_NAME,
 							   redir['name'])
 		while True:
-			hashq = input(strings.PROMPT_HASH)
+			uuidq = input(strings.PROMPT_UUID)
 			
-			if hashq in ("0","1"):
+			if uuidq in ("0","1"):
 				break
 			else:
 				print(strings.ERR_HASH)
 
-		if hashq == "0":
-			print(" Not implemented yet, using custom alias")
-			hashq = "1"
-			# TODO alias = randomize something
+		if uuidq == "0":
+			alias = uuid.uuid4().hex + f"@{domain}"
 		
-		if hashq == "1":
+		if uuidq == "1":
 			while True:
 				alias = input_w_prefill(strings.PROMPT_ALIAS, redir['alias'])
 				if alias and utils.is_valid_email(alias) == True:
