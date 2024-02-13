@@ -4,6 +4,7 @@ import json
 import os
 import ovh
 import readline
+import strings
 import time
 import utils
 
@@ -308,35 +309,39 @@ while (True):
 
 	elif (action == "1"):
 		print("Create a new redirection")
-		name = input(" (optional) Name/description ? ")
+		name = input(strings.PROMPT_NAME)
 
 		while True:
-			hashq = input(" Use a hash (0) or readable (1)"
-				 		  " redir address ? [0/1] ")
-			if hashq == "0":
-				print(" Hash ! (not implemented yet)")
-				# TODO alias = randomize something
-				# break
-			elif hashq == "1":
-				alias = input(" Alias address ? ")
-			else :
-				print(" Error, type is 0 (use a hashed/unreadable address)"
-		  			  " or 1 (use a readable redirection address)")
-
-			if alias and utils.is_valid_email(alias) == True:
+			hashq = input(strings.PROMPT_HASH)
+			
+			if hashq in ("0","1"):
 				break
 			else:
-				print(f" {alias} is not a valid e-mail format.")
+				print(strings.ERR_HASH)
+
+		if hashq == "0":
+			print(" Not implemented yet, using custom alias")
+			hashq = "1"
+			# TODO alias = randomize something
+		
+		if hashq == "1":
+			while True:
+				alias = input(strings.PROMPT_ALIAS)
+				if alias and utils.is_valid_email(alias) == True:
+					# TODO check si l'alias n'existe pas déjà
+					break
+				print(strings.err_not_valid_email(alias))
 
 		while True:
 			if config_general['default_dest_addr']:
-				to = input_w_prefill(" Destination address ? ",
+				to = input_w_prefill(strings.PROMPT_DEST,
 							  	     config_general['default_dest_addr'])
 			else :
 				to = input(" Destination address ? ")
 
 			if to and utils.is_valid_email(to) == True:
 				break
+			print(strings.err_not_valid_email(to))
 
 		create_redir(name, alias, to)
 
@@ -346,7 +351,7 @@ while (True):
 		id = 0
 
 		while True:
-			alias = input(" Alias address to edit ? ")
+			alias = input(strings.PROMPT_ALIAS)
 
 			if alias == "":
 				continue
@@ -355,59 +360,58 @@ while (True):
 				id = find_id_by_alias(alias)
 				break
 			else:
-				print(f" {alias} is not a valid e-mail format.")
+				print(strings.err_not_valid_email(alias))
 				continue
 
 		if id == None:
-			print(f" Could not find alias \"{alias}\".")
+			print(strings.cant_find_alias(alias))
 			continue
 
 		redir = config_redir[id]
-		name = input_w_prefill(" (optional) Name/description ? ",
+		name = input_w_prefill(strings.PROMPT_NAME,
 							   redir['name'])
 		while True:
-			hashq = input(" Replace with a generated hash (0)"
-						  " or edit alias manually (1) ? [0/1] ")
+			hashq = input(strings.PROMPT_HASH)
 			
 			if hashq in ("0","1"):
 				break
+			else:
+				print(strings.ERR_HASH)
 
 		if hashq == "0":
 			print(" Not implemented yet, using custom alias")
 			hashq = "1"
 			# TODO alias = randomize something
-			# break
 		
 		if hashq == "1":
-			alias = input_w_prefill(" Alias address ? ",
-									redir['alias'])
+			while True:
+				alias = input_w_prefill(strings.PROMPT_ALIAS, redir['alias'])
+				if alias and utils.is_valid_email(alias) == True:
+					# TODO check si l'alias n'existe pas déjà
+					break
+				print(strings.err_not_valid_email(alias))
 
-		if utils.is_valid_email(alias) == False:
-			print(f" {alias} is not a valid e-mail format.")
-			continue
-
-		to = input_w_prefill(" Destination address ? ",
-								redir['to'])
-				
-		if utils.is_valid_email(to) == False:
-			print(f" {to} is not a valid e-mail format.")
-			continue
+		while True:
+			to = input_w_prefill(strings.PROMPT_DEST, redir['to'])
+			if to and utils.is_valid_email(to) == True:
+				break
+			print(strings.err_not_valid_email(to))
 
 		edit_redir(id, name, alias, to)
 
 	elif (action == "3"):
 		print("Remove a redirection")
 		while True:
-			alias = input(" Alias to remove ? ")
+			alias = input(strings.PROMPT_ALIAS)
 
 			if utils.is_valid_email(alias) == True:
 				id = find_id_by_alias(alias)
 			else:
-				print(f" {alias} is not a valid e-mail format.")
+				print(strings.err_not_valid_email(alias))
 				continue
 
 			if id == 0:
-				print(f" Could not find alias \"{alias}\".")
+				print(strings.cant_find_alias(alias))
 				break
 			else:
 				remove_redir(alias)
