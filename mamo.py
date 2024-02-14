@@ -114,7 +114,7 @@ def compare(id: str, config_data: dict, remote_data: dict) -> int:
 	'''
 	result = 0
 
-	if config_data['alias'] + domain != remote_data['alias']:
+	if config_data['alias'] != remote_data['alias']:
 		print(f" Compare {id}: alias differs (local {config_data['alias']}"
 			  f" <> remote {remote_data['alias']})")
 		result += 1
