@@ -19,8 +19,9 @@ Planned/ideas :
 - Others hosting services support
 
 ## Setup
-- Clone the repository localy
+- Clone the repository localy : `git clone https://github.com/hotrooibos/MAMO.git`
+- Install dependencies : `pip install -r requirements.txt`
 - Create a config.json file based on the given template (copy and rename it)
 - Generate your OVH API token (https://api.ovh.com/createToken/index.cgi?GET=/*&PUT=/*&POST=/*&DELETE=/*)
 - In the config file, fill the token fields
-- Run : python3 mamo.py
+- Run : `python mamo.py`
