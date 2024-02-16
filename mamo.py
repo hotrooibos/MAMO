@@ -285,6 +285,9 @@ if len(config_redir) < 1:
 # redirs_remote = get_redirs_remote()
 # init_check(redirs_remote, config_redir)
 
+# eel.init('web')
+# eel.start('index.html', mode='default', port=0)
+
 print("""======================================
 Mail Alias Manager for OVH - MAMO v0.2
 Copyright(c) 2024 Antoine Marzin
