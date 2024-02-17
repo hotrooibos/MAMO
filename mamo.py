@@ -4,18 +4,14 @@ import model
 import strings
 import utils
 import uuid
-import web
 
 
 @eel.expose
-def get_redirs() -> dict:
-    # r = mamo.get_redirs()
-    r = {
-		"foo": "bar",
-		"bar": "foo"	
-	}
-    print(r)
-    return(r)
+def get_redirs() -> str:
+    r = model.get_redirs()
+	# TODO tri : date de création > ordre alphab 
+	# 			 du domaine > ordre alphab mail
+    return r
 
 
 def syncheck(redirs_remote: list, config_redir: list):
@@ -71,7 +67,8 @@ if len(model.config_redir) < 1:
 # 		  size=(300, 200),
 # 		  jinja_templates='templates',
 # 		  mode='default',
-# 		  port=0)
+# 		  port=8080)
+
 
 print("""======================================
 Mail Alias Manager for OVH - MAMO v0.2

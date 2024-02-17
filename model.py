@@ -4,9 +4,6 @@ import os
 import ovh
 import time
 
-ROOTDIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG = ROOTDIR + "/config.json"
-domain = "tical.fr"
 
 def get_redirs_remote() -> dict:
 	'''
@@ -32,6 +29,20 @@ def get_redirs_remote() -> dict:
 	except ovh.APIError as e:
 		print(e)
 		
+
+def get_redirs() -> str:
+    redirs = {}
+
+    for k, v in config_redir.items():
+        redirs[k] = {
+            "name": v["name"],
+            "date": v["date"],
+            "alias": v["alias"],
+            "to": v["to"]
+        }
+    
+    return(json.dumps(redirs, indent=4))
+
 
 def find_id_by_alias(alias: str):
 	'''
@@ -199,11 +210,20 @@ def write_config(config_redir: dict):
 		json.dump(config, json_file, indent=4)
 
 
+
+ROOTDIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG = ROOTDIR + "/config.json"
+
 # Read config file
 with open(file=CONFIG,
 		  mode='r',
           encoding='utf-8') as json_file:
 	config = json.load(json_file)
+
+config_redir = config['redirection']
+config_general = config['general']
+
+domain = config_general['domain']
 
 # Instantiate an OVH Client
 client = ovh.Client(
@@ -212,6 +232,3 @@ client = ovh.Client(
 	application_secret = config['token']['app_secret'],
 	consumer_key = config['token']['consumer_key'],
 )
-
-config_redir = config['redirection']
-config_general = config['general']

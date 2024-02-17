@@ -1,6 +1,7 @@
 {
     "general": {
-        "default_dest_addr": ""
+        "default_dest_addr": "myprivate@email.com",
+        "domain": "mydomain.fr"
     },
     "token": {
         "endpoint": "ovh-eu",
