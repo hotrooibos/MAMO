@@ -3,6 +3,10 @@ const doc       = document;
 const listRedir = doc.querySelector('#listRedir');
 const redirList = doc.querySelector('#redirList');
 
+const genUUID = doc.querySelector('#genUUID');
+
+const fieldAlias = doc.querySelector('#alias');
+
 const listTest = doc.querySelector('#listTest');
 const testList = doc.querySelector('#testList');
 
@@ -24,13 +28,15 @@ function showRedirs(jsonStr) {
     }
 }
 
-function getRedirs() {
-    eel.get_redirs()(showRedirs);
+function fillAlias(aliasStr) {
+    // texte du field "alias" = aliasStr
+    fieldAlias.value = aliasStr;
 }
 
-listRedir.addEventListener('click', (e) => {
-    getRedirs();
-});
+function getRedirs() { eel.get_redirs()(showRedirs); }
+function generateUUID() { eel.get_uuid()(fillAlias); }
+listRedir.addEventListener('click', (e) => { getRedirs(); });
+genUUID.addEventListener('click', (e) => { generateUUID(); });
 
 
 // Tests

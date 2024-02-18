@@ -13,6 +13,12 @@ def get_redirs() -> str:
 	# 			 du domaine > ordre alphab mail
     return r
 
+@eel.expose
+def get_uuid() -> str:
+    r = uuid.uuid4().hex + f"@{model.domain}"
+    return r
+
+
 
 def syncheck(redirs_remote: list, config_redir: list):
 	'''
