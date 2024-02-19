@@ -14,6 +14,8 @@ const testList = doc.querySelector('#testList');
 function showRedirs(jsonStr) {
     jsonObj = JSON.parse(jsonStr);
 
+    redirList.innerHTML = "";
+
     r = [];
 
     for (const key of Object.keys(jsonObj)) { 
@@ -37,6 +39,8 @@ function getRedirs() { eel.get_redirs()(showRedirs); }
 function generateUUID() { eel.get_uuid()(fillAlias); }
 listRedir.addEventListener('click', (e) => { getRedirs(); });
 genUUID.addEventListener('click', (e) => { generateUUID(); });
+
+
 
 
 // Tests
