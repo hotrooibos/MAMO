@@ -171,6 +171,45 @@ def remove_redir(alias: str) -> int:
 	except ovh.APIError as e:
 		print(e)
 		return 1
+	
+	
+def syncheck(redirs_remote: list, config_redir: list):
+	'''
+		Check if the the whole local (config.json) informations
+		are equals to the remote (ovh api) informations
+	'''
+
+	if (len(config_redir) != len(redirs_remote)):
+		print(" WARNING : local config length DIFFERS from remote !")
+
+	# Loop in the local config
+	print("\n Check config...")
+	for id, v in config_redir.items():
+		try:
+			model.compare(id, config_redir[id], redirs_remote[id])
+
+		except KeyError:
+			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
+				  		    " unknown in remote config. Create it ? [y/N]")
+			if action == "y":
+				print(" TODO create a remote entry")
+				continue
+			else:
+				continue
+
+	# Loop in the remote config
+	print("\n Check remote...")
+	for id, v in redirs_remote.items():
+		try:
+			model.compare(id, config_redir[id], redirs_remote[id])
+		except KeyError:
+			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
+				  		 	" unknown in local config. Create it ? [y/N]")
+			if action == "y":
+				print(" TODO create a local entry")
+				continue
+			else:
+				continue
 
 
 def compare(id: str, config_data: dict, remote_data: dict) -> int:

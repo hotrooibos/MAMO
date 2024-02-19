@@ -1,10 +1,15 @@
 # -*- encoding: utf-8 -*-
 import eel
+import json
 import model
 import strings
 import utils
 import uuid
 
+'''	EEL exposed functions
+	Called from JavaScript
+
+'''
 
 @eel.expose
 def get_redirs() -> str:
@@ -14,51 +19,26 @@ def get_redirs() -> str:
     return r
 
 @eel.expose
+def set_redir(form: str) -> int:
+	f = json.loads(form);
+	name = f['name']
+	alias = f['alias']
+	to = f['to']
+	
+	r = model.create_redir(name=name,
+						   alias=alias,
+						   to=to)
+	return r
+
+@eel.expose
 def get_uuid() -> str:
     r = uuid.uuid4().hex + f"@{model.domain}"
     return r
 
 
+'''	Main app
 
-def syncheck(redirs_remote: list, config_redir: list):
-	'''
-		Check if the the whole local (config.json) informations
-		are equals to the remote (ovh api) informations
-	'''
-
-	if (len(config_redir) != len(redirs_remote)):
-		print(" WARNING : local config length DIFFERS from remote !")
-
-	# Loop in the local config
-	print("\n Check config...")
-	for id, v in config_redir.items():
-		try:
-			model.compare(id, config_redir[id], redirs_remote[id])
-
-		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
-				  		    " unknown in remote config. Create it ? [y/N]")
-			if action == "y":
-				print(" TODO create a remote entry")
-				continue
-			else:
-				continue
-
-	# Loop in the remote config
-	print("\n Check remote...")
-	for id, v in redirs_remote.items():
-		try:
-			model.compare(id, config_redir[id], redirs_remote[id])
-		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
-				  		 	" unknown in local config. Create it ? [y/N]")
-			if action == "y":
-				print(" TODO create a local entry")
-				continue
-			else:
-				continue
-
-
+'''
 
 # If local config is empty, try to retrieve
 # an existing remote redirections
@@ -68,13 +48,23 @@ if len(model.config_redir) < 1:
 # redirs_remote = get_redirs_remote()
 # init_check(redirs_remote, config_redir)
 
-# eel.init('web')
-# eel.start('templates/index.j2',
-# 		  size=(300, 200),
-# 		  jinja_templates='templates',
-# 		  mode='default',
-# 		  port=8080)
 
+# Start Eel web UI
+eel.init('web')
+eel.start('templates/index.j2',
+		  size=(300, 200),
+		  jinja_templates='templates',
+		  mode='default',
+		  port=8080)
+
+
+
+'''	CLI
+	Should/will be part of a specific module
+	As of now, it offers more working functions than web ui
+	Comment the above eel init/start to use CLI
+
+'''
 
 print("""======================================
 Mail Alias Manager for OVH - MAMO v0.2

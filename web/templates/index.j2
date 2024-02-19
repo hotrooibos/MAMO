@@ -3,18 +3,18 @@
 {% block content %}
     <h1>MAMO v0.3</h1>
 
-    <h2>Test area</h2>
+    {# <h2>Test area</h2>
     <div class="box">
         <a href="#" id="listTest">Test button</a>
         <div id="testList">
         </div>
-    </div>
+    </div> #}
 
     <h2 class="toggleshow">List redirections</h2>
     <div class="box">
         <a href="#" id="listRedir">List/hide redirections</a>
         <div>
-            <ul id="redirList">
+            <ul id="redirList" style="display: none;">
             </ul>
         </div>
     </div>
@@ -23,7 +23,7 @@
     <div class="box">
         <a href="#" id="genUUID">Generate random UUID address</a>
 
-        <form method="post" id="addRedirForm">
+        <form method="post" id="redir_form" class="flex-utd">
             <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
             <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="myalias@mydomain.com">
             <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="myprivate@email.com">

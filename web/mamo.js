@@ -3,8 +3,8 @@ const doc       = document;
 const listRedir = doc.querySelector('#listRedir');
 const redirList = doc.querySelector('#redirList');
 
+const redirForm = doc.querySelector('#redir_form');
 const genUUID = doc.querySelector('#genUUID');
-
 const fieldAlias = doc.querySelector('#alias');
 
 const listTest = doc.querySelector('#listTest');
@@ -36,33 +36,60 @@ function fillAlias(aliasStr) {
 }
 
 function getRedirs() { eel.get_redirs()(showRedirs); }
+function setRedir(form) { eel.set_redir(form)(showRedirs); }
 function generateUUID() { eel.get_uuid()(fillAlias); }
-listRedir.addEventListener('click', (e) => { getRedirs(); });
-genUUID.addEventListener('click', (e) => { generateUUID(); });
 
 
+/*
 
+Event listeners
 
-// Tests
-var testDict = {
-    "001": {
-        "name": "Test",
-        "date": "",
-        "alias": "001@tical.fr",
-        "to": "antoine@marzin.org"
-    },
-    "002": {
-        "name": "",
-        "date": "",
-        "alias": "002@tical.fr",
-        "to": "antoine@marzin.org"
+*/
+
+listRedir.addEventListener('click', (e) => {
+    getRedirs();
+
+    if (redirList.hasAttribute('style')) {
+        redirList.removeAttribute('style');
     }
-}
-
-listTest.addEventListener('click', (e) => {
-    console.log('Type : ' + typeof(testDict));
-
-    for (const key of Object.keys(testDict)) { 
-        console.log(key + ": " + JSON.stringify(testDict[key])); 
-     };
+    else {
+        redirList.style.display = 'none';
+    }
 });
+
+genUUID.addEventListener('click', (e) => {
+    generateUUID();
+});
+
+redirForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let newRedirForm = new FormData(redirForm);
+    newRedirForm = JSON.stringify(Object.fromEntries(newRedirForm));
+    setRedir(newRedirForm);
+});
+
+
+
+// // Tests
+// var testDict = {
+//     "001": {
+//         "name": "Test",
+//         "date": "",
+//         "alias": "001@tical.fr",
+//         "to": "antoine@marzin.org"
+//     },
+//     "002": {
+//         "name": "",
+//         "date": "",
+//         "alias": "002@tical.fr",
+//         "to": "antoine@marzin.org"
+//     }
+// }
+
+// listTest.addEventListener('click', (e) => {
+//     console.log('Type : ' + typeof(testDict));
+
+//     for (const key of Object.keys(testDict)) { 
+//         console.log(key + ": " + JSON.stringify(testDict[key])); 
+//      };
+// });
