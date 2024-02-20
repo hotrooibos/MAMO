@@ -2,6 +2,7 @@
 import json
 import os
 import ovh
+import strings
 import time
 
 
@@ -68,9 +69,11 @@ def find_id_by_alias(alias: str):
 	return id
 
 
-def create_redir(name:str, alias: str, to: str) -> int:
+def create_redir_remote(alias: str, to: str) -> int:
 	'''
-		Create a new redirection
+		Create a new redirection in remote
+		Return 0 if created successfully
+		Return 1 otherwise
 	'''
 	try:
 		result = client.post('/email/domain/tical.fr/redirection',
@@ -79,26 +82,51 @@ def create_redir(name:str, alias: str, to: str) -> int:
 							 to=to)
 		
 		# If successfuly created, get ID
+		# (API response does not provide it)
 		if result:
-			id = find_id_by_alias(alias)
-
-			new_redir = {
-				"name": name,
-				"date": int(time.time()),
-				"alias": alias,
-				"to": to
-			}
-
-			config_redir[id] = new_redir
-			write_config(config_redir)
-			print(f" Created id {id} : {config_redir[id]['alias']}"
-		 		  f" -> {config_redir[id]['to']}")
 			return 0
 		
 	except ovh.APIError as e:
 		print(e)
 	
 	return 1
+
+
+def create_redir_local(id: int, name:str, alias: str, to: str) -> int:
+	'''
+		Create a new redirection entry in configuration
+	'''
+	try:
+		new_redir = {
+			"name": name,
+			"date": int(time.time()),
+			"alias": alias,
+			"to": to
+		}
+
+		config_redir[id] = new_redir
+		write_config(config_redir)
+		return 0
+	
+	except:
+		return 1
+	
+	
+def create_redir(name:str, alias: str, to: str) -> int:
+	'''
+		Create a new redirection (remote + local)
+	'''
+	res = create_redir_remote(alias=alias,
+						   	  to=to)
+
+	if res == 0:
+		id = find_id_by_alias(alias)
+		res = create_redir_local(id=id,
+						   		 name=name,
+						   		 alias=alias,
+						   		 to=to)
+	
+	return res
 
 
 def edit_redir(id: str, name: str, alias: str, to: str) -> int:
@@ -172,69 +200,78 @@ def remove_redir(alias: str) -> int:
 		print(e)
 		return 1
 	
-	
-def syncheck(redirs_remote: list, config_redir: list):
+
+def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):
 	'''
-		Check if the the whole local (config.json) informations
-		are equals to the remote (ovh api) informations
+		Check both local config and remote redirs,
+		and sync them.
+		Set dry = True for a dry run (check without creating any entry)
 	'''
 
 	if (len(config_redir) != len(redirs_remote)):
 		print(" WARNING : local config length DIFFERS from remote !")
 
 	# Loop in the local config
-	print("\n Check config...")
 	for id, v in config_redir.items():
 		try:
-			model.compare(id, config_redir[id], redirs_remote[id])
+			compare(id, config_redir[id], redirs_remote[id])
 
 		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
-				  		    " unknown in remote config. Create it ? [y/N]")
-			if action == "y":
-				print(" TODO create a remote entry")
-				continue
-			else:
-				continue
+			alias = config_redir[id]['alias']
+			to = config_redir[id]['to']
+			if not dry:
+				res = create_redir_remote(alias=alias,
+										  to=to)
+			# Update the ID
+				if res == 0:
+					id = find_id_by_alias(alias)
+					config_redir[id]['alias'] = id
+
+			if dry:
+				print(f"Dry creating remote (alias {alias}, to {to}).")
 
 	# Loop in the remote config
-	print("\n Check remote...")
 	for id, v in redirs_remote.items():
 		try:
-			model.compare(id, config_redir[id], redirs_remote[id])
+			compare(id, config_redir[id], redirs_remote[id])
+
 		except KeyError:
-			action = input(f" Redirection {id} [{v['alias']} -> {v['to']}]"
-				  		 	" unknown in local config. Create it ? [y/N]")
-			if action == "y":
-				print(" TODO create a local entry")
-				continue
-			else:
-				continue
+			name = strings.SYNCED_ENTRY_NAME
+			alias = redirs_remote[id]['alias']
+			to = redirs_remote[id]['to']
+			if not dry:
+				create_redir_local(id=id,
+								   name=name,
+								   alias=alias,
+								   to=to)
+			
+			if dry:
+				print(f"Dry creating local (id {id}, name {name}, alias {alias}, to {to}).")
 
 
 def compare(id: str, config_data: dict, remote_data: dict) -> int:
 	'''
 		Compare the given local and remote datas
 		
-		return values :
+		Return values :
 			0: data are sync
 			1: "alias" differs
 			2: "to" differs
 			3: both "alias" and "to" differs
 	'''
-	result = 0
+	res = 0
 
 	if config_data['alias'] != remote_data['alias']:
-		print(f" Compare {id}: alias differs (local {config_data['alias']}"
-			  f" <> remote {remote_data['alias']})")
-		result += 1
+		# print(f" Compare {id}: alias differs (local {config_data['alias']}"
+		# 	  f" <> remote {remote_data['alias']})")
+		res += 1
 
 	if config_data['to'] != remote_data['to']:
-		print(f" Compare {id}: to differs (local {config_data['to']}"
-			  f" <> remote {remote_data['to']})")
-		result += 2
+		# print(f" Compare {id}: to differs (local {config_data['to']}"
+		# 	  f" <> remote {remote_data['to']})")
+		res += 2
 	
-	return result
+	return res
 
 
 def write_config(config_redir: dict):

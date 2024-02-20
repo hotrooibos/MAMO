@@ -50,12 +50,12 @@ if len(model.config_redir) < 1:
 
 
 # Start Eel web UI
-eel.init('web')
-eel.start('templates/index.j2',
-		  size=(300, 200),
-		  jinja_templates='templates',
-		  mode='default',
-		  port=8080)
+# eel.init('web')
+# eel.start('templates/index.j2',
+# 		  size=(300, 200),
+# 		  jinja_templates='templates',
+# 		  mode='default',
+# 		  port=8080)
 
 
 
@@ -75,7 +75,8 @@ Copyright(c) 2024 Antoine Marzin
   [1] Create a new redirection
   [2] Edit an existing redirection
   [3] Remove a redirection
-  [4] Check/synchronize local configuration with remote (OVH) redirections
+  [4] DRY Check/synchronize local configuration with remote (OVH) redirections
+  [5] Check/synchronize local configuration with remote (OVH) redirections
   [q] Exit""")
 
 # Main loop
@@ -84,8 +85,9 @@ while (True):
 
 
 	if (action == "0"):
+		print(f" {len(model.config_redir)} entries found.\n---")
 		for k, v in model.config_redir.items():
-			print(f'{k} -> {v}')
+			print(f' {k} -> {v}')
 			# TODO tri : date de création > ordre alphab 
 			# 			 du domaine > ordre alphab mail
 
@@ -198,10 +200,16 @@ while (True):
 
 
 	elif (action == "4"):
+		print("DRY Check + synchronize local configuration <-> OVH configuration")
+		model.syncheck(redirs_remote=model.get_redirs_remote(),
+	   		 	 	   config_redir=model.config_redir,
+					   dry=True)
+
+	elif (action == "5"):
 		print("Check + synchronize local configuration <-> OVH configuration")
-		syncheck(redirs_remote=model.get_redirs_remote(),
-	   		 	 config_redir=model.config_redir)
-	
+		model.syncheck(redirs_remote=model.get_redirs_remote(),
+	   		 	 	   config_redir=model.config_redir)
+
 	elif (action == "q"):
 		quit()
 	else :
