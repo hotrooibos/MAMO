@@ -160,6 +160,22 @@ h1 {
     color: var(--color-text);
 }
 
+.tile {
+    display: grid; 
+    grid-template-columns: minmax(1px, 90px) 5fr; 
+    grid-template-rows: auto 1fr; 
+    grid-template-areas: 
+      "preview title"
+      "preview date";
+    gap: 0 1em;
+    padding: 1em;
+    border-radius: 3px;
+    transition: background-color 150ms, color 150ms;
+}
+.tile:hover {
+    background-color: var(--color-hover);
+}
+
 .input {
     margin: .5em;
     padding: .3em;

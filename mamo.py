@@ -35,6 +35,11 @@ def get_uuid() -> str:
     r = uuid.uuid4().hex + f"@{model.domain}"
     return r
 
+@eel.expose
+def del_redir(alias:str) -> str:
+    r = model.remove_redir(alias)
+    return r
+
 
 '''	Main app
 

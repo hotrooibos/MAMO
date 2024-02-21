@@ -7,6 +7,9 @@ const redirForm = doc.querySelector('#redir_form');
 const genUUID = doc.querySelector('#genUUID');
 const fieldAlias = doc.querySelector('#alias');
 
+const delForm = doc.querySelector('#del_redir_form');
+const fieldAliasDel = doc.querySelector('#alias_del');
+
 const listTest = doc.querySelector('#listTest');
 const testList = doc.querySelector('#testList');
 
@@ -66,6 +69,14 @@ redirForm.addEventListener('submit', (e) => {
     let newRedirForm = new FormData(redirForm);
     newRedirForm = JSON.stringify(Object.fromEntries(newRedirForm));
     setRedir(newRedirForm);
+});
+
+delForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let newDelForm = new FormData(delForm);
+    newDelForm = JSON.stringify(Object.fromEntries(newDelForm));
+
+    console.log(newDelForm);
 });
 
 
