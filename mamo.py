@@ -57,12 +57,12 @@ if len(model.config_redir) < 1:
 
 
 # Start Eel web UI
-eel.init('web')
-eel.start('templates/index.j2',
-		  size=(300, 200),
-		  jinja_templates='templates',
-		  mode='default',
-		  port=8080)
+# eel.init('web')
+# eel.start('templates/index.j2',
+# 		  size=(300, 200),
+# 		  jinja_templates='templates',
+# 		  mode='default',
+# 		  port=8080)
 
 
 
