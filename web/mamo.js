@@ -1,20 +1,37 @@
-const doc       = document;
+const doc           = document;
 
-const listRedir = doc.querySelector('#listRedir');
-const redirList = doc.querySelector('#redirList');
+const listRedir     = doc.querySelector('#listRedir');
+const redirList     = doc.querySelector('#redirList');
 
-const redirForm = doc.querySelector('#redir_form');
-const genUUID = doc.querySelector('#genUUID');
-const fieldAlias = doc.querySelector('#alias');
+const redirForm     = doc.querySelector('#redir_form');
+const genUuid       = doc.querySelector('#genUUID');
+const fieldAlias    = doc.querySelector('#alias');
 
-const delForm = doc.querySelector('#del_redir_form');
+const delForm       = doc.querySelector('#del_redir_form');
 const fieldAliasDel = doc.querySelector('#alias_del');
 
-const listTest = doc.querySelector('#listTest');
-const testList = doc.querySelector('#testList');
+const listTest      = doc.querySelector('#listTest');
+const testList      = doc.querySelector('#testList');
 
 
-function showRedirs(jsonStr) {
+function showInfobox(msg) {
+    let msgbox = doc.createElement('div');
+    msgbox.setAttribute('id', 'msgbox');
+    msgbox.setAttribute('class', 'msgbox');
+    msgbox.innerHTML = msg;
+    boxtop = (msgbox.getBoundingClientRect().top - 50) + 'px';
+    boxleft = (msgbox.getBoundingClientRect().left -50) + 'px';
+    msgbox.style.top = boxtop;
+    msgbox.style.left = boxleft;
+    doc.querySelector('body').appendChild(msgbox);
+
+    setTimeout(function() {
+        doc.querySelector('#msgbox').remove();
+    }, 5000);
+}
+
+
+function loadRedirs(jsonStr) {
     jsonObj = JSON.parse(jsonStr);
 
     redirList.innerHTML = "";
@@ -33,14 +50,43 @@ function showRedirs(jsonStr) {
     }
 }
 
+
 function fillAlias(aliasStr) {
     // texte du field "alias" = aliasStr
     fieldAlias.value = aliasStr;
 }
 
-function getRedirs() { eel.get_redirs()(showRedirs); }
-function setRedir(form) { eel.set_redir(form)(showRedirs); }
-function generateUUID() { eel.get_uuid()(fillAlias); }
+
+function getRedirs() {
+    eel.get_redirs()(loadRedirs);
+}
+
+
+function setRedir(form) {
+    eel.set_redir(form)((e) => {
+        loadRedirs();
+        console.log(e);
+        if (e == 0) {
+            redirForm.reset();
+        }
+    })
+}
+
+
+function getUuid() {
+    showInfobox("Generating UUID...");
+    eel.get_uuid()(fillAlias);
+}
+
+
+function delRedir(form) {
+    eel.del_redir(form)((e) => {
+        console.log(e);
+        if (e == 0) {
+            delForm.reset();
+        }
+    })
+}
 
 
 /*
@@ -60,8 +106,8 @@ listRedir.addEventListener('click', (e) => {
     }
 });
 
-genUUID.addEventListener('click', (e) => {
-    generateUUID();
+genUuid.addEventListener('click', (e) => {
+    getUuid();
 });
 
 redirForm.addEventListener('submit', (e) => {
@@ -75,8 +121,7 @@ delForm.addEventListener('submit', (e) => {
     e.preventDefault();
     let newDelForm = new FormData(delForm);
     newDelForm = JSON.stringify(Object.fromEntries(newDelForm));
-
-    console.log(newDelForm);
+    delRedir(newDelForm);
 });
 
 

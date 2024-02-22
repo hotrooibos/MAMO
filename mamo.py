@@ -20,7 +20,7 @@ def get_redirs() -> str:
 
 @eel.expose
 def set_redir(form: str) -> int:
-	f = json.loads(form);
+	f = json.loads(form)
 	name = f['name']
 	alias = f['alias']
 	to = f['to']
@@ -36,9 +36,11 @@ def get_uuid() -> str:
     return r
 
 @eel.expose
-def del_redir(alias:str) -> str:
-    r = model.remove_redir(alias)
-    return r
+def del_redir(form:str) -> str:
+	f = json.loads(form)
+	alias = f['alias']
+	r = model.remove_redir(alias)
+	return r
 
 
 '''	Main app
@@ -55,12 +57,12 @@ if len(model.config_redir) < 1:
 
 
 # Start Eel web UI
-# eel.init('web')
-# eel.start('templates/index.j2',
-# 		  size=(300, 200),
-# 		  jinja_templates='templates',
-# 		  mode='default',
-# 		  port=8080)
+eel.init('web')
+eel.start('templates/index.j2',
+		  size=(300, 200),
+		  jinja_templates='templates',
+		  mode='default',
+		  port=8080)
 
 
 
