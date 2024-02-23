@@ -20,7 +20,6 @@ def get_redirs() -> str:
 
 @eel.expose
 def set_redir(form: str) -> int:
-	print("set redir !")
 	f = json.loads(form)
 	name = f['name']
 	alias = f['alias']

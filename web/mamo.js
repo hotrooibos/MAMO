@@ -16,17 +16,18 @@ const testList      = doc.querySelector('#testList');
 
 
 function showInfobox(msg) {
+    let cnt = doc.querySelectorAll('.msgbox').length*3 + 1;
     let msgbox = doc.createElement('div');
     msgbox.setAttribute('id', 'msgbox');
     msgbox.setAttribute('class', 'msgbox');
     msgbox.innerHTML = msg;
-    msgbox.style.top = "1em";
+    msgbox.style.top = cnt + "em";
     msgbox.style.right = "1em";
     doc.querySelector('body').appendChild(msgbox);
 
     setTimeout((e) => {
-        doc.querySelector('#msgbox').remove();
-    }, 7000);
+        doc.querySelector('.msgbox').remove();
+    }, 5000);
 }
 
 
@@ -69,13 +70,14 @@ function getRedirs() {
 async function setRedir(form) {
     showInfobox("Creating new redir...");
 
-    const res = await eel.set_redir(form)(console.log("zou"));
-    console.log("res : " + res);
+    const res = await eel.set_redir(form)();
 
     if (res == 0) {
         // eel.get_redirs();
         // redirForm.reset();
-        showInfobox("res :" + res);
+        showInfobox("Alias created succesfully !");
+    } else {
+        showInfobox("An error occured while creating the alias...");
     }
 }
 
@@ -86,13 +88,18 @@ function getUuid() {
 }
 
 
-function delRedir(form) {
-    eel.del_redir(form)((e) => {
-        console.log(e);
-        if (e == 0) {
-            delForm.reset();
-        }
-    })
+async function delRedir(form) {
+    showInfobox("Removing a redir...");
+
+    const res = await eel.del_redir(form)();
+
+    if (res == 0) {
+        showInfobox("Alias removed succesfully !");
+        delForm.reset();
+    } else {
+        showInfobox("An error occured while removing the alias...");
+    }
+
 }
 
 
