@@ -1,4 +1,5 @@
 const doc           = document;
+const wrapper     = doc.querySelector('#wrapper');
 
 const listRedir     = doc.querySelector('#listRedir');
 const redirList     = doc.querySelector('#redirList');
@@ -19,15 +20,13 @@ function showInfobox(msg) {
     msgbox.setAttribute('id', 'msgbox');
     msgbox.setAttribute('class', 'msgbox');
     msgbox.innerHTML = msg;
-    boxtop = (msgbox.getBoundingClientRect().top - 50) + 'px';
-    boxleft = (msgbox.getBoundingClientRect().left -50) + 'px';
-    msgbox.style.top = boxtop;
-    msgbox.style.left = boxleft;
+    msgbox.style.top = "1em";
+    msgbox.style.right = "1em";
     doc.querySelector('body').appendChild(msgbox);
 
     setTimeout(function() {
         doc.querySelector('#msgbox').remove();
-    }, 5000);
+    }, 7000);
 }
 
 

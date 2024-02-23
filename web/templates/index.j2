@@ -1,33 +1,34 @@
 {% extends 'base.j2' %} 
 {% block title %}MAMO{% endblock %}
 {% block content %}
-    <h1>MAMO v0.3</h1>
+    <div id="wrapper">
+        <h1>MAMO v0.3</h1>
 
-    {# <h2>Test area</h2>
-    <div class="box">
-        <a href="#" id="listTest">Test button</a>
-        <div id="testList">
-        </div>
-    </div> #}
+        {# <h2>Test area</h2>
+        <div class="box">
+            <a href="#" id="listTest">Test button</a>
+            <div id="testList">
+            </div>
+        </div> #}
 
-    <h2 class="toggleshow">List redirections</h2>
-    <a href="#" id="listRedir">List/hide redirections</a>
-    <ul id="redirList" style="display: none;">
-    </ul>
+        <h2 class="toggleshow">List redirections</h2>
+        <a href="#" id="listRedir">List/hide redirections</a>
+        <ul id="redirList" style="display: none;">
+        </ul>
 
-    <h2>Add redirection</h2>
-    <a href="#" id="genUUID">Generate random UUID address</a>
-    <form method="post" id="redir_form" class="flex-utd">
-        <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
-        <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
-        <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
-        <input type="submit" class="submit" value="Create">
-    </form>
+        <h2>Add redirection</h2>
+        <a href="#" id="genUUID">Generate random UUID address</a>
+        <form method="post" id="redir_form" class="flex-utd">
+            <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
+            <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
+            <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
+            <input type="submit" class="submit" value="Create">
+        </form>
 
-    <h2>Remove alias</h2>
-    <form method="post" id="del_redir_form" class="flex-utd">
-        <input type="text" id="alias_del" class="input" name="alias" maxlength="64" placeholder="alias_to_remove@mail.com">
-        <input type="submit" class="submit" value="Remove">
-    </form>
-
+        <h2>Remove alias</h2>
+        <form method="post" id="del_redir_form" class="flex-utd">
+            <input type="text" id="alias_del" class="input" name="alias" maxlength="64" placeholder="alias_to_remove@mail.com">
+            <input type="submit" class="submit" value="Remove">
+        </form>
+    </div>
 {% endblock %}
