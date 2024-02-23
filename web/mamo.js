@@ -43,7 +43,7 @@ function loadRedirs(jsonStr) {
         r.push(key + ": " + JSON.stringify(jsonObj[key]));
     };
 
-    let li = doc.createElement('p');
+    let li = doc.createElement('li');
     li.innerHTML = "Alias count : " + r.length;
     redirList.appendChild(li);
 
