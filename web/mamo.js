@@ -5,11 +5,11 @@ const listRedir     = doc.querySelector('#listRedir');
 const redirList     = doc.querySelector('#redirList');
 
 const redirForm     = doc.querySelector('#redir_form');
-const genUuid       = doc.querySelector('#genUUID');
+const genUuid       = doc.querySelector('#gen_uuid');
 const fieldAlias    = doc.querySelector('#alias');
 
 const delForm       = doc.querySelector('#del_redir_form');
-const fieldAliasDel = doc.querySelector('#alias_del');
+const fieldAliasDel = doc.querySelector('#id_del');
 
 const listTest      = doc.querySelector('#listTest');
 const testList      = doc.querySelector('#testList');
@@ -24,7 +24,7 @@ function showInfobox(msg) {
     msgbox.style.right = "1em";
     doc.querySelector('body').appendChild(msgbox);
 
-    setTimeout(function() {
+    setTimeout((e) => {
         doc.querySelector('#msgbox').remove();
     }, 7000);
 }
@@ -66,14 +66,17 @@ function getRedirs() {
 }
 
 
-function setRedir(form) {
-    eel.set_redir(form)((e) => {
-        loadRedirs();
-        console.log(e);
-        if (e == 0) {
-            redirForm.reset();
-        }
-    })
+async function setRedir(form) {
+    showInfobox("Creating new redir...");
+
+    const res = await eel.set_redir(form)(console.log("zou"));
+    console.log("res : " + res);
+
+    if (res == 0) {
+        // eel.get_redirs();
+        // redirForm.reset();
+        showInfobox("res :" + res);
+    }
 }
 
 

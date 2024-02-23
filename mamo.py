@@ -20,6 +20,7 @@ def get_redirs() -> str:
 
 @eel.expose
 def set_redir(form: str) -> int:
+	print("set redir !")
 	f = json.loads(form)
 	name = f['name']
 	alias = f['alias']
@@ -38,8 +39,8 @@ def get_uuid() -> str:
 @eel.expose
 def del_redir(form:str) -> str:
 	f = json.loads(form)
-	alias = f['alias']
-	r = model.remove_redir(alias)
+	id = f['id_del']
+	r = model.remove_redir(id)
 	return r
 
 
@@ -57,12 +58,12 @@ if len(model.config_redir) < 1:
 
 
 # Start Eel web UI
-# eel.init('web')
-# eel.start('templates/index.j2',
-# 		  size=(300, 200),
-# 		  jinja_templates='templates',
-# 		  mode='default',
-# 		  port=8080)
+eel.init('web')
+eel.start('templates/index.j2',
+		  size=(300, 200),
+		  jinja_templates='templates',
+		  mode='default',
+		  port=8080)
 
 
 
@@ -142,12 +143,13 @@ while (True):
 
 		while True:
 			alias = input(strings.PROMPT_ALIAS)
+			to = input(strings.PROMPT_DEST)
 
 			if alias == "":
 				continue
 
 			if utils.is_valid_email(alias) == True:
-				id = model.find_id_by_alias(alias)
+				id = model.find_id(alias, to)
 				break
 			else:
 				print(strings.err_not_valid_email(alias))
@@ -191,9 +193,10 @@ while (True):
 		print("Remove a redirection")
 		while True:
 			alias = input(strings.PROMPT_ALIAS)
+			to = input(strings.PROMPT_DEST)
 
 			if utils.is_valid_email(alias) == True:
-				id = model.find_id_by_alias(alias)
+				id = model.find_id(alias, to)
 			else:
 				print(strings.err_not_valid_email(alias))
 				continue

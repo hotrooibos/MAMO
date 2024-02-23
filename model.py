@@ -45,16 +45,16 @@ def get_redirs() -> str:
     return(json.dumps(redirs, indent=4))
 
 
-def find_id_by_alias(alias: str):
+def find_id(alias: str, to: str):
 	'''
-		Get a remove redirection ID by its alias
+		Get a remove redirection ID by its alias/to
 		Return 0 if ID doesn't exists
 	'''
 	id = None
 
 	# Try to get id from local config
 	for k, v in config_redir.items():
-		if v['alias'] == alias:
+		if v['alias'] == alias and v['to'] == to:
 			id = k
 			break
 
@@ -63,7 +63,7 @@ def find_id_by_alias(alias: str):
 		redirs_remote = get_redirs_remote()
 
 		for k, v in redirs_remote.items():
-			if v['alias'] == alias:
+			if v['alias'] == alias and v['to'] == to:
 				id = k
 
 	return id
@@ -120,7 +120,7 @@ def create_redir(name:str, alias: str, to: str) -> int:
 						   	  to=to)
 
 	if res == 0:
-		id = find_id_by_alias(alias)
+		id = find_id(alias, to)
 		res = create_redir_local(id=id,
 						   		 name=name,
 						   		 alias=alias,
@@ -141,8 +141,7 @@ def edit_redir(id: str, name: str, alias: str, to: str) -> int:
 	for k, v in config_redir.items():
 		if k == id:
 			if v['alias'] != alias:
-				old_alias = v['alias']
-				rm = remove_redir(old_alias)
+				rm = remove_redir(id)
 				
 				if rm == 0:
 					create_redir(name=name,
@@ -172,28 +171,16 @@ def edit_redir(id: str, name: str, alias: str, to: str) -> int:
 	return 1
 
 
-def remove_redir(alias: str) -> int:
+def remove_redir(id: int) -> int:
 	'''
-		Create a new redirection
+		Remove a redirection (remote + local)
 	'''
-	id = None
-
-	# Look for ID in local config, else query remote
-	for k, v in config_redir.items():
-		if v['alias'] == alias:
-			id = k
-			break
-	
-	if id == None:
-		id = find_id_by_alias(alias)
-
 	# Delete remote, and then local if success
 	try:
 		result = client.delete(f'/email/domain/{domain}/redirection/{id}')
 		if result:
 			del config_redir[id]
 			write_config(config_redir)
-			print(f" {alias} alias removed.")
 			return 0
 
 	except ovh.APIError as e:
@@ -224,7 +211,7 @@ def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):
 										  to=to)
 			# Update the ID
 				if res == 0:
-					id = find_id_by_alias(alias)
+					id = find_id(alias, to)
 					config_redir[id]['alias'] = id
 
 			if dry:
