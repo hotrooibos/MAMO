@@ -12,8 +12,10 @@ Working features :
 - Edit a redirection, including alias
 - Remove an alias
 
+WIP :
+- Web UI (porting to Quart + Uvicorn)
+
 Planned/ideas :
-- Local Web UI
 - Multi domain support
 - Filter/sort
 - Others hosting services support
