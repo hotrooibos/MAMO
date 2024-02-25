@@ -33,9 +33,7 @@ function showInfobox(msg) {
 
 function loadRedirs(jsonStr) {
     jsonObj = JSON.parse(jsonStr);
-
     redirList.innerHTML = "";
-
     r = [];
 
     for (const key of Object.keys(jsonObj)) { 
@@ -47,7 +45,6 @@ function loadRedirs(jsonStr) {
     li.innerHTML = "Alias count : " + r.length;
     redirList.appendChild(li);
 
-
     for (const item of r) {
         li = doc.createElement('li');
         li.innerHTML = item;
@@ -56,50 +53,40 @@ function loadRedirs(jsonStr) {
 }
 
 
-function fillAlias(aliasStr) {
-    // texte du field "alias" = aliasStr
-    fieldAlias.value = aliasStr;
-}
-
-
-function getRedirs() {
-    eel.get_redirs()(loadRedirs);
-}
-
-
 async function setRedir(form) {
     showInfobox("Creating new redir...");
 
-    const res = await eel.set_redir(form)();
-
-    if (res == 0) {
-        // eel.get_redirs();
-        // redirForm.reset();
-        showInfobox("Alias created succesfully !");
-    } else {
-        showInfobox("An error occured while creating the alias...");
-    }
+    fetch('/set_redir', {
+        method: 'post',
+        body: form,
+    })
+    .then(response => response.status)  
+    .then(status => {
+        if (status == 200) {
+            // get_redirs();
+            // redirForm.reset();
+            showInfobox("Alias created succesfully !");
+        } else {
+            showInfobox("An error occured while creating the alias...");
+        }
+    });
 }
-
-
-function getUuid() {
-    showInfobox("Generating UUID...");
-    eel.get_uuid()(fillAlias);
-}
-
 
 async function delRedir(form) {
     showInfobox("Removing a redir...");
 
-    const res = await eel.del_redir(form)();
-
-    if (res == 0) {
-        showInfobox("Alias removed succesfully !");
-        delForm.reset();
-    } else {
-        showInfobox("An error occured while removing the alias...");
-    }
-
+    fetch('/del_redir', {
+        method: 'post',
+        body: form,
+    })
+    .then(response => response.status)  
+    .then(status => {
+        if (status == 200) {
+            showInfobox("Alias removed succesfully !");
+        } else {
+            showInfobox("An error occured while removing the alias...");
+        }
+    });
 }
 
 
@@ -110,7 +97,7 @@ Event listeners
 */
 
 listRedir.addEventListener('click', (e) => {
-    getRedirs();
+    // getRedirs();
 
     if (redirList.hasAttribute('style')) {
         redirList.removeAttribute('style');
@@ -121,7 +108,11 @@ listRedir.addEventListener('click', (e) => {
 });
 
 genUuid.addEventListener('click', (e) => {
-    getUuid();
+    showInfobox("Generating UUID...");
+
+    fetch('/get_uuid')
+    .then(response => response.text())  
+    .then(text => fieldAlias.value = text);
 });
 
 redirForm.addEventListener('submit', (e) => {

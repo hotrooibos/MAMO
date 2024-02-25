@@ -13,8 +13,25 @@
 
         <h2 class="toggleshow">List redirections</h2>
         <a href="#" id="listRedir">List/hide redirections</a>
-        <ul id="redirList" style="display: none;">
-        </ul>
+        <p>{{ redirs|length }} aliases - <a href="#" id="refresh-redirs">refresh</a></p>
+        <table id="redirList">
+            <tr>
+                <th>ID</th>
+                <th>Name/description</th>
+                <th>Date modified</th>
+                <th>Alias</th>
+                <th>Destination addr</th>
+            </tr>
+        {% for r in redirs %}
+            <tr>
+                <td>{{ r }}</td>
+                <td>{{ redirs[r]['name'] }}</td>
+                <td>{{ redirs[r]['date'] }}</td>
+                <td>{{ redirs[r]['alias'] }}</td>
+                <td>{{ redirs[r]['to'] }}</td>
+            </tr>
+        {% endfor %}
+        </table>
 
         <h2>Add redirection</h2>
         <a href="#" id="gen_uuid">Generate random UUID address</a>

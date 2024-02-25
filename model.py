@@ -31,7 +31,7 @@ def get_redirs_remote() -> dict:
 		print(e)
 		
 
-def get_redirs() -> str:
+def get_redirs() -> dict:
     redirs = {}
 
     for k, v in config_redir.items():
@@ -42,7 +42,7 @@ def get_redirs() -> str:
             "to": v["to"]
         }
     
-    return(json.dumps(redirs, indent=4))
+    return(redirs)
 
 
 def find_id(alias: str, to: str):
