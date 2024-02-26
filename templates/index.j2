@@ -1,7 +1,7 @@
 {% extends 'base.j2' %} 
 {% block title %}MAMO{% endblock %}
 {% block content %}
-    <div id="wrapper">
+    <div id="wrapper" class="flex">
         <h1>MAMO v0.3</h1>
 
         {# <h2>Test area</h2>
@@ -34,7 +34,7 @@
         </table>
 
         <h2>Add redirection</h2>
-        <a href="#" id="gen_uuid">Generate random UUID address</a>
+        <a href="" id="gen_uuid">Generate random UUID address</a>
         <form method="post" id="redir_form" class="flex-utd">
             <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
             <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">

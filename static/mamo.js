@@ -16,15 +16,23 @@ const testList      = doc.querySelector('#testList');
 
 
 function showInfobox(msg) {
-    let cnt = doc.querySelectorAll('.msgbox').length*3 + 1;
-    let msgbox = doc.createElement('div');
-    msgbox.setAttribute('id', 'msgbox');
-    msgbox.setAttribute('class', 'msgbox');
-    msgbox.innerHTML = msg;
-    msgbox.style.top = cnt + "em";
-    msgbox.style.right = "1em";
-    doc.querySelector('body').appendChild(msgbox);
+    var boxesArr = doc.querySelectorAll('.msgbox');
 
+    // Move down msg boxes actually displayed
+    for (let i = 0; i < boxesArr.length; i++) {
+        const box = boxesArr[i];
+        box.style.top = (parseFloat(box.style.top) + 4) + "em";
+    }
+
+    // Create the new box on the top
+    let newBox = doc.createElement('div');
+    newBox.setAttribute('id', 'msgbox');
+    newBox.setAttribute('class', 'msgbox');
+    newBox.innerHTML = msg + " (" + boxesArr.length + ")";
+    newBox.style.top = "1em";
+    wrapper.appendChild(newBox);
+
+    // Schedule the new box to be removed after 5s
     setTimeout((e) => {
         doc.querySelector('.msgbox').remove();
     }, 5000);
@@ -108,8 +116,8 @@ listRedir.addEventListener('click', (e) => {
 });
 
 genUuid.addEventListener('click', (e) => {
+    e.preventDefault();
     showInfobox("Generating UUID...");
-
     fetch('/get_uuid')
     .then(response => response.text())  
     .then(text => fieldAlias.value = text);

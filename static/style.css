@@ -54,11 +54,6 @@ html {
     color-scheme: light;
 }
 
-/* .box {
-    padding: 1em;
-    background-color: rgb(217, 229, 241);
-} */
-
 a,
 a:visited {
     color: var(--color-link);
@@ -213,7 +208,9 @@ h1 {
 
 .msgbox {
     position: fixed;
-    padding: .3em;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: .6em;
     border-radius: .3em;
     font-weight: bold;
     color: var(--color-bg);
