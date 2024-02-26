@@ -1,7 +1,7 @@
 {% extends 'base.j2' %} 
 {% block title %}MAMO{% endblock %}
 {% block content %}
-    <div id="wrapper" class="flex">
+    <div id="wrapper">
         <h1>MAMO v0.3</h1>
 
         {# <h2>Test area</h2>
@@ -11,28 +11,30 @@
             </div>
         </div> #}
 
-        <h2 class="toggleshow">List redirections</h2>
-        <a href="#" id="listRedir">List/hide redirections</a>
+        <h2 class="toggleshow">Aliases</h2>
+        <a href="#" id="showHide">Show/hide</a>
         <p>{{ redirs|length }} aliases - <a href="#" id="refresh-redirs">refresh</a></p>
-        <table id="redirList">
-            <tr>
-                <th>ID</th>
-                <th>Name/description</th>
-                <th>Date modified</th>
-                <th>Alias</th>
-                <th>Destination addr</th>
-            </tr>
-        {% for r in redirs %}
-            <tr>
-                <td>{{ r }}</td>
-                <td>{{ redirs[r]['name'] }}</td>
-                <td>{{ redirs[r]['date'] }}</td>
-                <td>{{ redirs[r]['alias'] }}</td>
-                <td>{{ redirs[r]['to'] }}</td>
-            </tr>
-        {% endfor %}
-        </table>
-
+        <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
+        <div id="redir-list">
+            <table id="redir-tab">
+                <tr>
+                    <th>ID</th>
+                    <th>Name/description</th>
+                    <th>Date modified</th>
+                    <th>Alias</th>
+                    <th>Destination addr</th>
+                </tr>
+            {% for r in redirs %}
+                <tr>
+                    <td>{{ r }}</td>
+                    <td>{{ redirs[r]['name'] }}</td>
+                    <td>{{ redirs[r]['date'] }}</td>
+                    <td>{{ redirs[r]['alias'] }}</td>
+                    <td>{{ redirs[r]['to'] }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+        </div>
         <h2>Add redirection</h2>
         <a href="" id="gen_uuid">Generate random UUID address</a>
         <form method="post" id="redir_form" class="flex-utd">

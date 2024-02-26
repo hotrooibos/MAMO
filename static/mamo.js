@@ -1,8 +1,10 @@
 const doc           = document;
-const wrapper     = doc.querySelector('#wrapper');
+const wrapper       = doc.querySelector('#wrapper');
 
-const listRedir     = doc.querySelector('#listRedir');
-const redirList     = doc.querySelector('#redirList');
+const showHide      = doc.querySelector('#showHide');
+const findInput     = doc.querySelector('#find')
+const redirList     = doc.querySelector('#redir-list');
+const redirTab     = doc.querySelector('#redir-tab');
 
 const redirForm     = doc.querySelector('#redir_form');
 const genUuid       = doc.querySelector('#gen_uuid');
@@ -39,26 +41,26 @@ function showInfobox(msg) {
 }
 
 
-function loadRedirs(jsonStr) {
-    jsonObj = JSON.parse(jsonStr);
-    redirList.innerHTML = "";
-    r = [];
+// function loadRedirs(jsonStr) {
+//     jsonObj = JSON.parse(jsonStr);
+//     redirList.innerHTML = "";
+//     r = [];
 
-    for (const key of Object.keys(jsonObj)) { 
-        // console.log(key + ": " + JSON.stringify(jsonObj[key]));
-        r.push(key + ": " + JSON.stringify(jsonObj[key]));
-    };
+//     for (const key of Object.keys(jsonObj)) { 
+//         // console.log(key + ": " + JSON.stringify(jsonObj[key]));
+//         r.push(key + ": " + JSON.stringify(jsonObj[key]));
+//     };
 
-    let li = doc.createElement('li');
-    li.innerHTML = "Alias count : " + r.length;
-    redirList.appendChild(li);
+//     let li = doc.createElement('li');
+//     li.innerHTML = "Alias count : " + r.length;
+//     redirList.appendChild(li);
 
-    for (const item of r) {
-        li = doc.createElement('li');
-        li.innerHTML = item;
-        redirList.appendChild(li);
-    }
-}
+//     for (const item of r) {
+//         li = doc.createElement('li');
+//         li.innerHTML = item;
+//         redirList.appendChild(li);
+//     }
+// }
 
 
 async function setRedir(form) {
@@ -104,14 +106,38 @@ Event listeners
 
 */
 
-listRedir.addEventListener('click', (e) => {
+showHide.addEventListener('click', (e) => {
     // getRedirs();
 
     if (redirList.hasAttribute('style')) {
         redirList.removeAttribute('style');
     }
     else {
-        redirList.style.display = 'none';
+        redirList.style.height = '100%';
+    }
+});
+
+findInput.addEventListener('input', (e) => {
+    if (findInput.value.length > 0) {
+        for (let i = 1, row; row = redirTab.rows[i]; i++) {
+            row.style.display = "none";
+        }
+    } else {
+        for (let i = 0, row; row = redirTab.rows[i]; i++) {
+            row.removeAttribute('style');
+        }
+    }
+
+    for (var i = 1, row; row = redirTab.rows[i]; i++) {
+       //iterate through rows
+       //rows would be accessed using the "row" variable assigned in the for loop
+       for (var j = 0, col; col = row.cells[j]; j++) {
+         //iterate through columns
+         //columns would be accessed using the "col" variable assigned in the for loop
+         if (findInput.value.length > 2 && col.innerHTML.includes(findInput.value)) {
+            row.removeAttribute('style');
+         }
+       }  
     }
 });
 

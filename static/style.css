@@ -22,6 +22,10 @@ html {
     color: var(--color-text);
 }
 
+body {
+    width: 100%;
+}
+
 :root,
 :root.dark {
     --color-text: rgb(225, 225, 225);
@@ -115,6 +119,9 @@ h1 {
 .items-center {
     align-items: center;
 }
+.justify-center {
+    justify-content: center;
+}
 .justify-between {
     justify-content: space-between;
 }
@@ -153,22 +160,6 @@ h1 {
 }
 .hover\:text-black:hover {
     color: var(--color-text);
-}
-
-.tile {
-    display: grid; 
-    grid-template-columns: minmax(1px, 90px) 5fr; 
-    grid-template-rows: auto 1fr; 
-    grid-template-areas: 
-      "preview title"
-      "preview date";
-    gap: 0 1em;
-    padding: 1em;
-    border-radius: 3px;
-    transition: background-color 150ms, color 150ms;
-}
-.tile:hover {
-    background-color: var(--color-hover);
 }
 
 .input {
@@ -215,4 +206,13 @@ h1 {
     font-weight: bold;
     color: var(--color-bg);
     background-color: var(--color-highlight);
+}
+
+#wrapper {
+    min-width: 700px;
+}
+
+#redir-list {
+    height: 10em;
+    overflow: hidden;
 }
