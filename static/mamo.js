@@ -2,7 +2,7 @@ const doc           = document;
 const wrapper       = doc.querySelector('#wrapper');
 
 const showHide      = doc.querySelector('#showHide');
-const findInput     = doc.querySelector('#find')
+const findInput     = doc.querySelector('#find');
 const redirList     = doc.querySelector('#redir-list');
 const redirTab      = doc.querySelector('#redir-tab');
 const btnsDel       = doc.querySelectorAll('.btn-del');
@@ -133,11 +133,41 @@ btnsDel.forEach(ele => ele.addEventListener('click', (e) => {
     dialogDel.showModal();
 }));
 
-btnsEdit.forEach(ele => ele.addEventListener('click', (e) => {
+function lockRow(e) {
+    // console.log(e.target.closest('tr').id);
+    let ele = e.target;
+    let parent = ele.parentElement.closest('tr');
+
+    if (!parent.hasAttribute('edition')) {
+        console.log(ele.closest('tr').id);
+        
+        // if (e.target.closest('tr') && e.target.closest('tr').id == id) {
+        //     tdArr.forEach((arrayItem, index) => {
+        //         switch (index) {
+        //             case 0:
+        //             case 2:
+        //             case 3:
+        //                 arrayItem.removeAttribute('contenteditable','');
+        //                 arrayItem.removeAttribute('class');
+        //                 break;
+        //             default:
+        //                 break;
+        //         }
+        //     });
+        // }
+
+        window.removeEventListener('click', lockRow);
+    }
+}
+
+function editRow(e) {
     e.preventDefault();
+    let ele = e.target;
     let parent = ele.parentElement.closest('tr');
     let id = parent.id;
     let tdArr = parent.querySelectorAll('td');
+
+    parent.setAttribute('edition', '');
 
     // TODO click outside current tr = make all its cells uneditable
 
@@ -149,14 +179,17 @@ btnsEdit.forEach(ele => ele.addEventListener('click', (e) => {
             case 2:
             case 3:
                 arrayItem.setAttribute('contenteditable','');
-                arrayItem.setAttribute('class', 'td-editable')
+                arrayItem.setAttribute('class', 'td-editable');
                 break;
             default:
                 break;
         }
-});
-    // console.log(tds)
-}));
+    });
+
+    window.addEventListener("click", lockRow);
+}
+
+btnsEdit.forEach(ele => ele.addEventListener('click', editRow));
 
 dialogDel.addEventListener('close', (e) => {
     if (dialogDel.returnValue === "yes") {
