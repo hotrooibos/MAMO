@@ -5,7 +5,8 @@ const showHide      = doc.querySelector('#showHide');
 const findInput     = doc.querySelector('#find')
 const redirList     = doc.querySelector('#redir-list');
 const redirTab      = doc.querySelector('#redir-tab');
-const delBtns       = doc.querySelectorAll('.del-btn');
+const btnsDel       = doc.querySelectorAll('.btn-del');
+const btnsEdit      = doc.querySelectorAll('.btn-edit');
 
 const redirForm     = doc.querySelector('#redir_form');
 const genUuid       = doc.querySelector('#gen_uuid');
@@ -124,12 +125,37 @@ showHide.addEventListener('click', (e) => {
     }
 });
 
-delBtns.forEach((ele) => ele.addEventListener('click', (e) => {
+btnsDel.forEach(ele => ele.addEventListener('click', (e) => {
     e.preventDefault();
     let id = ele.parentElement.closest('tr').id;
     let dialogText = "Remove id " + id + " ?";
     dialogDel.querySelector('p').innerHTML = dialogText;
     dialogDel.showModal();
+}));
+
+btnsEdit.forEach(ele => ele.addEventListener('click', (e) => {
+    e.preventDefault();
+    let parent = ele.parentElement.closest('tr');
+    let id = parent.id;
+    let tdArr = parent.querySelectorAll('td');
+
+    // TODO click outside current tr = make all its cells uneditable
+
+    // Make useful cells' (<td>) content
+    // editable for the edited row
+    tdArr.forEach((arrayItem, index) => {
+        switch (index) {
+            case 0:
+            case 2:
+            case 3:
+                arrayItem.setAttribute('contenteditable','');
+                arrayItem.setAttribute('class', 'td-editable')
+                break;
+            default:
+                break;
+        }
+});
+    // console.log(tds)
 }));
 
 dialogDel.addEventListener('close', (e) => {

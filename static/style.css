@@ -104,6 +104,10 @@ th {
     background-color: var(--color-hover);
 }
 
+.td-editable {
+    background-color: var(--color-control);
+}
+
 h1 {
     margin: 1em 0 .3em;
     color: var(--color-highlight);
