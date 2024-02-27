@@ -15,24 +15,37 @@
         <a href="#" id="showHide">Show/hide</a>
         <p>{{ redirs|length }} aliases - <a href="#" id="refresh-redirs">refresh</a></p>
         <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
-        <div id="redir-list">
+        <div id="redir-list" class="fade-bottom">
             <table id="redir-tab">
-                <tr>
-                    <th>ID</th>
-                    <th>Name/description</th>
-                    <th>Date modified</th>
-                    <th>Alias</th>
-                    <th>Destination addr</th>
-                </tr>
-            {% for r in redirs %}
-                <tr>
-                    <td>{{ r }}</td>
-                    <td>{{ redirs[r]['name'] }}</td>
-                    <td>{{ redirs[r]['date'] }}</td>
-                    <td>{{ redirs[r]['alias'] }}</td>
-                    <td>{{ redirs[r]['to'] }}</td>
-                </tr>
-            {% endfor %}
+                <thead>
+                    <tr>
+                        <th>Name/description</th>
+                        <th>Date modified</th>
+                        <th>Alias</th>
+                        <th>Destination addr</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in redirs %}
+                    <tr id="{{ r }}">
+                        <td>{{ redirs[r]['name'] }}</td>
+                        <td>{{ redirs[r]['date'] }}</td>
+                        <td>{{ redirs[r]['alias'] }}</td>
+                        <td>{{ redirs[r]['to'] }}</td>
+                        <td><i data-feather="edit"></i><a class="del-btn" href=""><i data-feather="trash-2"></a></i></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Name/description</th>
+                        <th>Date modified</th>
+                        <th>Alias</th>
+                        <th>Destination addr</th>
+                        <th>Actions</th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         <h2>Add redirection</h2>
@@ -50,4 +63,13 @@
             <input type="submit" class="submit" value="Remove">
         </form>
     </div>
+
+    <dialog id="dialog-del">
+        <p>Delete ?</p>
+        <form method="dialog">
+            <button value="yes" >Yes</button>
+            <button value="no" formmethod="dialog" autofocus>NO</button>
+        </form>
+    </dialog>
+
 {% endblock %}

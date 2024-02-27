@@ -19,6 +19,7 @@ Planned/ideas :
 - Automatize config file initialization
 - Multi domain support
 - Filter/sort
+- Secrets and configuration centralization/hosting
 - Others hosting services support
 
 ## Setup

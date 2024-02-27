@@ -4,7 +4,8 @@ const wrapper       = doc.querySelector('#wrapper');
 const showHide      = doc.querySelector('#showHide');
 const findInput     = doc.querySelector('#find')
 const redirList     = doc.querySelector('#redir-list');
-const redirTab     = doc.querySelector('#redir-tab');
+const redirTab      = doc.querySelector('#redir-tab');
+const delBtns       = doc.querySelectorAll('.del-btn');
 
 const redirForm     = doc.querySelector('#redir_form');
 const genUuid       = doc.querySelector('#gen_uuid');
@@ -13,8 +14,12 @@ const fieldAlias    = doc.querySelector('#alias');
 const delForm       = doc.querySelector('#del_redir_form');
 const fieldAliasDel = doc.querySelector('#id_del');
 
-const listTest      = doc.querySelector('#listTest');
-const testList      = doc.querySelector('#testList');
+const dialogDel     = doc.querySelector('#dialog-del');
+
+
+// const listTest      = doc.querySelector('#listTest');
+// const testList      = doc.querySelector('#testList');
+
 
 
 function showInfobox(msg) {
@@ -109,11 +114,27 @@ Event listeners
 showHide.addEventListener('click', (e) => {
     // getRedirs();
 
-    if (redirList.hasAttribute('style')) {
-        redirList.removeAttribute('style');
+    if (redirList.hasAttribute('class')) {
+        redirList.removeAttribute('class');
+        redirList.style.height = '100%';
     }
     else {
-        redirList.style.height = '100%';
+        redirList.setAttribute('class', 'fade-bottom');
+        redirList.removeAttribute('style');
+    }
+});
+
+delBtns.forEach((ele) => ele.addEventListener('click', (e) => {
+    e.preventDefault();
+    let id = ele.parentElement.closest('tr').id;
+    let dialogText = "Remove id " + id + " ?";
+    dialogDel.querySelector('p').innerHTML = dialogText;
+    dialogDel.showModal();
+}));
+
+dialogDel.addEventListener('close', (e) => {
+    if (dialogDel.returnValue === "yes") {
+        console.log("TODO : delete alias");
     }
 });
 
@@ -129,15 +150,11 @@ findInput.addEventListener('input', (e) => {
     }
 
     for (var i = 1, row; row = redirTab.rows[i]; i++) {
-       //iterate through rows
-       //rows would be accessed using the "row" variable assigned in the for loop
-       for (var j = 0, col; col = row.cells[j]; j++) {
-         //iterate through columns
-         //columns would be accessed using the "col" variable assigned in the for loop
-         if (findInput.value.length > 2 && col.innerHTML.includes(findInput.value)) {
-            row.removeAttribute('style');
-         }
-       }  
+        for (var j = 0, col; col = row.cells[j]; j++) {
+            if (findInput.value.length > 1 && col.innerHTML.includes(findInput.value)) {
+                row.removeAttribute('style');
+            }
+        }  
     }
 });
 
