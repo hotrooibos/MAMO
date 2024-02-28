@@ -136,25 +136,20 @@ btnsDel.forEach(ele => ele.addEventListener('click', (e) => {
 function lockRow(e) {
     // console.log(e.target.closest('tr').id);
     let ele = e.target;
-    let parent = ele.parentElement.closest('tr');
+    let trParent = ele.closest('tr');
+    let editedTr = doc.querySelector("tr[edition]");
+    let editedTdArr = doc.querySelectorAll("td[contenteditable]");
+    console.log(ele)
+    // If click event happened anywhere but on
+    // the currently editing row/alias,
+    // terminate this edition, and this click listener
+    if (!trParent || !trParent.hasAttribute('edition')) {
+        editedTr.removeAttribute('edition');
 
-    if (!parent.hasAttribute('edition')) {
-        console.log(ele.closest('tr').id);
-        
-        // if (e.target.closest('tr') && e.target.closest('tr').id == id) {
-        //     tdArr.forEach((arrayItem, index) => {
-        //         switch (index) {
-        //             case 0:
-        //             case 2:
-        //             case 3:
-        //                 arrayItem.removeAttribute('contenteditable','');
-        //                 arrayItem.removeAttribute('class');
-        //                 break;
-        //             default:
-        //                 break;
-        //         }
-        //     });
-        // }
+        editedTdArr.forEach((tdItem, index) => {
+            tdItem.removeAttribute('contenteditable','');
+            tdItem.removeAttribute('class');
+        });
 
         window.removeEventListener('click', lockRow);
     }
