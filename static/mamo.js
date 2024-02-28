@@ -36,7 +36,7 @@ function showInfobox(msg) {
     let newBox = doc.createElement('div');
     newBox.setAttribute('id', 'msgbox');
     newBox.setAttribute('class', 'msgbox');
-    newBox.innerHTML = msg + " (" + boxesArr.length + ")";
+    newBox.innerHTML = msg;
     newBox.style.top = "1em";
     wrapper.appendChild(newBox);
 
@@ -133,17 +133,37 @@ btnsDel.forEach(ele => ele.addEventListener('click', (e) => {
     dialogDel.showModal();
 }));
 
+// Function used to lock editable cells (<td>)
+// as soon as the user click anywhere out of the
+// row currently edited
 function lockRow(e) {
-    // console.log(e.target.closest('tr').id);
+    // Identify currently clicked element
     let ele = e.target;
     let trParent = ele.closest('tr');
-    let editedTr = doc.querySelector("tr[edition]");
-    let editedTdArr = doc.querySelectorAll("td[contenteditable]");
-    console.log(ele)
+
     // If click event happened anywhere but on
-    // the currently editing row/alias,
-    // terminate this edition, and this click listener
+    // the currently edited row elements: 
+    // - Process the content modification
+    // - Terminate table edition
+    // - Remove the click listener triggering this function
     if (!trParent || !trParent.hasAttribute('edition')) {
+        // Identify row/cells under edition
+        let editedTr = doc.querySelector('tr[edition]');
+        let editedTdArr = doc.querySelectorAll('td[contenteditable]');
+
+        // Process content modification
+        // Get content from edited cells
+        const editedContent = {};
+
+        editedTdArr.forEach((tdItem, index) => {
+            aliasItem = tdItem.dataset.aliasItem;
+            editedContent[aliasItem] = tdItem.innerHTML;
+        });
+
+        let editedMsg = JSON.stringify(editedContent);
+        showInfobox(editedMsg);
+        
+        // Remove the table edition
         editedTr.removeAttribute('edition');
 
         editedTdArr.forEach((tdItem, index) => {
@@ -159,12 +179,24 @@ function editRow(e) {
     e.preventDefault();
     let ele = e.target;
     let parent = ele.parentElement.closest('tr');
-    let id = parent.id;
     let tdArr = parent.querySelectorAll('td');
 
-    parent.setAttribute('edition', '');
+    // TODO s'il existe des cells editable, clore leur edition avant d'ouvrir
+    // cette nouvelle edition
+    let editedTr = doc.querySelector('tr[edition]');
+    let editedTdArr = doc.querySelectorAll('td[contenteditable]');
 
-    // TODO click outside current tr = make all its cells uneditable
+    if (editedTr) {
+        // Remove the table edition
+        editedTr.removeAttribute('edition');
+
+        editedTdArr.forEach((tdItem, index) => {
+            tdItem.removeAttribute('contenteditable','');
+            tdItem.removeAttribute('class');
+        });
+    }
+
+    parent.setAttribute('edition', '');
 
     // Make useful cells' (<td>) content
     // editable for the edited row

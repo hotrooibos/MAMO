@@ -29,10 +29,10 @@
                 <tbody>
                     {% for r in redirs %}
                     <tr id="{{ r }}">
-                        <td>{{ redirs[r]['name'] }}</td>
-                        <td>{{ redirs[r]['date'] }}</td>
-                        <td>{{ redirs[r]['alias'] }}</td>
-                        <td>{{ redirs[r]['to'] }}</td>
+                        <td data-alias-item="name">{{ redirs[r]['name'] }}</td>
+                        <td data-alias-item="date">{{ redirs[r]['date'] }}</td>
+                        <td data-alias-item="alias">{{ redirs[r]['alias'] }}</td>
+                        <td data-alias-item="to">{{ redirs[r]['to'] }}</td>
                         <td><a class="btn-edit" href=""><i data-feather="edit"></a></i><a class="btn-del" href=""><i data-feather="trash-2"></a></i></td>
                     </tr>
                 {% endfor %}
