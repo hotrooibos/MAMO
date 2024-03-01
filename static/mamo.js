@@ -14,6 +14,7 @@ const wrapper       = doc.querySelector('#wrapper');
 const dates         = doc.querySelectorAll('time');
 
 const showHide      = doc.querySelector('#showHide');
+const newAlias      = doc.querySelector('#newAlias');
 const findInput     = doc.querySelector('#find');
 const redirList     = doc.querySelector('#redir-list');
 const redirTab      = doc.querySelector('#redir-tab');
@@ -151,6 +152,59 @@ async function delRedir(form) {
             showInfobox("An error occured while removing the alias...");
         }
     });
+}
+
+
+/*
+* Table
+* Add a new alias row
+*/
+function addRow(e) {
+    e.preventDefault();
+    let newRow = redirTab.insertRow(1);
+    newRow.id = "0"
+    newRow.innerHTML = 
+    "<td data-alias-item=\"name\">New alias</td>" +
+    "<td data-alias-item=\"date\"></td>" +
+    "<td data-alias-item=\"alias\"></td>" +
+    "<td data-alias-item=\"to\"></td>" +
+    "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>";
+    
+    // Feather icons : replace <i data-feather> with icons
+    // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
+    feather.replace();
+
+    editItems = newRow.querySelectorAll("a");
+
+    for (const a of editItems) {
+
+        if (a.classList.contains('btn-del')) {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                let id = a.parentElement.closest('tr').id;
+                let dialogText = "Remove id " + id + " ?";
+                dialogDel.querySelector('p').innerHTML = dialogText;
+                dialogDel.__delArr = [id];
+                dialogDel.showModal();
+            });
+        }
+        
+        if (a.classList.contains('btn-edit')) {
+            a.addEventListener('click', editRow);
+        }
+
+
+    }
+    // Create the new row
+    // let newTr = doc.createElement('tr');
+    // newTr.setAttribute('id', '');
+
+    
+
+    // newBox.setAttribute('class', 'msgbox');
+    // newBox.innerHTML = msg;
+    // newBox.style.top = "1em";
+    // wrapper.appendChild(newBox);
 }
 
 
@@ -308,6 +362,12 @@ showHide.addEventListener('click', (e) => {
         redirList.removeAttribute('style');
     }
 });
+
+
+//
+// Table : New alias link button
+//
+newAlias.addEventListener('click', addRow);
 
 
 //
