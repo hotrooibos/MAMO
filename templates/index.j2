@@ -20,7 +20,7 @@
                 <thead>
                     <tr>
                         <th data-alias-item="name">Name/description</th>
-                        <th data-alias-item="date">Date modified</th>
+                        <th data-alias-item="date">Date</th>
                         <th data-alias-item="alias">Alias</th>
                         <th data-alias-item="to">Destination addr</th>
                         <th data-alias-item="edit"></th>
@@ -30,7 +30,7 @@
                     {% for r in redirs %}
                     <tr id="{{ r }}">
                         <td data-alias-item="name">{{ redirs[r]['name'] }}</td>
-                        <td data-alias-item="date">{{ redirs[r]['date'] }}</td>
+                        <td data-alias-item="date">{% if redirs[r]['date'] %}<time>{{ redirs[r]['date'] }}</time>{% endif %}</td>
                         <td data-alias-item="alias">{{ redirs[r]['alias'] }}</td>
                         <td data-alias-item="to">{{ redirs[r]['to'] }}</td>
                         <td data-alias-item="edit"><a class="btn-edit" href=""><i data-feather="edit"></a></i><a class="btn-del" href=""><i data-feather="trash-2"></a></i></td>
@@ -40,7 +40,7 @@
                 <tfoot>
                     <tr>
                         <th>Name/description</th>
-                        <th>Date modified</th>
+                        <th>Date</th>
                         <th>Alias</th>
                         <th>Destination addr</th>
                         <th></th>
@@ -55,12 +55,6 @@
             <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
             <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
             <input type="submit" class="submit" value="Create">
-        </form>
-
-        <h2>Remove alias</h2>
-        <form method="post" id="del_redir_form" class="flex-utd">
-            <input type="text" id="id_del" class="input" name="id_del" maxlength="64" placeholder="Id of the alias to remove">
-            <input type="submit" class="submit" value="Remove">
         </form>
     </div>
 

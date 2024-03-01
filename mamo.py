@@ -51,13 +51,15 @@ async def get_uuid() -> str:
 
 @app.route('/del_redir', methods=['POST'])
 async def del_redir() -> str:
-	form = await qr.request.data
-	f = json.loads(form)
-	id = f['id_del']
-	r = model.remove_redir(id)
+	del_arr = await qr.request.data
+	del_arr = json.loads(del_arr)
 
-	if r == 0:
-		return "200"
+	for id in del_arr:
+		r = model.remove_redir(id)
+		if r != 0:
+			return "403"
+		
+	return "200"
 
 
 """	Main app
