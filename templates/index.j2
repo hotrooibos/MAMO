@@ -19,11 +19,11 @@
             <table id="redir-tab">
                 <thead>
                     <tr>
-                        <th>Name/description</th>
-                        <th>Date modified</th>
-                        <th>Alias</th>
-                        <th>Destination addr</th>
-                        <th></th>
+                        <th data-alias-item="name">Name/description</th>
+                        <th data-alias-item="date">Date modified</th>
+                        <th data-alias-item="alias">Alias</th>
+                        <th data-alias-item="to">Destination addr</th>
+                        <th data-alias-item="edit"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,7 +33,7 @@
                         <td data-alias-item="date">{{ redirs[r]['date'] }}</td>
                         <td data-alias-item="alias">{{ redirs[r]['alias'] }}</td>
                         <td data-alias-item="to">{{ redirs[r]['to'] }}</td>
-                        <td><a class="btn-edit" href=""><i data-feather="edit"></a></i><a class="btn-del" href=""><i data-feather="trash-2"></a></i></td>
+                        <td data-alias-item="edit"><a class="btn-edit" href=""><i data-feather="edit"></a></i><a class="btn-del" href=""><i data-feather="trash-2"></a></i></td>
                     </tr>
                 {% endfor %}
                 </tbody>

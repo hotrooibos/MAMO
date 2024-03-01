@@ -173,6 +173,7 @@ function editRow(e) {
     // make useful cells' (<td>) content editable
     const content = {};
 
+
     tdArr.forEach((tdItem, index) => {
         switch (index) {
             case 0:
@@ -182,6 +183,9 @@ function editRow(e) {
                 tdItem.setAttribute('class', 'td-editable');
                 aliasItem = tdItem.dataset.aliasItem;
                 content[aliasItem] = tdItem.innerHTML;
+
+                // And Enter key press listener to prevent line breaks
+                tdItem.addEventListener('keydown', disableEnterKey, false);
                 break;
             default:
                 break;
@@ -193,6 +197,13 @@ function editRow(e) {
 
     // Add a click listener to anywhere on the document
     window.addEventListener("click", lockRow);
+}
+
+
+function disableEnterKey(e) {
+    if (e.keyCode === 13) {
+        e.preventDefault();
+    }
 }
 
 
