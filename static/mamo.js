@@ -13,20 +13,18 @@ const doc           = document;
 const wrapper       = doc.querySelector('#wrapper');
 const dates         = doc.querySelectorAll('time');
 
-const showHide      = doc.querySelector('#showHide');
-const newAlias      = doc.querySelector('#newAlias');
-const findInput     = doc.querySelector('#find');
-const redirList     = doc.querySelector('#redir-list');
-const redirTab      = doc.querySelector('#redir-tab');
+const btnShowHide   = doc.querySelector('#show-hide');
+const btnsRefresh   = doc.querySelector('#refresh-redirs');
+const newAlias      = doc.querySelector('#new-alias');
+const inputFind     = doc.querySelector('#find');
+const listRedir     = doc.querySelector('#redir-list');
+const tabRedir      = doc.querySelector('#redir-tab');
 const btnsDel       = doc.querySelectorAll('.btn-del');
 const btnsEdit      = doc.querySelectorAll('.btn-edit');
 
-const redirForm     = doc.querySelector('#redir_form');
-const genUuid       = doc.querySelector('#gen_uuid');
-const fieldAlias    = doc.querySelector('#alias');
-
-const delForm       = doc.querySelector('#del_redir_form');
-const fieldAliasDel = doc.querySelector('#id_del');
+const formRedir     = doc.querySelector('#redir-form');
+const btnUuid       = doc.querySelector('#gen-uuid');
+const inputAlias    = doc.querySelector('#alias');
 
 const dialogDel     = doc.querySelector('#dialog-del');
 
@@ -146,10 +144,12 @@ async function delRedir(form) {
             body: form,
         });
 
-        if (await res.text() == "True") {
+        resText = await res.text();
+
+        if (resText.includes("'action': 'delete'")) {
             showInfobox("Alias removed succesfully !");
         } else {
-            showInfobox("An error happened...");
+            showInfobox("Error: " + resText);
         }
 
     } catch (error) {
@@ -188,7 +188,7 @@ async function getAliasList(e) {
 * Update the table with JSON data in parameter
 */
 function updateTable(jsonObj) {
-    let tbody = redirTab.querySelector('tbody');
+    let tbody = tabRedir.querySelector('tbody');
     let newTbodyContent = "";
 
     for (const key in jsonObj) {
@@ -203,10 +203,30 @@ function updateTable(jsonObj) {
     }
 
     tbody.innerHTML = newTbodyContent;
+    doc.querySelector('#redir-count').innerHTML = Object.keys(jsonObj).length;
 
     // Feather icons : replace <i data-feather> with icons
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
+
+    editItems = tbody.querySelectorAll("a");
+
+    for (const a of editItems) {
+        if (a.classList.contains('btn-del')) {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                let id = a.parentElement.closest('tr').id;
+                let dialogText = "Remove id " + id + " ?";
+                dialogDel.querySelector('p').innerHTML = dialogText;
+                dialogDel.__delArr = [id];
+                dialogDel.showModal();
+            });
+        }
+
+        if (a.classList.contains('btn-edit')) {
+            a.addEventListener('click', editRow);
+        }
+    }
 }
 
 
@@ -216,7 +236,7 @@ function updateTable(jsonObj) {
 */
 function addRow(e) {
     e.preventDefault();
-    let newRow = redirTab.insertRow(1);
+    let newRow = tabRedir.insertRow(1);
     newRow.id = "0"
     newRow.innerHTML =
         "<td data-alias-item=\"name\">New alias</td>" +
@@ -232,7 +252,6 @@ function addRow(e) {
     editItems = newRow.querySelectorAll("a");
 
     for (const a of editItems) {
-
         if (a.classList.contains('btn-del')) {
             a.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -247,8 +266,6 @@ function addRow(e) {
         if (a.classList.contains('btn-edit')) {
             a.addEventListener('click', editRow);
         }
-
-
     }
     // Create the new row
     // let newTr = doc.createElement('tr');
@@ -405,16 +422,16 @@ function lockRow(e) {
 //
 // Table : show/hide link button
 //
-showHide.addEventListener('click', (e) => {
+btnShowHide.addEventListener('click', (e) => {
     // getRedirs();
 
-    if (redirList.hasAttribute('class')) {
-        redirList.removeAttribute('class');
-        redirList.style.height = '100%';
+    if (listRedir.hasAttribute('class')) {
+        listRedir.removeAttribute('class');
+        listRedir.style.height = '100%';
     }
     else {
-        redirList.setAttribute('class', 'fade-bottom');
-        redirList.removeAttribute('style');
+        listRedir.setAttribute('class', 'fade-bottom');
+        listRedir.removeAttribute('style');
     }
 });
 
@@ -428,7 +445,7 @@ newAlias.addEventListener('click', addRow);
 //
 // Table : Refresh link button
 //
-refreshBtn.addEventListener('click', async (e) => {
+btnsRefresh.addEventListener('click', async (e) => {
     let aliasData = await getAliasList(e);
     updateTable(aliasData);
 });
@@ -458,10 +475,13 @@ btnsEdit.forEach(ele => {
 //
 // Delete dialog box : closing the box
 //
-dialogDel.addEventListener('close', (e) => {
+dialogDel.addEventListener('close', async (e) => {
     if (dialogDel.returnValue === "yes") {
         let delArr = JSON.stringify(dialogDel.__delArr);
-        delRedir(delArr);
+        await delRedir(delArr);
+
+        let aliasData = await getAliasList(e);
+        updateTable(aliasData);
     }
 });
 
@@ -469,20 +489,20 @@ dialogDel.addEventListener('close', (e) => {
 //
 // Find/search in table input : typing something
 //
-findInput.addEventListener('input', (e) => {
-    if (findInput.value.length > 0) {
-        for (let i = 1, row; row = redirTab.rows[i]; i++) {
+inputFind.addEventListener('input', (e) => {
+    if (inputFind.value.length > 0) {
+        for (let i = 1, row; row = tabRedir.rows[i]; i++) {
             row.style.display = "none";
         }
     } else {
-        for (let i = 0, row; row = redirTab.rows[i]; i++) {
+        for (let i = 0, row; row = tabRedir.rows[i]; i++) {
             row.removeAttribute('style');
         }
     }
 
-    for (var i = 1, row; row = redirTab.rows[i]; i++) {
+    for (var i = 1, row; row = tabRedir.rows[i]; i++) {
         for (var j = 0, col; col = row.cells[j]; j++) {
-            if (findInput.value.length > 1 && col.innerHTML.includes(findInput.value)) {
+            if (inputFind.value.length > 1 && col.innerHTML.includes(inputFind.value)) {
                 row.removeAttribute('style');
             }
         }
@@ -493,21 +513,24 @@ findInput.addEventListener('input', (e) => {
 //
 // Add alias form : clicking generate UUID link button
 //
-genUuid.addEventListener('click', (e) => {
+btnUuid.addEventListener('click', (e) => {
     e.preventDefault();
     showInfobox("Generating UUID...");
     fetch('/get_uuid')
         .then(response => response.text())
-        .then(text => fieldAlias.value = text);
+        .then(text => inputAlias.value = text);
 });
 
 
 //
 // Add alias form : clicking Create(submit) button
 //
-redirForm.addEventListener('submit', (e) => {
+formRedir.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let newRedirForm = new FormData(redirForm);
+    let newRedirForm = new FormData(formRedir);
     newRedirForm = JSON.stringify(Object.fromEntries(newRedirForm));
-    setRedir(newRedirForm);
+    await setRedir(newRedirForm);
+
+    let aliasData = await getAliasList(e);
+    updateTable(aliasData);
 });

@@ -30,7 +30,7 @@ async def index():
 @app.route('/get_redirs', methods=['POST'])
 async def get_redirs() -> str:
 	sort_key = await qr.request.data
-	print(sort_key)
+	print(f"TODO sort key: {sort_key}")
 	redirs = model.get_redirs()
 
 	return redirs, 200
@@ -44,12 +44,15 @@ async def set_redir() -> str:
 	alias = f['alias']
 	to = f['to']
 	
-	r = model.create_redir(name=name,
-						   alias=alias,
-						   to=to)
-	if r == 0:
-		return "200"
-
+	try:
+		res = model.create_redir(name=name,
+						   		 alias=alias,
+						   		 to=to)
+		return res, 200
+	
+	except Exception as e:
+		qr.abort(400, description=e)
+	
 
 @app.route('/get_uuid', methods=['GET'])
 async def get_uuid() -> str:
@@ -59,13 +62,19 @@ async def get_uuid() -> str:
 
 @app.route('/del_redir', methods=['POST'])
 async def del_redir() -> str:
-		del_arr = await qr.request.data
-		del_arr = json.loads(del_arr)
-
+	del_arr = await qr.request.data
+	del_arr = json.loads(del_arr)
+	
+	# TODO using an array for future bulk deletion
+	# atm, there will only be one id in the del_arr
+	try:
 		for id in del_arr:
 			r = model.remove_redir(id)
 
 		return str(r), 200
+
+	except Exception as e:
+		qr.abort(400, description=e)
 	
 
 

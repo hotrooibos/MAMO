@@ -29,6 +29,7 @@ def get_redirs_remote() -> dict:
 	
 	except ovh.APIError as e:
 		print(e)
+		raise
 		
 
 def get_redirs() -> dict:
@@ -45,7 +46,7 @@ def get_redirs() -> dict:
     return(redirs)
 
 
-def find_id(alias: str, to: str):
+def find_id(alias: str, to: str) -> str:
 	'''
 		Get a remove redirection ID by its alias/to
 		Return 0 if ID doesn't exists
@@ -69,30 +70,24 @@ def find_id(alias: str, to: str):
 	return id
 
 
-def create_redir_remote(alias: str, to: str) -> int:
+def create_redir_remote(alias: str, to: str) -> str:
 	'''
 		Create a new redirection in remote
-		Return 0 if created successfully
-		Return 1 otherwise
 	'''
 	try:
-		result = client.post('/email/domain/tical.fr/redirection',
-							 _from=alias,
-							 localCopy=False,
-							 to=to)
+		res = client.post('/email/domain/tical.fr/redirection',
+						  _from=alias,
+						  localCopy=False,
+						  to=to)
 		
-		# If successfuly created, get ID
-		# (API response does not provide it)
-		if result:
-			return 0
-		
+		return res
+				
 	except ovh.APIError as e:
 		print(e)
+		raise
 	
-	return 1
 
-
-def create_redir_local(id: int, name:str, alias: str, to: str) -> int:
+def create_redir_local(id: int, name:str, alias: str, to: str):
 	'''
 		Create a new redirection entry in configuration
 	'''
@@ -106,27 +101,31 @@ def create_redir_local(id: int, name:str, alias: str, to: str) -> int:
 
 		config_redir[id] = new_redir
 		write_config(config_redir)
-		return 0
 	
-	except:
-		return 1
+	except Exception as e:
+		print(e)
+		raise
+
 	
-	
-def create_redir(name:str, alias: str, to: str) -> int:
+def create_redir(name:str, alias: str, to: str) -> str:
 	'''
 		Create a new redirection (remote + local)
 	'''
-	res = create_redir_remote(alias=alias,
-						   	  to=to)
+	try:
+		res = create_redir_remote(alias=alias,
+							   	  to=to)
 
-	if res == 0:
 		id = find_id(alias, to)
-		res = create_redir_local(id=id,
-						   		 name=name,
-						   		 alias=alias,
-						   		 to=to)
+		create_redir_local(id=id,
+						   name=name,
+						   alias=alias,
+						   to=to)
+
+		return res
 	
-	return res
+	except ovh.APIError as e:
+		print(e)
+		raise
 
 
 def edit_redir(id: str, name: str, alias: str, to: str) -> int:
@@ -143,13 +142,11 @@ def edit_redir(id: str, name: str, alias: str, to: str) -> int:
 			if v['alias'] != alias:
 				rm = remove_redir(id)
 				
-				if rm == 0:
-					create_redir(name=name,
-								 alias=alias,
-								 to=to)
-					return 0
-				else:
-					return 1
+				if rm:
+					res = create_redir(name=name,
+									   alias=alias,
+									   to=to)
+					return res
 
 			if v['name'] != name:
 				config_redir[id]['name'] = name
@@ -157,18 +154,18 @@ def edit_redir(id: str, name: str, alias: str, to: str) -> int:
 
 			if v['to'] != to:
 				try:
-					result = client.post("/email/domain/tical.fr/redirection"
+					res = client.post("/email/domain/tical.fr/redirection"
 						  				 f"/{id}/changeRedirection",
 										 to=to)
-					if result:
-						config_redir[id]['to'] = to
-						write_config(config_redir)
+					
+					config_redir[id]['to'] = to
+					write_config(config_redir)
+
+					return res
 
 				except ovh.APIError as e:
 					print(e)
-					return 1
-			return 0
-	return 1
+					raise
 
 
 def remove_redir(id: int) -> bool:
@@ -177,19 +174,15 @@ def remove_redir(id: int) -> bool:
 	'''
 	# Delete remote, and then local if success
 	try:
-		result = client.delete(f'/email/domain/{domain}/redirection/{id}')
+		res = client.delete(f'/email/domain/{domain}/redirection/{id}')
 		del config_redir[id]
 		write_config(config_redir)
 		
-		for k, v in result.items():
-			if k == "action" and v == "delete":
-				return True
+		return res
 		
-		return False
-
 	except ovh.APIError as e:
 		print(e)
-		return False
+		raise
 	
 
 def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):

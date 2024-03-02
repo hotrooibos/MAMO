@@ -12,16 +12,16 @@
     </div> #}
 
     <h2 class="toggleshow">Aliases</h2>
-    <a href="#" id="showHide">Show/hide</a> - <a href="" id="newAlias">New alias</a>
-    <p>{{ redirs|length }} aliases - <a href="" id="refresh-redirs">refresh</a></p>
+    <a href="#" id="show-hide">Show/hide</a> - <a href="" id="new-alias">New alias</a>
+    <p><span id="redir-count">{{ redirs|length }}</span> aliases - <a href="" id="refresh-redirs">refresh</a></p>
     <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
     <div id="redir-list" class="fade-bottom">
         {% include 'table.j2' %}
     </div>
 
     <h2>Add redirection</h2>
-    <a href="" id="gen_uuid">Generate random UUID address</a>
-    <form method="post" id="redir_form" class="flex-utd">
+    <a href="" id="gen-uuid">Generate random UUID address</a>
+    <form method="post" id="redir-form" class="flex-utd">
         <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
         <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
         <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
