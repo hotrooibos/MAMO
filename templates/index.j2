@@ -1,69 +1,39 @@
-{% extends 'base.j2' %} 
+{% extends 'base.j2' %}
 {% block title %}MAMO{% endblock %}
 {% block content %}
-    <div id="wrapper">
-        <h1>MAMO v0.3</h1>
+<div id="wrapper">
+    <h1>MAMO v0.3</h1>
 
-        {# <h2>Test area</h2>
-        <div class="box">
-            <a href="#" id="listTest">Test button</a>
-            <div id="testList">
-            </div>
-        </div> #}
-
-        <h2 class="toggleshow">Aliases</h2>
-        <a href="#" id="showHide">Show/hide</a> - <a href="#" id="newAlias">New alias</a>
-        <p>{{ redirs|length }} aliases - <a href="#" id="refresh-redirs">refresh</a></p>
-        <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
-        <div id="redir-list" class="fade-bottom">
-            <table id="redir-tab">
-                <thead>
-                    <tr>
-                        <th data-alias-item="name">Name/description</th>
-                        <th data-alias-item="date">Date</th>
-                        <th data-alias-item="alias">Alias</th>
-                        <th data-alias-item="to">Destination addr</th>
-                        <th data-alias-item="edit"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in redirs %}
-                    <tr id="{{ r }}">
-                        <td data-alias-item="name">{{ redirs[r]['name'] }}</td>
-                        <td data-alias-item="date">{% if redirs[r]['date'] %}<time>{{ redirs[r]['date'] }}</time>{% endif %}</td>
-                        <td data-alias-item="alias">{{ redirs[r]['alias'] }}</td>
-                        <td data-alias-item="to">{{ redirs[r]['to'] }}</td>
-                        <td data-alias-item="edit"><a class="btn-edit" href=""><i data-feather="edit"></a></i><a class="btn-del" href=""><i data-feather="trash-2"></a></i></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th>Name/description</th>
-                        <th>Date</th>
-                        <th>Alias</th>
-                        <th>Destination addr</th>
-                        <th></th>
-                    </tr>
-                </tfoot>
-            </table>
+    {# <h2>Test area</h2>
+    <div class="box">
+        <a href="#" id="listTest">Test button</a>
+        <div id="testList">
         </div>
-        <h2>Add redirection</h2>
-        <a href="" id="gen_uuid">Generate random UUID address</a>
-        <form method="post" id="redir_form" class="flex-utd">
-            <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
-            <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
-            <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
-            <input type="submit" class="submit" value="Create">
-        </form>
+    </div> #}
+
+    <h2 class="toggleshow">Aliases</h2>
+    <a href="#" id="showHide">Show/hide</a> - <a href="" id="newAlias">New alias</a>
+    <p>{{ redirs|length }} aliases - <a href="" id="refresh-redirs">refresh</a></p>
+    <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
+    <div id="redir-list" class="fade-bottom">
+        {% include 'table.j2' %}
     </div>
 
-    <dialog id="dialog-del">
-        <p>Delete ?</p>
-        <form method="dialog">
-            <button value="yes" >Yes</button>
-            <button value="no" formmethod="dialog" autofocus>NO</button>
-        </form>
-    </dialog>
+    <h2>Add redirection</h2>
+    <a href="" id="gen_uuid">Generate random UUID address</a>
+    <form method="post" id="redir_form" class="flex-utd">
+        <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
+        <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
+        <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
+        <input type="submit" class="submit" value="Create">
+    </form>
+</div>
 
+<dialog id="dialog-del">
+    <p>Delete ?</p>
+    <form method="dialog">
+        <button value="yes">Yes</button>
+        <button value="no" formmethod="dialog" autofocus>NO</button>
+    </form>
+</dialog>
 {% endblock %}

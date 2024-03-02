@@ -1,0 +1,31 @@
+<table id="redir-tab">
+    <thead>
+        <tr>
+            <th data-alias-item="name">Name/description</th>
+            <th data-alias-item="date">Date</th>
+            <th data-alias-item="alias">Alias</th>
+            <th data-alias-item="to">Destination addr</th>
+            <th data-alias-item="edit"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in redirs %}
+        <tr id="{{ r }}">
+            <td data-alias-item="name">{{ redirs[r]['name'] }}</td>
+            <td data-alias-item="date">{% if redirs[r]['date'] %}<time>{{ redirs[r]['date'] }}</time>{% endif %}</td>
+            <td data-alias-item="alias">{{ redirs[r]['alias'] }}</td>
+            <td data-alias-item="to">{{ redirs[r]['to'] }}</td>
+            <td data-alias-item="edit"><a class="btn-edit" href=""><i data-feather="edit"></a></i><a class="btn-del" href=""><i data-feather="trash-2"></a></i></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>Name/description</th>
+            <th>Date</th>
+            <th>Alias</th>
+            <th>Destination addr</th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>

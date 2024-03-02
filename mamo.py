@@ -27,6 +27,15 @@ async def index():
 									redirs=redirs)
 
 
+@app.route('/get_redirs', methods=['POST'])
+async def get_redirs() -> str:
+	sort_key = await qr.request.data
+	print(sort_key)
+	redirs = model.get_redirs()
+
+	return redirs, 200
+
+
 @app.route('/set_redir', methods=['POST'])
 async def set_redir() -> str:
 	form = await qr.request.data
@@ -38,7 +47,6 @@ async def set_redir() -> str:
 	r = model.create_redir(name=name,
 						   alias=alias,
 						   to=to)
-
 	if r == 0:
 		return "200"
 
@@ -51,15 +59,14 @@ async def get_uuid() -> str:
 
 @app.route('/del_redir', methods=['POST'])
 async def del_redir() -> str:
-	del_arr = await qr.request.data
-	del_arr = json.loads(del_arr)
+		del_arr = await qr.request.data
+		del_arr = json.loads(del_arr)
 
-	for id in del_arr:
-		r = model.remove_redir(id)
-		if r != 0:
-			return "403"
-		
-	return "200"
+		for id in del_arr:
+			r = model.remove_redir(id)
+
+		return str(r), 200
+	
 
 
 """	Main app

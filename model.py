@@ -171,21 +171,25 @@ def edit_redir(id: str, name: str, alias: str, to: str) -> int:
 	return 1
 
 
-def remove_redir(id: int) -> int:
+def remove_redir(id: int) -> bool:
 	'''
 		Remove a redirection (remote + local)
 	'''
 	# Delete remote, and then local if success
 	try:
 		result = client.delete(f'/email/domain/{domain}/redirection/{id}')
-		if result:
-			del config_redir[id]
-			write_config(config_redir)
-			return 0
+		del config_redir[id]
+		write_config(config_redir)
+		
+		for k, v in result.items():
+			if k == "action" and v == "delete":
+				return True
+		
+		return False
 
 	except ovh.APIError as e:
 		print(e)
-		return 1
+		return False
 	
 
 def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):

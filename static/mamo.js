@@ -63,7 +63,7 @@ function showInfobox(msg) {
     // Schedule the new box to be removed after 5s
     setTimeout((e) => {
         doc.querySelector('.msgbox').remove();
-    }, 5000);
+    }, 8000);
 }
 
 
@@ -82,8 +82,8 @@ function convertEpoch(dates) {
         };
 
         // Show year if not in current year
-        if (dt.getFullYear() != new Date().getFullYear() ) {
-            options["year"] = "numeric";        
+        if (dt.getFullYear() != new Date().getFullYear()) {
+            options["year"] = "numeric";
         }
 
         // GB time format (ex: 28 September 2022)
@@ -125,33 +125,88 @@ async function setRedir(form) {
         method: 'post',
         body: form,
     })
-    .then(response => response.status)  
-    .then(status => {
-        if (status == 200) {
-            // get_redirs();
-            // redirForm.reset();
-            showInfobox("Alias created succesfully !");
-        } else {
-            showInfobox("An error occured while creating the alias...");
-        }
-    });
+        .then(response => response.status)
+        .then(status => {
+            if (status == 200) {
+                // get_redirs();
+                // redirForm.reset();
+                showInfobox("Alias created succesfully !");
+            } else {
+                showInfobox("An error occured while creating the alias...");
+            }
+        });
 }
 
 async function delRedir(form) {
     showInfobox("Removing a redir...");
 
-    fetch('/del_redir', {
-        method: 'post',
-        body: form,
-    })
-    .then(response => response.status)  
-    .then(status => {
-        if (status == 200) {
+    try {
+        const res = await fetch('/del_redir', {
+            method: 'post',
+            body: form,
+        });
+
+        if (await res.text() == "True") {
             showInfobox("Alias removed succesfully !");
         } else {
-            showInfobox("An error occured while removing the alias...");
+            showInfobox("An error happened...");
         }
+
+    } catch (error) {
+        showInfobox(error);
+    }
+}
+
+
+/*
+* Fetch JSON alias list from server
+*/
+async function getAliasList(e) {
+    e.preventDefault();
+    let ele = e.target;
+    let sortKey;
+
+    if (ele.dataset.aliasItem) {
+        sortKey = ele.dataset.aliasItem;
+    }
+
+    const res = await fetch('/get_redirs', {
+        method: 'post',
+        body: sortKey,
     });
+
+    if (res.status == 200) {
+        let resText = await res.text();
+        let aliasList = JSON.parse(resText);
+        return aliasList;
+    }
+}
+
+
+/*
+* Table
+* Update the table with JSON data in parameter
+*/
+function updateTable(jsonObj) {
+    let tbody = redirTab.querySelector('tbody');
+    let newTbodyContent = "";
+
+    for (const key in jsonObj) {
+        newTbodyContent +=
+            "<tr id=\"" + key + "\">" +
+            "<td data-alias-item=\"name\">" + jsonObj[key]['name'] + "</td>" +
+            "<td data-alias-item=\"date\">" + jsonObj[key]['date'] + "</td>" +
+            "<td data-alias-item=\"alias\">" + jsonObj[key]['alias'] + "</td>" +
+            "<td data-alias-item=\"to\">" + jsonObj[key]['to'] + "</td>" +
+            "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>" +
+            "</tr>"
+    }
+
+    tbody.innerHTML = newTbodyContent;
+
+    // Feather icons : replace <i data-feather> with icons
+    // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
+    feather.replace();
 }
 
 
@@ -163,13 +218,13 @@ function addRow(e) {
     e.preventDefault();
     let newRow = redirTab.insertRow(1);
     newRow.id = "0"
-    newRow.innerHTML = 
-    "<td data-alias-item=\"name\">New alias</td>" +
-    "<td data-alias-item=\"date\"></td>" +
-    "<td data-alias-item=\"alias\"></td>" +
-    "<td data-alias-item=\"to\"></td>" +
-    "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>";
-    
+    newRow.innerHTML =
+        "<td data-alias-item=\"name\">New alias</td>" +
+        "<td data-alias-item=\"date\"></td>" +
+        "<td data-alias-item=\"alias\"></td>" +
+        "<td data-alias-item=\"to\"></td>" +
+        "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>";
+
     // Feather icons : replace <i data-feather> with icons
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
@@ -188,7 +243,7 @@ function addRow(e) {
                 dialogDel.showModal();
             });
         }
-        
+
         if (a.classList.contains('btn-edit')) {
             a.addEventListener('click', editRow);
         }
@@ -199,7 +254,7 @@ function addRow(e) {
     // let newTr = doc.createElement('tr');
     // newTr.setAttribute('id', '');
 
-    
+
 
     // newBox.setAttribute('class', 'msgbox');
     // newBox.innerHTML = msg;
@@ -229,7 +284,7 @@ function editRow(e) {
         editedTr.removeAttribute('edition');
 
         editedTdArr.forEach((tdItem, index) => {
-            tdItem.removeAttribute('contenteditable','');
+            tdItem.removeAttribute('contenteditable', '');
             tdItem.removeAttribute('class');
         });
     }
@@ -262,7 +317,7 @@ function editRow(e) {
 
     if (!trParent.__origContent)
         trParent.__origContent = content;
-    
+
     // Add a click listener to anywhere on the document
     window.addEventListener("click", lockRow);
 }
@@ -271,7 +326,7 @@ function editRow(e) {
 /*
  * Table
  * Disable use of Enter key to prevent line break
- */ 
+ */
 function disableEnterKey(e) {
     if (e.keyCode === 13) {
         e.preventDefault();
@@ -283,7 +338,7 @@ function disableEnterKey(e) {
  * Table
  * Lock editable cells (td) when the user clicks anywhere
  * out of the row currently edited, and return edited content
- */ 
+ */
 function lockRow(e) {
     // Identify currently clicked element
     let ele = e.target;
@@ -318,7 +373,7 @@ function lockRow(e) {
         editedTr.removeAttribute('edition');
 
         editedTdArr.forEach((tdItem, index) => {
-            tdItem.removeAttribute('contenteditable','');
+            tdItem.removeAttribute('contenteditable', '');
             tdItem.classList.remove('td-editable');
 
             key = tdItem.dataset.aliasItem;
@@ -368,6 +423,15 @@ showHide.addEventListener('click', (e) => {
 // Table : New alias link button
 //
 newAlias.addEventListener('click', addRow);
+
+
+//
+// Table : Refresh link button
+//
+refreshBtn.addEventListener('click', async (e) => {
+    let aliasData = await getAliasList(e);
+    updateTable(aliasData);
+});
 
 
 //
@@ -421,7 +485,7 @@ findInput.addEventListener('input', (e) => {
             if (findInput.value.length > 1 && col.innerHTML.includes(findInput.value)) {
                 row.removeAttribute('style');
             }
-        }  
+        }
     }
 });
 
@@ -433,8 +497,8 @@ genUuid.addEventListener('click', (e) => {
     e.preventDefault();
     showInfobox("Generating UUID...");
     fetch('/get_uuid')
-    .then(response => response.text())  
-    .then(text => fieldAlias.value = text);
+        .then(response => response.text())
+        .then(text => fieldAlias.value = text);
 });
 
 
