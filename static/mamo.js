@@ -19,7 +19,7 @@ const newAliasBtn       = doc.querySelector('#new-alias');
 const saveAliasBtn      = doc.querySelector('#save-alias');
 const cancelAliasBtn    = doc.querySelector('#cancel-alias');
 const findInput         = doc.querySelector('#find');
-const listRedir         = doc.querySelector('#redir-list');
+const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
 const delBtns           = doc.querySelectorAll('.btn-del');
 const editBtns          = doc.querySelectorAll('.btn-edit');
@@ -196,7 +196,7 @@ async function getAliasList(e) {
 * Update the table with JSON data in parameter
 */
 function updateTable(jsonObj) {
-    let tbody = redirTabl.querySelector('tbody');
+    const tbody = redirTabl.querySelector('tbody');
     let newTbodyContent = "";
 
     for (const key in jsonObj) {
@@ -217,7 +217,7 @@ function updateTable(jsonObj) {
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
 
-    editItems = tbody.querySelectorAll("a");
+    const editItems = tbody.querySelectorAll("a");
 
     for (const a of editItems) {
         if (a.classList.contains('btn-del')) {
@@ -374,7 +374,7 @@ function cancelAliasOperations() {
  */
 function lockRows() {
     // Identify row/cells under edition
-    let editedTrArr = doc.querySelectorAll('tr[edition]');
+    const editedTrArr = doc.querySelectorAll('tr[edition]');
 
     for (const tr of editedTrArr) {
 
@@ -446,14 +446,14 @@ function lockRows() {
 // Table : show/hide button
 //
 showHideBtn.addEventListener('click', (e) => {
-    if (listRedir.hasAttribute('class')) {
-        listRedir.removeAttribute('class');
-        listRedir.style.height = '100%';
+    if (redirList.hasAttribute('class')) {
+        redirList.removeAttribute('class');
+        redirList.style.height = '100%';
         showHideBtn.children[0].dataset.feather = "eye-off";
     }
     else {
-        listRedir.setAttribute('class', 'fade-bottom');
-        listRedir.removeAttribute('style');
+        redirList.setAttribute('class', 'fade-bottom');
+        redirList.removeAttribute('style');
         showHideBtn.children[0].dataset.feather = "eye";
     }
 
@@ -465,6 +465,39 @@ showHideBtn.addEventListener('click', (e) => {
 // Table : New alias link button
 //
 newAliasBtn.addEventListener('click', addRow);
+
+
+//
+// Cancel button : cancel all "new" and/or "edit" alias operations in table
+//
+saveAliasBtn.addEventListener('click', (e) => {
+    console.log("TODO save...");
+    // TODO les td sans id -> créer
+    const tbody = redirTabl.querySelector('tbody');
+    const editedTrArr = tbody.querySelectorAll("tr");
+    let aliasData;
+
+    for (const tr of editedTrArr) {
+        if (!tr.id) {
+            // {
+            //     "name": "test text :)",
+            //     "alias": "e4c80b78-110d-4f25-983c-83c09376451e@tical.fr",
+            //     "to": "x@xaa.com"
+            // }
+            newRedir = {
+                "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
+                "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
+                "to" : tr.querySelector('td[data-alias-item="to"]').innerText
+            }
+
+            setRedir(JSON.stringify(newRedir));
+        }
+    }
+
+    aliasData = getAliasList(e);
+    updateTable(aliasData);
+    // TODO edit les td dont l'attribut __editedContent est non null
+});
 
 
 //
@@ -562,8 +595,9 @@ submitAlias.addEventListener('submit', async (e) => {
     e.preventDefault();
     let newRedirForm = new FormData(submitAlias);
     newRedirForm = JSON.stringify(Object.fromEntries(newRedirForm));
-    await setRedir(newRedirForm);
+    console.log(newRedirForm)
+    // await setRedir(newRedirForm);
 
-    let aliasData = await getAliasList(e);
-    updateTable(aliasData);
+    // let aliasData = await getAliasList(e);
+    // updateTable(aliasData);
 });
