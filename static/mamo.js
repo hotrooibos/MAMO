@@ -9,24 +9,26 @@
  * ASCII comments : https://www.patorjk.com/software/taag/#p=display&f=ANSI%20Regular
  */
 
-const doc           = document;
-const wrapper       = doc.querySelector('#wrapper');
-const dates         = doc.querySelectorAll('time');
+const doc               = document;
+const wrapper           = doc.querySelector('#wrapper');
+const dates             = doc.querySelectorAll('time');
 
-const btnShowHide   = doc.querySelector('#show-hide');
-const btnsRefresh   = doc.querySelector('#refresh-redirs');
-const newAlias      = doc.querySelector('#new-alias');
-const inputFind     = doc.querySelector('#find');
-const listRedir     = doc.querySelector('#redir-list');
-const tabRedir      = doc.querySelector('#redir-tab');
-const btnsDel       = doc.querySelectorAll('.btn-del');
-const btnsEdit      = doc.querySelectorAll('.btn-edit');
+const showHideBtn       = doc.querySelector('#show-hide');
+const refreshBtn        = doc.querySelector('#refresh-redirs');
+const newAliasBtn       = doc.querySelector('#new-alias');
+const saveAliasBtn      = doc.querySelector('#save-alias');
+const cancelAliasBtn    = doc.querySelector('#cancel-alias');
+const findInput         = doc.querySelector('#find');
+const listRedir         = doc.querySelector('#redir-list');
+const redirTabl         = doc.querySelector('#redir-tab');
+const delBtns           = doc.querySelectorAll('.btn-del');
+const editBtns          = doc.querySelectorAll('.btn-edit');
 
-const formRedir     = doc.querySelector('#redir-form');
-const btnUuid       = doc.querySelector('#gen-uuid');
-const inputAlias    = doc.querySelector('#alias');
+const submitAlias       = doc.querySelector('#redir-form');
+const uuidBtn           = doc.querySelector('#gen-uuid');
+const inputAlias        = doc.querySelector('#alias');
 
-const dialogDel     = doc.querySelector('#dialog-del');
+const delDialog         = doc.querySelector('#dialog-del');
 
 
 
@@ -65,6 +67,12 @@ function showInfobox(msg) {
 }
 
 
+function showSaveBtn() {
+    saveAliasBtn.disabled = false;
+    cancelAliasBtn.disabled = false;
+}
+
+
 /*
  * CONVERT EPOCH time to datetime
  */
@@ -85,9 +93,9 @@ function convertEpoch(dates) {
         }
 
         // GB time format (ex: 28 September 2022)
-        const postdate = new Intl.DateTimeFormat('en-GB', options).format(dt);
+        const formatedDate = new Intl.DateTimeFormat('en-GB', options).format(dt);
 
-        d.innerHTML = postdate;
+        d.innerHTML = formatedDate;
     }
 }
 
@@ -188,7 +196,7 @@ async function getAliasList(e) {
 * Update the table with JSON data in parameter
 */
 function updateTable(jsonObj) {
-    let tbody = tabRedir.querySelector('tbody');
+    let tbody = redirTabl.querySelector('tbody');
     let newTbodyContent = "";
 
     for (const key in jsonObj) {
@@ -217,9 +225,9 @@ function updateTable(jsonObj) {
                 e.preventDefault();
                 let id = a.parentElement.closest('tr').id;
                 let dialogText = "Remove id " + id + " ?";
-                dialogDel.querySelector('p').innerHTML = dialogText;
-                dialogDel.__delArr = [id];
-                dialogDel.showModal();
+                delDialog.querySelector('p').innerHTML = dialogText;
+                delDialog.__delArr = [id];
+                delDialog.showModal();
             });
         }
 
@@ -236,19 +244,42 @@ function updateTable(jsonObj) {
 */
 function addRow(e) {
     e.preventDefault();
-    let newRow = tabRedir.insertRow(1);
-    newRow.id = "0"
+
+    // Create the new row
+    let newRow = redirTabl.insertRow(1);
+    newRow.setAttribute('edition', '');
     newRow.innerHTML =
-        "<td data-alias-item=\"name\">New alias</td>" +
+        "<td class=\"td-editable\" data-alias-item=\"name\" contenteditable=\"true\">New alias</td>" +
         "<td data-alias-item=\"date\"></td>" +
-        "<td data-alias-item=\"alias\"></td>" +
-        "<td data-alias-item=\"to\"></td>" +
+        "<td class=\"td-editable\" data-alias-item=\"alias\" contenteditable=\"true\"></td>" +
+        "<td class=\"td-editable\" data-alias-item=\"to\" contenteditable=\"true\"></td>" +
         "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>";
 
+    // And Enter key press listener to editables cells to prevent line breaks
+    // newRow.forEach((tdItem, index) => {
+
+    for (const tdItem of newRow.childNodes) {
+        switch (tdItem.dataset.aliasItem) {
+            case "name":
+            case "alias":
+            case "to":
+                tdItem.addEventListener('keydown', disableEnterKey, false);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Add a click listener to anywhere on the document
+    // window.addEventListener("click", lockRow);
+    
     // Feather icons : replace <i data-feather> with icons
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
 
+    // Affect click listeners to the two buttons in
+    // the edition column (edit + remove icons)
+    //
     editItems = newRow.querySelectorAll("a");
 
     for (const a of editItems) {
@@ -257,9 +288,9 @@ function addRow(e) {
                 e.preventDefault();
                 let id = a.parentElement.closest('tr').id;
                 let dialogText = "Remove id " + id + " ?";
-                dialogDel.querySelector('p').innerHTML = dialogText;
-                dialogDel.__delArr = [id];
-                dialogDel.showModal();
+                delDialog.querySelector('p').innerHTML = dialogText;
+                delDialog.__delArr = [id];
+                delDialog.showModal();
             });
         }
 
@@ -267,16 +298,8 @@ function addRow(e) {
             a.addEventListener('click', editRow);
         }
     }
-    // Create the new row
-    // let newTr = doc.createElement('tr');
-    // newTr.setAttribute('id', '');
 
-
-
-    // newBox.setAttribute('class', 'msgbox');
-    // newBox.innerHTML = msg;
-    // newBox.style.top = "1em";
-    // wrapper.appendChild(newBox);
+    showSaveBtn();
 }
 
 
@@ -287,31 +310,14 @@ function addRow(e) {
 */
 function editRow(e) {
     e.preventDefault();
-    let ele = e.target;
-    let trParent = ele.parentElement.closest('tr');
-    let tdArr = trParent.querySelectorAll('td');
+    let clickedEle = e.target;
+    let parentTr = clickedEle.parentElement.closest('tr');
+    let tdArr = parentTr.querySelectorAll('td');
 
-    // If editable row/cells exists, lock them
-    // before making the current selection editable
-    let editedTr = doc.querySelector('tr[edition]');
-    let editedTdArr = doc.querySelectorAll('td[contenteditable]');
+    parentTr.setAttribute('edition', '');
 
-    if (editedTr) {
-        // Remove the table edition
-        editedTr.removeAttribute('edition');
-
-        editedTdArr.forEach((tdItem, index) => {
-            tdItem.removeAttribute('contenteditable', '');
-            tdItem.removeAttribute('class');
-        });
-    }
-
-    trParent.setAttribute('edition', '');
-
-    // Get data from the row to be edited and
+    // Get data to be edited and
     // make useful cells' (<td>) content editable
-    const content = {};
-
     tdArr.forEach((tdItem, index) => {
         switch (index) {
             case 0:
@@ -320,7 +326,7 @@ function editRow(e) {
                 tdItem.contentEditable = true;
                 tdItem.setAttribute('class', 'td-editable');
                 aliasItem = tdItem.dataset.aliasItem;
-                content[aliasItem] = tdItem.innerHTML;
+                tdItem.__origContent = tdItem.innerHTML;
 
                 // And Enter key press listener to prevent line breaks
                 tdItem.addEventListener('keydown', disableEnterKey, false);
@@ -328,15 +334,9 @@ function editRow(e) {
             default:
                 break;
         }
-
-
     });
 
-    if (!trParent.__origContent)
-        trParent.__origContent = content;
-
-    // Add a click listener to anywhere on the document
-    window.addEventListener("click", lockRow);
+    showSaveBtn();
 }
 
 
@@ -352,57 +352,80 @@ function disableEnterKey(e) {
 
 
 /*
- * Table
- * Lock editable cells (td) when the user clicks anywhere
- * out of the row currently edited, and return edited content
+ * Button cancel + Table
+ * Cancel all ongoing editions on table by,
+ * rolling back values to initial ones
  */
-function lockRow(e) {
-    // Identify currently clicked element
-    let ele = e.target;
-    let trParent = ele.closest('tr');
+function cancelAliasOperations() {
+    const editedTdArr = doc.querySelectorAll('td[contenteditable]');
+
+    for (const td of editedTdArr)
+        if (td.__origContent) {
+            td.innerHTML = td.__origContent;
+        } else {
+            td.innerHTML = "";
+        }
+}
+
+
+/*
+ * Table
+ * Lock editable cells (td)
+ */
+function lockRows() {
     // Identify row/cells under edition
-    let editedTr = doc.querySelector('tr[edition]');
-    let editedTdArr = doc.querySelectorAll('td[contenteditable]');
+    let editedTrArr = doc.querySelectorAll('tr[edition]');
 
-    // If click event happened anywhere but on
-    // the currently edited row elements: 
-    // - Process the content modification
-    // - Terminate table edition
-    // - Remove the click listener triggering this function
-    if (!trParent || !trParent.hasAttribute('edition')) {
-        // Process content modification
-        // Get content from edited cells
-        const content = {};
+    for (const tr of editedTrArr) {
 
-        editedTdArr.forEach((tdItem, index) => {
-            key = tdItem.dataset.aliasItem;
+        // Delete rows with no ID (cancelled new alias creation)
+        if (!tr.id)
+            tr.remove();
 
-            // Workaround to browsers' behaviour which adds a linebreak (<br>)
-            // when an contenteditable element's content is set empty by the user
-            tdItem.innerText = tdItem.innerText.replace(/(\r\n|\n|\r)/gm, "");
-
-            content[key] = tdItem.innerText;
-        });
-
-        editedTr.__editedContent = content;
-
-        // Remove the table edition
-        editedTr.removeAttribute('edition');
-
-        editedTdArr.forEach((tdItem, index) => {
-            tdItem.removeAttribute('contenteditable', '');
-            tdItem.classList.remove('td-editable');
-
-            key = tdItem.dataset.aliasItem;
-
-            if (editedTr.__editedContent[key] != editedTr.__origContent[key]) {
-                console.log("modified key: " + key);
+        // For all rows under edition :
+        //  - Terminate row/cells edition
+        //  - Restore the previous values
+        if (tr.hasAttribute('edition')) {
+            tr.removeAttribute('edition');
+            for (const td of tr.children) {
+                td.removeAttribute('contenteditable', '');
+                td.classList.remove('td-editable');
             }
-        });
 
-        // Job done, remove calling listener
-        window.removeEventListener('click', lockRow);
+        }
     }
+
+        // // Process content modification
+        // // Get content from edited cells
+        // const content = {};
+
+        // editedTdArr.forEach((tdItem, index) => {
+        //     key = tdItem.dataset.aliasItem;
+
+        //     // Workaround to browsers' behaviour which adds a linebreak (<br>)
+        //     // when an contenteditable element's content is set empty by the user
+        //     tdItem.innerText = tdItem.innerText.replace(/(\r\n|\n|\r)/gm, "");
+
+        //     content[key] = tdItem.innerText;
+        // });
+
+        // editedTr.__editedContent = content;
+
+        // // Remove the table edition
+        // editedTr.removeAttribute('edition');
+
+        // editedTdArr.forEach((tdItem, index) => {
+        //     tdItem.removeAttribute('contenteditable', '');
+        //     tdItem.classList.remove('td-editable');
+
+        //     key = tdItem.dataset.aliasItem;
+
+        //     if (!editedTr.__origContent ||
+        //         (editedTr.__editedContent[key] != editedTr.__origContent[key])) {
+        //         console.log("modified key: " + key);
+        //     }
+        // });
+    // }
 }
 
 
@@ -422,8 +445,8 @@ function lockRow(e) {
 //
 // Table : show/hide link button
 //
-btnShowHide.addEventListener('click', (e) => {
-    // getRedirs();
+showHideBtn.addEventListener('click', (e) => {
+    e.preventDefault();
 
     if (listRedir.hasAttribute('class')) {
         listRedir.removeAttribute('class');
@@ -439,13 +462,24 @@ btnShowHide.addEventListener('click', (e) => {
 //
 // Table : New alias link button
 //
-newAlias.addEventListener('click', addRow);
+newAliasBtn.addEventListener('click', addRow);
+
+
+//
+// Cancel button : cancel all "new" and/or "edit" alias operations in table
+//
+cancelAliasBtn.addEventListener('click', (e) => {
+    cancelAliasOperations();
+    lockRows();
+    saveAliasBtn.disabled = true;
+    cancelAliasBtn.disabled = true;
+});
 
 
 //
 // Table : Refresh link button
 //
-btnsRefresh.addEventListener('click', async (e) => {
+refreshBtn.addEventListener('click', async (e) => {
     let aliasData = await getAliasList(e);
     updateTable(aliasData);
 });
@@ -454,20 +488,20 @@ btnsRefresh.addEventListener('click', async (e) => {
 //
 // Table : delete buttons
 //
-btnsDel.forEach(ele => ele.addEventListener('click', (e) => {
+delBtns.forEach(ele => ele.addEventListener('click', (e) => {
     e.preventDefault();
     let id = ele.parentElement.closest('tr').id;
     let dialogText = "Remove id " + id + " ?";
-    dialogDel.querySelector('p').innerHTML = dialogText;
-    dialogDel.__delArr = [id];
-    dialogDel.showModal();
+    delDialog.querySelector('p').innerHTML = dialogText;
+    delDialog.__delArr = [id];
+    delDialog.showModal();
 }));
 
 
 //
 // Table : edit buttons
 //
-btnsEdit.forEach(ele => {
+editBtns.forEach(ele => {
     ele.addEventListener('click', editRow);
 });
 
@@ -475,9 +509,9 @@ btnsEdit.forEach(ele => {
 //
 // Delete dialog box : closing the box
 //
-dialogDel.addEventListener('close', async (e) => {
-    if (dialogDel.returnValue === "yes") {
-        let delArr = JSON.stringify(dialogDel.__delArr);
+delDialog.addEventListener('close', async (e) => {
+    if (delDialog.returnValue === "yes") {
+        let delArr = JSON.stringify(delDialog.__delArr);
         await delRedir(delArr);
 
         let aliasData = await getAliasList(e);
@@ -489,20 +523,20 @@ dialogDel.addEventListener('close', async (e) => {
 //
 // Find/search in table input : typing something
 //
-inputFind.addEventListener('input', (e) => {
-    if (inputFind.value.length > 0) {
-        for (let i = 1, row; row = tabRedir.rows[i]; i++) {
+findInput.addEventListener('input', (e) => {
+    if (findInput.value.length > 0) {
+        for (let i = 1, row; row = redirTabl.rows[i]; i++) {
             row.style.display = "none";
         }
     } else {
-        for (let i = 0, row; row = tabRedir.rows[i]; i++) {
+        for (let i = 0, row; row = redirTabl.rows[i]; i++) {
             row.removeAttribute('style');
         }
     }
 
-    for (var i = 1, row; row = tabRedir.rows[i]; i++) {
+    for (var i = 1, row; row = redirTabl.rows[i]; i++) {
         for (var j = 0, col; col = row.cells[j]; j++) {
-            if (inputFind.value.length > 1 && col.innerHTML.includes(inputFind.value)) {
+            if (findInput.value.length > 1 && col.innerHTML.includes(findInput.value)) {
                 row.removeAttribute('style');
             }
         }
@@ -513,7 +547,7 @@ inputFind.addEventListener('input', (e) => {
 //
 // Add alias form : clicking generate UUID link button
 //
-btnUuid.addEventListener('click', (e) => {
+uuidBtn.addEventListener('click', (e) => {
     e.preventDefault();
     showInfobox("Generating UUID...");
     fetch('/get_uuid')
@@ -525,9 +559,9 @@ btnUuid.addEventListener('click', (e) => {
 //
 // Add alias form : clicking Create(submit) button
 //
-formRedir.addEventListener('submit', async (e) => {
+submitAlias.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let newRedirForm = new FormData(formRedir);
+    let newRedirForm = new FormData(submitAlias);
     newRedirForm = JSON.stringify(Object.fromEntries(newRedirForm));
     await setRedir(newRedirForm);
 
