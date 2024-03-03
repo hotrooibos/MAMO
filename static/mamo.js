@@ -443,19 +443,21 @@ function lockRows() {
  */
 
 //
-// Table : show/hide link button
+// Table : show/hide button
 //
 showHideBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-
     if (listRedir.hasAttribute('class')) {
         listRedir.removeAttribute('class');
         listRedir.style.height = '100%';
+        showHideBtn.children[0].dataset.feather = "eye-off";
     }
     else {
         listRedir.setAttribute('class', 'fade-bottom');
         listRedir.removeAttribute('style');
+        showHideBtn.children[0].dataset.feather = "eye";
     }
+
+    feather.replace();
 });
 
 
@@ -549,10 +551,7 @@ findInput.addEventListener('input', (e) => {
 //
 uuidBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    showInfobox("Generating UUID...");
-    fetch('/get_uuid')
-        .then(response => response.text())
-        .then(text => inputAlias.value = text);
+    inputAlias.value = crypto.randomUUID();
 });
 
 

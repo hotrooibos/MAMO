@@ -12,8 +12,8 @@
     </div> #}
 
     <h2 class="toggleshow">Aliases</h2>
-    <a href="" id="show-hide">Show/hide</a> - <a href="" id="new-alias">New alias</a> - <button id="save-alias" type="button" disabled><i data-feather="save"></i></button> - <button id="cancel-alias" type="button" disabled><i data-feather="x"></i></button>
-    <p><span id="redir-count">{{ redirs|length }}</span> aliases - <a href="" id="refresh-redirs">refresh</a></p>
+    <button id="show-hide" type="button"><i data-feather="eye"></i></button> <button id="new-alias" type="button"><i data-feather="plus"></i></button> <button id="save-alias" type="button" disabled><i data-feather="save"></i></button> <button id="cancel-alias" type="button" disabled><i data-feather="x"></i></button>
+    <p><span id="redir-count">{{ redirs|length }}</span> aliases <button id="refresh-redirs" type="button"><i data-feather="refresh-cw"></i></button>
     <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
     <div id="redir-list" class="fade-bottom">
         {% include 'table.j2' %}

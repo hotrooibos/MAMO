@@ -4,7 +4,6 @@ import model
 import quart as qr
 import strings
 import utils
-import uuid
 from werkzeug.datastructures import MultiDict 
 
 app = qr.Quart(__name__)
@@ -54,17 +53,11 @@ async def set_redir() -> str:
 		qr.abort(400, description=e)
 	
 
-@app.route('/get_uuid', methods=['GET'])
-async def get_uuid() -> str:
-    r = uuid.uuid4().hex + f"@{model.domain}"
-    return r
-
-
 @app.route('/del_redir', methods=['POST'])
 async def del_redir() -> str:
 	del_arr = await qr.request.data
 	del_arr = json.loads(del_arr)
-	
+
 	# TODO using an array for future bulk deletion
 	# atm, there will only be one id in the del_arr
 	try:
