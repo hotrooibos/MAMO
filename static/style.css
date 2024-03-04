@@ -84,9 +84,7 @@ ul {
 table {
     border-collapse: collapse;
     width: 100%;
-
-    white-space:nowrap;
-
+    word-break: break-all;
 }
 
 tr:nth-child(odd) { background-color: var(--color-bg); }
@@ -98,10 +96,6 @@ td, th {
     padding: 0 .5em;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-[data-alias-item="edit"] {
-    text-align: center;
 }
 
 th {
@@ -158,6 +152,11 @@ h1 {
 .justify-between {
     justify-content: space-between;
 }
+.minw-10 { min-width: 10%; }
+.minw-20 { min-width: 20%; }
+.minw-30 { min-width: 30%; }
+.minw-40 { min-width: 40%; }
+.minw-50 { min-width: 50%; }
 .mx-auto {
     margin-left:auto;
     margin-right:auto;
@@ -174,9 +173,15 @@ h1 {
 .mb-2 {
     margin-bottom: 2rem;
 }
+.no-wrap {
+    white-space: nowrap;
+}
 .text-base {
     font-size:1rem;
     line-height:1.5rem;
+}
+.text-center {
+    text-align: center;
 }
 .text-2xl {
     font-size:1.5rem;
@@ -191,7 +196,7 @@ h1 {
 .text-gray-2 {
     color: var(--color-text-gray-2);
 }
-.hover\:text-black:hover {
+.hover:text-black:hover {
     color: var(--color-text);
 }
 
@@ -269,5 +274,5 @@ h1 {
 #redir-list {
     height: 30em;
     width: 100%;
-    /* overflow: hidden; */
+    overflow: hidden;
 }

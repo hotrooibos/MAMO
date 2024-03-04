@@ -21,8 +21,6 @@ const cancelAliasBtn    = doc.querySelector('#cancel-alias');
 const findInput         = doc.querySelector('#find');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
-const delBtns           = doc.querySelectorAll('.btn-del');
-const editBtns          = doc.querySelectorAll('.btn-edit');
 
 const submitAlias       = doc.querySelector('#redir-form');
 const uuidBtn           = doc.querySelector('#gen-uuid');
@@ -143,6 +141,7 @@ async function setRedir(form) {
         });
 }
 
+
 async function delRedir(form) {
     showInfobox("Removing a redir...");
 
@@ -170,7 +169,6 @@ async function delRedir(form) {
 * Fetch JSON alias list from server
 */
 async function getAliasList(e) {
-    e.preventDefault();
     let ele = e.target;
     let sortKey;
 
@@ -191,6 +189,31 @@ async function getAliasList(e) {
 }
 
 
+function setActionBtns() {
+    const delBtns = doc.querySelectorAll('.btn-del');
+    const editBtns = doc.querySelectorAll('.btn-edit');
+
+    // Delete buttons
+    for (const btn of delBtns) {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const parent = btn.parentElement.closest('tr');
+            const id = parent.id;
+            const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
+            const dialogText = "Remove alias " + alias + " ?";
+            delDialog.querySelector('p').innerHTML = dialogText;
+            delDialog.__delArr = [id];
+            delDialog.showModal();
+        })
+    }
+
+    // Edit buttons
+    editBtns.forEach(ele => {
+        ele.addEventListener('click', editRow);
+    });
+}
+
+
 /*
 * Table
 * Update the table with JSON data in parameter
@@ -206,7 +229,7 @@ function updateTable(jsonObj) {
             "<td data-alias-item=\"date\">" + jsonObj[key]['date'] + "</td>" +
             "<td data-alias-item=\"alias\">" + jsonObj[key]['alias'] + "</td>" +
             "<td data-alias-item=\"to\">" + jsonObj[key]['to'] + "</td>" +
-            "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>" +
+            "<td data-alias-item=\"edit\" class=\"text-center no-wrap\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>" +
             "</tr>"
     }
 
@@ -217,24 +240,7 @@ function updateTable(jsonObj) {
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
 
-    const editItems = tbody.querySelectorAll("a");
-
-    for (const a of editItems) {
-        if (a.classList.contains('btn-del')) {
-            a.addEventListener('click', (e) => {
-                e.preventDefault();
-                let id = a.parentElement.closest('tr').id;
-                let dialogText = "Remove id " + id + " ?";
-                delDialog.querySelector('p').innerHTML = dialogText;
-                delDialog.__delArr = [id];
-                delDialog.showModal();
-            });
-        }
-
-        if (a.classList.contains('btn-edit')) {
-            a.addEventListener('click', editRow);
-        }
-    }
+    setActionBtns();
 }
 
 
@@ -243,61 +249,37 @@ function updateTable(jsonObj) {
 * Add a new alias row
 */
 function addRow(e) {
-    e.preventDefault();
+    // Create a new row (tr) node from a cloned one
+    // so we get its classes, datasets...
+    const tbody = redirTabl.querySelector('tbody');
+    const newRow = tbody.children[0].cloneNode(true);
 
-    // Create the new row
-    let newRow = redirTabl.insertRow(1);
+    newRow.removeAttribute('id');
     newRow.setAttribute('edition', '');
-    newRow.innerHTML =
-        "<td class=\"td-editable\" data-alias-item=\"name\" contenteditable=\"true\">New alias</td>" +
-        "<td data-alias-item=\"date\"></td>" +
-        "<td class=\"td-editable\" data-alias-item=\"alias\" contenteditable=\"true\"></td>" +
-        "<td class=\"td-editable\" data-alias-item=\"to\" contenteditable=\"true\"></td>" +
-        "<td data-alias-item=\"edit\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>";
 
-    // And Enter key press listener to editables cells to prevent line breaks
-    // newRow.forEach((tdItem, index) => {
-
-    for (const tdItem of newRow.childNodes) {
-        switch (tdItem.dataset.aliasItem) {
+    // Make cells editables
+    for (const td of newRow.children) {
+        switch (td.dataset.aliasItem) {
             case "name":
             case "alias":
             case "to":
-                tdItem.addEventListener('keydown', disableEnterKey, false);
+                td.contentEditable = "true";
+                td.classList.add('td-editable');
+
+                // And Enter key press listener to prevent line breaks
+                td.addEventListener('keydown', disableEnterKey, false);
                 break;
             default:
                 break;
         }
     }
 
-    // Add a click listener to anywhere on the document
-    // window.addEventListener("click", lockRow);
-    
-    // Feather icons : replace <i data-feather> with icons
-    // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
-    feather.replace();
+    // Insert the new row
+    tbody.insertAdjacentElement("afterbegin", newRow);
 
     // Affect click listeners to the two buttons in
     // the edition column (edit + remove icons)
-    //
-    editItems = newRow.querySelectorAll("a");
-
-    for (const a of editItems) {
-        if (a.classList.contains('btn-del')) {
-            a.addEventListener('click', (e) => {
-                e.preventDefault();
-                let id = a.parentElement.closest('tr').id;
-                let dialogText = "Remove id " + id + " ?";
-                delDialog.querySelector('p').innerHTML = dialogText;
-                delDialog.__delArr = [id];
-                delDialog.showModal();
-            });
-        }
-
-        if (a.classList.contains('btn-edit')) {
-            a.addEventListener('click', editRow);
-        }
-    }
+    setActionBtns();
 
     showSaveBtn();
 }
@@ -318,23 +300,22 @@ function editRow(e) {
 
     // Get data to be edited and
     // make useful cells' (<td>) content editable
-    tdArr.forEach((tdItem, index) => {
-        switch (index) {
-            case 0:
-            case 2:
-            case 3:
-                tdItem.contentEditable = true;
-                tdItem.setAttribute('class', 'td-editable');
-                aliasItem = tdItem.dataset.aliasItem;
-                tdItem.__origContent = tdItem.innerHTML;
+    for (const td of tdArr) {
+        switch (td.dataset.aliasItem) {
+            case "name":
+            case "alias":
+            case "to":
+                td.contentEditable = true;
+                td.classList.add('td-editable');
+                td.__origContent = td.innerHTML;
 
                 // And Enter key press listener to prevent line breaks
-                tdItem.addEventListener('keydown', disableEnterKey, false);
+                td.addEventListener('keydown', disableEnterKey, false);
                 break;
             default:
                 break;
         }
-    });
+    }
 
     showSaveBtn();
 }
@@ -471,19 +452,12 @@ newAliasBtn.addEventListener('click', addRow);
 // Cancel button : cancel all "new" and/or "edit" alias operations in table
 //
 saveAliasBtn.addEventListener('click', (e) => {
-    console.log("TODO save...");
-    // TODO les td sans id -> créer
     const tbody = redirTabl.querySelector('tbody');
     const editedTrArr = tbody.querySelectorAll("tr");
     let aliasData;
 
     for (const tr of editedTrArr) {
         if (!tr.id) {
-            // {
-            //     "name": "test text :)",
-            //     "alias": "e4c80b78-110d-4f25-983c-83c09376451e@tical.fr",
-            //     "to": "x@xaa.com"
-            // }
             newRedir = {
                 "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
                 "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
@@ -496,6 +470,7 @@ saveAliasBtn.addEventListener('click', (e) => {
 
     aliasData = getAliasList(e);
     updateTable(aliasData);
+    
     // TODO edit les td dont l'attribut __editedContent est non null
 });
 
@@ -515,30 +490,15 @@ cancelAliasBtn.addEventListener('click', (e) => {
 // Table : Refresh link button
 //
 refreshBtn.addEventListener('click', async (e) => {
-    let aliasData = await getAliasList(e);
+    const aliasData = await getAliasList(e);
     updateTable(aliasData);
 });
 
 
 //
-// Table : delete buttons
+// Table : actions btns (edit + delete)
 //
-delBtns.forEach(ele => ele.addEventListener('click', (e) => {
-    e.preventDefault();
-    let id = ele.parentElement.closest('tr').id;
-    let dialogText = "Remove id " + id + " ?";
-    delDialog.querySelector('p').innerHTML = dialogText;
-    delDialog.__delArr = [id];
-    delDialog.showModal();
-}));
-
-
-//
-// Table : edit buttons
-//
-editBtns.forEach(ele => {
-    ele.addEventListener('click', editRow);
-});
+setActionBtns();
 
 
 //
