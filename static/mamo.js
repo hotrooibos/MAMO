@@ -1,4 +1,4 @@
-/*!
+/*
  * MAMO web view
  * https://github.com/hotrooibos/MAMO
  *
@@ -21,6 +21,7 @@ const cancelAliasBtn    = doc.querySelector('#cancel-alias');
 const findInput         = doc.querySelector('#find');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
+const tbody             = redirTabl.querySelector('tbody');
 
 const submitAlias       = doc.querySelector('#redir-form');
 const uuidBtn           = doc.querySelector('#gen-uuid');
@@ -42,7 +43,7 @@ const delDialog         = doc.querySelector('#dialog-del');
  */
 
 function showInfobox(msg) {
-    var boxesArr = doc.querySelectorAll('.msgbox');
+    const boxesArr = doc.querySelectorAll('.msgbox');
 
     // Move down msg boxes actually displayed
     for (let i = 0; i < boxesArr.length; i++) {
@@ -51,10 +52,10 @@ function showInfobox(msg) {
     }
 
     // Create the new box on the top
-    let newBox = doc.createElement('div');
+    const newBox = doc.createElement('div');
     newBox.setAttribute('id', 'msgbox');
     newBox.setAttribute('class', 'msgbox');
-    newBox.innerHTML = msg;
+    newBox.innerText = msg;
     newBox.style.top = "1em";
     wrapper.appendChild(newBox);
 
@@ -62,12 +63,6 @@ function showInfobox(msg) {
     setTimeout((e) => {
         doc.querySelector('.msgbox').remove();
     }, 8000);
-}
-
-
-function showSaveBtn() {
-    saveAliasBtn.disabled = false;
-    cancelAliasBtn.disabled = false;
 }
 
 
@@ -151,7 +146,7 @@ async function delRedir(form) {
             body: form,
         });
 
-        resText = await res.text();
+        const resText = await res.text();
 
         if (resText.includes("'action': 'delete'")) {
             showInfobox("Alias removed succesfully !");
@@ -166,10 +161,10 @@ async function delRedir(form) {
 
 
 /*
-* Fetch JSON alias list from server
-*/
+ * Fetch JSON alias list from server
+ */
 async function getAliasList(e) {
-    let ele = e.target;
+    const ele = e.target;
     let sortKey;
 
     if (ele.dataset.aliasItem) {
@@ -182,9 +177,9 @@ async function getAliasList(e) {
     });
 
     if (res.status == 200) {
-        let resText = await res.text();
-        let aliasList = JSON.parse(resText);
-        return aliasList;
+        const resText = await res.text();
+
+        return JSON.parse(resText);
     }
 }
 
@@ -196,7 +191,6 @@ function setActionBtns() {
     // Delete buttons
     for (const btn of delBtns) {
         btn.addEventListener('click', (e) => {
-            e.preventDefault();
             const parent = btn.parentElement.closest('tr');
             const id = parent.id;
             const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
@@ -208,19 +202,18 @@ function setActionBtns() {
     }
 
     // Edit buttons
-    editBtns.forEach(ele => {
-        ele.addEventListener('click', editRow);
-    });
+    for (const btn of editBtns) {
+        btn.addEventListener('click', editRow);
+    }
 }
 
 
 /*
-* Table
-* Update the table with JSON data in parameter
-*/
+ * Table
+ * Update the table with JSON data in parameter
+ */
 function updateTable(jsonObj) {
-    const tbody = redirTabl.querySelector('tbody');
-    let newTbodyContent = "";
+    let newTbodyContent;
 
     for (const key in jsonObj) {
         newTbodyContent +=
@@ -234,7 +227,7 @@ function updateTable(jsonObj) {
     }
 
     tbody.innerHTML = newTbodyContent;
-    doc.querySelector('#redir-count').innerHTML = Object.keys(jsonObj).length;
+    doc.querySelector('#redir-count').innerText = Object.keys(jsonObj).length;
 
     // Feather icons : replace <i data-feather> with icons
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
@@ -245,17 +238,16 @@ function updateTable(jsonObj) {
 
 
 /*
-* Table
-* Add a new alias row
-*/
+ * Table
+ * Add a new alias row
+ */
 function addRow(e) {
     // Create a new row (tr) node from a cloned one
     // so we get its classes, datasets...
-    const tbody = redirTabl.querySelector('tbody');
     const newRow = tbody.children[0].cloneNode(true);
 
     newRow.removeAttribute('id');
-    newRow.setAttribute('edition', '');
+    newRow.__edition = true;
 
     // Make cells editables
     for (const td of newRow.children) {
@@ -281,22 +273,23 @@ function addRow(e) {
     // the edition column (edit + remove icons)
     setActionBtns();
 
-    showSaveBtn();
+    saveAliasBtn.disabled = false;
+    cancelAliasBtn.disabled = false;
 }
 
 
 /*
-* Table
-* Makes cells from a specific row editables
-* Called when clicking an edit row btn
-*/
+ * Table
+ * Makes cells from a specific row editables
+ * Called when clicking an edit row btn
+ */
 function editRow(e) {
     e.preventDefault();
-    let clickedEle = e.target;
-    let parentTr = clickedEle.parentElement.closest('tr');
-    let tdArr = parentTr.querySelectorAll('td');
+    const clickedEle = e.target;
+    const parentTr = clickedEle.parentElement.closest('tr');
+    const tdArr = parentTr.querySelectorAll('td');
 
-    parentTr.setAttribute('edition', '');
+    parentTr.__edition = true;
 
     // Get data to be edited and
     // make useful cells' (<td>) content editable
@@ -317,7 +310,8 @@ function editRow(e) {
         }
     }
 
-    showSaveBtn();
+    saveAliasBtn.disabled = false;
+    cancelAliasBtn.disabled = false;
 }
 
 
@@ -326,9 +320,8 @@ function editRow(e) {
  * Disable use of Enter key to prevent line break
  */
 function disableEnterKey(e) {
-    if (e.keyCode === 13) {
+    if (e.keyCode === 13)
         e.preventDefault();
-    }
 }
 
 
@@ -366,10 +359,10 @@ function lockRows() {
         // For all rows under edition :
         //  - Terminate row/cells edition
         //  - Restore the previous values
-        if (tr.hasAttribute('edition')) {
-            tr.removeAttribute('edition');
+        if (tr.__edition) {
+            delete tr.__edition;
             for (const td of tr.children) {
-                td.removeAttribute('contenteditable', '');
+                td.contentEditable = false;
                 td.classList.remove('td-editable');
             }
 
@@ -393,7 +386,7 @@ function lockRows() {
         // editedTr.__editedContent = content;
 
         // // Remove the table edition
-        // editedTr.removeAttribute('edition');
+        // delete editedTr.__edition;
 
         // editedTdArr.forEach((tdItem, index) => {
         //     tdItem.removeAttribute('contenteditable', '');
@@ -427,13 +420,13 @@ function lockRows() {
 // Table : show/hide button
 //
 showHideBtn.addEventListener('click', (e) => {
-    if (redirList.hasAttribute('class')) {
-        redirList.removeAttribute('class');
+    if (redirList.classList.contains('fade-bottom')) {
+        redirList.classList.remove('fade-bottom');
         redirList.style.height = '100%';
         showHideBtn.children[0].dataset.feather = "eye-off";
     }
     else {
-        redirList.setAttribute('class', 'fade-bottom');
+        redirList.classList.add('fade-bottom');
         redirList.removeAttribute('style');
         showHideBtn.children[0].dataset.feather = "eye";
     }
@@ -452,9 +445,8 @@ newAliasBtn.addEventListener('click', addRow);
 // Cancel button : cancel all "new" and/or "edit" alias operations in table
 //
 saveAliasBtn.addEventListener('click', (e) => {
-    const tbody = redirTabl.querySelector('tbody');
     const editedTrArr = tbody.querySelectorAll("tr");
-    let aliasData;
+    let newRedir;
 
     for (const tr of editedTrArr) {
         if (!tr.id) {
@@ -468,8 +460,7 @@ saveAliasBtn.addEventListener('click', (e) => {
         }
     }
 
-    aliasData = getAliasList(e);
-    updateTable(aliasData);
+    updateTable(getAliasList(e));
     
     // TODO edit les td dont l'attribut __editedContent est non null
 });
@@ -506,10 +497,10 @@ setActionBtns();
 //
 delDialog.addEventListener('close', async (e) => {
     if (delDialog.returnValue === "yes") {
-        let delArr = JSON.stringify(delDialog.__delArr);
+        const delArr = JSON.stringify(delDialog.__delArr);
         await delRedir(delArr);
 
-        let aliasData = await getAliasList(e);
+        const aliasData = await getAliasList(e);
         updateTable(aliasData);
     }
 });
@@ -529,8 +520,8 @@ findInput.addEventListener('input', (e) => {
         }
     }
 
-    for (var i = 1, row; row = redirTabl.rows[i]; i++) {
-        for (var j = 0, col; col = row.cells[j]; j++) {
+    for (let i = 1, row; row = redirTabl.rows[i]; i++) {
+        for (let j = 0, col; col = row.cells[j]; j++) {
             if (findInput.value.length > 1 && col.innerHTML.includes(findInput.value)) {
                 row.removeAttribute('style');
             }
