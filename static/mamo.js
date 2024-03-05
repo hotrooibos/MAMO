@@ -117,24 +117,23 @@ convertEpoch(dates);
 // }
 
 
-async function setRedir(form) {
-    showInfobox("Creating new redir...");
+async function setRedir(jsonObj) {
+    showInfobox("Creating new redir " + jsonObj['alias']);
 
-    fetch('/set_redir', {
+    const jsonStr = JSON.stringify(jsonObj);
+
+    const res = await fetch('/set_redir', {
         method: 'post',
-        body: form,
+        body: jsonStr,
     })
-        .then(response => response.status)
-        .then(status => {
-            if (status == 200) {
-                // get_redirs();
-                // redirForm.reset();
-                showInfobox("Alias created succesfully !");
-            } else {
-                showInfobox("An error occured while creating the alias...");
-            }
-        });
+
+    if (res.status == 200) {
+        showInfobox("Alias created succesfully !");
+    } else {
+        showInfobox("An error occured while creating the alias...");
+    }
 }
+
 
 
 async function delRedir(form) {
@@ -191,6 +190,7 @@ function setActionBtns() {
     // Delete buttons
     for (const btn of delBtns) {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const parent = btn.parentElement.closest('tr');
             const id = parent.id;
             const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
@@ -213,7 +213,7 @@ function setActionBtns() {
  * Update the table with JSON data in parameter
  */
 function updateTable(jsonObj) {
-    let newTbodyContent;
+    let newTbodyContent = "";
 
     for (const key in jsonObj) {
         newTbodyContent +=
@@ -442,9 +442,9 @@ newAliasBtn.addEventListener('click', addRow);
 
 
 //
-// Cancel button : cancel all "new" and/or "edit" alias operations in table
+// Save button : save new/edit alias operations made in table
 //
-saveAliasBtn.addEventListener('click', (e) => {
+saveAliasBtn.addEventListener('click', async (e) => {
     const editedTrArr = tbody.querySelectorAll("tr");
     let newRedir;
 
@@ -456,12 +456,12 @@ saveAliasBtn.addEventListener('click', (e) => {
                 "to" : tr.querySelector('td[data-alias-item="to"]').innerText
             }
 
-            setRedir(JSON.stringify(newRedir));
+            setRedir(newRedir);
         }
     }
+    const aliasData = await getAliasList(e);
+    updateTable(aliasData);
 
-    updateTable(getAliasList(e));
-    
     // TODO edit les td dont l'attribut __editedContent est non null
 });
 
@@ -545,10 +545,9 @@ uuidBtn.addEventListener('click', (e) => {
 submitAlias.addEventListener('submit', async (e) => {
     e.preventDefault();
     let newRedirForm = new FormData(submitAlias);
-    newRedirForm = JSON.stringify(Object.fromEntries(newRedirForm));
-    console.log(newRedirForm)
-    // await setRedir(newRedirForm);
+    newRedirForm = Object.fromEntries(newRedirForm);
+    await setRedir(newRedirForm);
 
-    // let aliasData = await getAliasList(e);
-    // updateTable(aliasData);
+    let aliasData = await getAliasList(e);
+    updateTable(aliasData);
 });
