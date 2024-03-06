@@ -445,24 +445,52 @@ newAliasBtn.addEventListener('click', addRow);
 // Save button : save new/edit alias operations made in table
 //
 saveAliasBtn.addEventListener('click', async (e) => {
-    const editedTrArr = tbody.querySelectorAll("tr");
+    const trArr = tbody.querySelectorAll('tr');
     let newRedir;
 
-    for (const tr of editedTrArr) {
+    for (const tr of trArr) {
+
+        // New aliases
         if (!tr.id) {
-            newRedir = {
-                "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
-                "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
-                "to" : tr.querySelector('td[data-alias-item="to"]').innerText
+            newRedir = {};
+
+            for (const td of tr.children) {    
+
+                switch (td.dataset.aliasItem) {
+                    case "name":
+                        newRedir.name = td.innerText;
+                    case "alias":
+                        newRedir.alias = td.innerText;
+                    case "to":
+                        newRedir.to = td.innerText;
+                    default:
+                        break;
+                }
             }
 
             setRedir(newRedir);
         }
+        // Edited aliases
+        // else {
+        //     newRedir = {
+        //         "id" : tr.id,
+        //         "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
+        //         "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
+        //         "to" : tr.querySelector('td[data-alias-item="to"]').innerText
+        //     }
+        // }
     }
+
     const aliasData = await getAliasList(e);
-    updateTable(aliasData);
 
     // TODO edit les td dont l'attribut __editedContent est non null
+    // for (const td of tbody.querySelectorAll("tr")) {
+    //     if (td.__origContent) {
+            
+    //     }
+    // }
+
+    updateTable(aliasData);
 });
 
 

@@ -51,7 +51,27 @@ async def set_redir() -> str:
 	
 	except Exception as e:
 		qr.abort(400, description=e)
+
+
+@app.route('/edit_redir', methods=['POST'])
+async def edit_redir() -> str:
+	form = await qr.request.data
+	f = json.loads(form)
+	id = f['id']
+	name = f['name']
+	alias = f['alias']
+	to = f['to']
 	
+	try:
+		res = model.edit_redir(id=id,
+						 	   name=name,
+						   	   alias=alias,
+						   	   to=to)
+		return res, 200
+	
+	except Exception as e:
+		qr.abort(400, description=e)
+
 
 @app.route('/del_redir', methods=['POST'])
 async def del_redir() -> str:
