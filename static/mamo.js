@@ -247,7 +247,7 @@ function addRow(e) {
     const newRow = tbody.children[0].cloneNode(true);
 
     newRow.removeAttribute('id');
-    newRow.__edition = true;
+    newRow.__edit = true;
 
     // Make cells editables
     for (const td of newRow.children) {
@@ -289,7 +289,7 @@ function editRow(e) {
     const parentTr = clickedEle.parentElement.closest('tr');
     const tdArr = parentTr.querySelectorAll('td');
 
-    parentTr.__edition = true;
+    parentTr.__edit = true;
 
     // Get data to be edited and
     // make useful cells' (<td>) content editable
@@ -300,7 +300,7 @@ function editRow(e) {
             case "to":
                 td.contentEditable = true;
                 td.classList.add('td-editable');
-                td.__origContent = td.innerHTML;
+                td.__origContent = td.innerText;
 
                 // And Enter key press listener to prevent line breaks
                 td.addEventListener('keydown', disableEnterKey, false);
@@ -312,6 +312,61 @@ function editRow(e) {
 
     saveAliasBtn.disabled = false;
     cancelAliasBtn.disabled = false;
+}
+
+
+/*
+ * Create/save modified aliases 
+ * Called when clicking the save btn
+ */
+function saveAlias() {
+    const trArr = tbody.querySelectorAll('tr');
+    const editTrArr = [];
+    let newRedir;
+
+    // Make array of edited modified rows
+    for (const tr of trArr) {
+        if (tr.__edit) {
+            editTrArr.push('tr');
+        }
+    }
+
+    // Loop through modified rows
+    // and process new aliases and edited ones
+    for (const tr of trArr) {
+
+        // New aliases (row has no id)
+        if (!tr.id) {
+            newRedir = {};
+
+            for (const td of tr.children) {    
+                switch (td.dataset.aliasItem) {
+                    case "name":
+                        newRedir.name = td.innerText;
+                    case "alias":
+                        newRedir.alias = td.innerText;
+                    case "to":
+                        newRedir.to = td.innerText;
+                    default:
+                        break;
+                }
+            }
+
+            setRedir(newRedir);
+        }
+
+        // Edited aliases
+        else {
+            newRedir = {
+                "id" : tr.id,
+                "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
+                "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
+                "to" : tr.querySelector('td[data-alias-item="to"]').innerText
+            }
+
+            // editRedir(newRedir);
+        }
+    }
 }
 
 
@@ -335,9 +390,9 @@ function cancelAliasOperations() {
 
     for (const td of editedTdArr)
         if (td.__origContent) {
-            td.innerHTML = td.__origContent;
+            td.innerText = td.__origContent;
         } else {
-            td.innerHTML = "";
+            td.innerText = "";
         }
 }
 
@@ -359,8 +414,8 @@ function lockRows() {
         // For all rows under edition :
         //  - Terminate row/cells edition
         //  - Restore the previous values
-        if (tr.__edition) {
-            delete tr.__edition;
+        if (tr.__edit) {
+            delete tr.__edit;
             for (const td of tr.children) {
                 td.contentEditable = false;
                 td.classList.remove('td-editable');
@@ -383,10 +438,9 @@ function lockRows() {
         //     content[key] = tdItem.innerText;
         // });
 
-        // editedTr.__editedContent = content;
 
         // // Remove the table edition
-        // delete editedTr.__edition;
+        // delete editedTr.__edit;
 
         // editedTdArr.forEach((tdItem, index) => {
         //     tdItem.removeAttribute('contenteditable', '');
@@ -444,52 +498,9 @@ newAliasBtn.addEventListener('click', addRow);
 //
 // Save button : save new/edit alias operations made in table
 //
-saveAliasBtn.addEventListener('click', async (e) => {
-    const trArr = tbody.querySelectorAll('tr');
-    let newRedir;
-
-    for (const tr of trArr) {
-
-        // New aliases
-        if (!tr.id) {
-            newRedir = {};
-
-            for (const td of tr.children) {    
-
-                switch (td.dataset.aliasItem) {
-                    case "name":
-                        newRedir.name = td.innerText;
-                    case "alias":
-                        newRedir.alias = td.innerText;
-                    case "to":
-                        newRedir.to = td.innerText;
-                    default:
-                        break;
-                }
-            }
-
-            setRedir(newRedir);
-        }
-        // Edited aliases
-        // else {
-        //     newRedir = {
-        //         "id" : tr.id,
-        //         "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
-        //         "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
-        //         "to" : tr.querySelector('td[data-alias-item="to"]').innerText
-        //     }
-        // }
-    }
-
+saveAliasBtn.addEventListener('click', async () => {
+    saveAlias();
     const aliasData = await getAliasList(e);
-
-    // TODO edit les td dont l'attribut __editedContent est non null
-    // for (const td of tbody.querySelectorAll("tr")) {
-    //     if (td.__origContent) {
-            
-    //     }
-    // }
-
     updateTable(aliasData);
 });
 
