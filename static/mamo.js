@@ -117,7 +117,7 @@ convertEpoch(dates);
 // }
 
 
-async function setRedir(jsonObj) {
+async function createRedir(jsonObj) {
     showInfobox("Creating new redir " + jsonObj['alias']);
 
     const jsonStr = JSON.stringify(jsonObj);
@@ -134,6 +134,28 @@ async function setRedir(jsonObj) {
     }
 }
 
+
+/*
+ * Backend call for editing redirection
+ *
+ * Return the redirection id (actually only useful for 
+ * editing the alias @ itself, since the redirection
+ * has to be recreated in this case)
+ */
+async function editRedir(jsonObj) {
+    const jsonStr = JSON.stringify(jsonObj);
+
+    const res = await fetch('/edit_redir', {
+        method: 'post',
+        body: jsonStr,
+    })
+
+    if (res.status == 200) {
+        showInfobox("Alias modified succesfully !");
+    } else {
+        showInfobox("An error occured while creating the alias...");
+    }
+}
 
 
 async function delRedir(form) {
@@ -352,11 +374,11 @@ function saveAlias() {
                 }
             }
 
-            setRedir(newRedir);
+            createRedir(newRedir);
         }
 
         // Edited aliases
-        else {
+        else if (tr.__edit) {
             newRedir = {
                 "id" : tr.id,
                 "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
@@ -364,7 +386,7 @@ function saveAlias() {
                 "to" : tr.querySelector('td[data-alias-item="to"]').innerText
             }
 
-            // editRedir(newRedir);
+            editRedir(newRedir);
         }
     }
 }
@@ -498,7 +520,7 @@ newAliasBtn.addEventListener('click', addRow);
 //
 // Save button : save new/edit alias operations made in table
 //
-saveAliasBtn.addEventListener('click', async () => {
+saveAliasBtn.addEventListener('click', async (e) => {
     saveAlias();
     const aliasData = await getAliasList(e);
     updateTable(aliasData);
@@ -585,7 +607,7 @@ submitAlias.addEventListener('submit', async (e) => {
     e.preventDefault();
     let newRedirForm = new FormData(submitAlias);
     newRedirForm = Object.fromEntries(newRedirForm);
-    await setRedir(newRedirForm);
+    await createRedir(newRedirForm);
 
     let aliasData = await getAliasList(e);
     updateTable(aliasData);

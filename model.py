@@ -128,7 +128,7 @@ def create_redir(name:str, alias: str, to: str) -> str:
 		raise
 
 
-def edit_redir(id: str, name: str, alias: str, to: str) -> int:
+def edit_redir(id: str, name: str, alias: str, to: str):
 	'''
 		Edit an existing redirection
 	'''
@@ -136,37 +136,47 @@ def edit_redir(id: str, name: str, alias: str, to: str) -> int:
 	# - If alias is, the API does NOT allows edition, so we have
 	#   to remove and recreate the redirection
 	# - If name is, it's only local so just edit config
-	# - If "to" address, the API allows direct edition
+	# - If "to" address, the API allows direct edition but
+	#   changes its id, so we need to get it and update it localy
 	for k, v in config_redir.items():
+
 		if k == id:
+
 			if v['alias'] != alias:
 				rm = remove_redir(id)
 				
 				if rm:
-					res = create_redir(name=name,
-									   alias=alias,
-									   to=to)
-					return res
+					create_redir(name=name,
+								 alias=alias,
+								 to=to)
+				res = 0
 
 			if v['name'] != name:
 				config_redir[id]['name'] = name
-				write_config(config_redir)
+				res = 0
 
 			if v['to'] != to:
 				try:
 					res = client.post("/email/domain/tical.fr/redirection"
-						  				 f"/{id}/changeRedirection",
-										 to=to)
+						  			  f"/{id}/changeRedirection",
+									  to=to)
 					
-					config_redir[id]['to'] = to
-					write_config(config_redir)
+					# Update the id
+					new_id = find_id(alias, to)
+					config_redir[new_id] = config_redir[id]
+					config_redir[new_id]['to'] = to
+					del config_redir[id]
 
-					return res
+					res = 0
+					break
 
 				except ovh.APIError as e:
 					print(e)
 					raise
-
+			
+	if res:
+		write_config(config_redir)
+			
 
 def remove_redir(id: int) -> bool:
 	'''

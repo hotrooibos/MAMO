@@ -63,11 +63,11 @@ async def edit_redir() -> str:
 	to = f['to']
 	
 	try:
-		res = model.edit_redir(id=id,
-						 	   name=name,
-						   	   alias=alias,
-						   	   to=to)
-		return res, 200
+		model.edit_redir(id=id,
+						 name=name,
+						 alias=alias,
+						 to=to)
+		return f"Alias edited succesfully", 200
 	
 	except Exception as e:
 		qr.abort(400, description=e)
