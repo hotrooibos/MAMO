@@ -4,6 +4,8 @@ html {
     -moz-tab-size: 4;
     -o-tab-size: 4;
     tab-size: 4;
+    color: var(--color-text);
+    background-color: var(--color-bg);
     font-family: Inter,
                  ui-sans-serif,
                  system-ui,
@@ -19,7 +21,6 @@ html {
                  Segoe UI Emoji,
                  Segoe UI Symbol,
                  Noto Color Emoji;
-    color: var(--color-text);
 }
 
 body {
@@ -31,7 +32,7 @@ body {
     --color-text: rgb(225, 225, 225);
     --color-text-gray-1: rgb(180, 180, 180);
     --color-text-gray-1: rgb(125, 125, 125);
-    --color-bg: rgb(20, 30, 36);
+    --color-bg: rgb(11, 20, 22);
     --color-bg-z: rgba(20, 30, 36, 0.902);
     --color-link: rgb(119, 193, 209);
     --color-hover: rgb(25, 57, 69);
