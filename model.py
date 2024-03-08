@@ -137,7 +137,7 @@ def edit_redir(id: str, name: str, alias: str, to: str):
 	#   to remove and recreate the redirection
 	# - If name is, it's only local so just edit config
 	# - If "to" address, the API allows direct edition but
-	#   changes its id, so we need to get it and update it localy
+	#   changes its id, so we need to get it and update it locally
 	for k, v in config_redir.items():
 
 		if k == id:
