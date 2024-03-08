@@ -18,6 +18,7 @@ const refreshBtn        = doc.querySelector('#refresh-redirs');
 const newAliasBtn       = doc.querySelector('#new-alias');
 const saveAliasBtn      = doc.querySelector('#save-alias');
 const cancelAliasBtn    = doc.querySelector('#cancel-alias');
+const redirCount        = doc.querySelector('#redir-count')
 const findInput         = doc.querySelector('#find');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
@@ -92,7 +93,32 @@ function convertEpoch(dates) {
     }
 }
 
-convertEpoch(dates);
+
+/*
+ * Table
+ * Disable use of Enter key to prevent line break
+ */
+function disableEnterKey(e) {
+    if (e.keyCode === 13)
+        e.preventDefault();
+}
+
+
+/*
+ * Button cancel + Table
+ * Cancel all ongoing editions on table by,
+ * rolling back values to initial ones
+ */
+function cancelAliasOperations() {
+    const editedTdArr = doc.querySelectorAll('td[contenteditable]');
+
+    for (const td of editedTdArr)
+        if (td.__origContent) {
+            td.innerText = td.__origContent;
+        } else {
+            td.innerText = "";
+        }
+}
 
 
 // function loadRedirs(jsonStr) {
@@ -117,117 +143,15 @@ convertEpoch(dates);
 // }
 
 
-async function createRedir(jsonObj) {
-    showInfobox("Creating new redir " + jsonObj['alias']);
-
-    const jsonStr = JSON.stringify(jsonObj);
-
-    const res = await fetch('/set_redir', {
-        method: 'post',
-        body: jsonStr,
-    })
-
-    if (res.status == 200) {
-        showInfobox("Alias created succesfully !");
-    } else {
-        showInfobox("An error occured while creating the alias...");
-    }
-}
-
-
 /*
- * Backend call for editing redirection
  *
- * Return the redirection id (actually only useful for 
- * editing the alias @ itself, since the redirection
- * has to be recreated in this case)
+ * ████████  █████  ██████  ██      ███████ 
+ *    ██    ██   ██ ██   ██ ██      ██      
+ *    ██    ███████ ██████  ██      █████   
+ *    ██    ██   ██ ██   ██ ██      ██      
+ *    ██    ██   ██ ██████  ███████ ███████ 
+ *
  */
-async function editRedir(jsonObj) {
-    const jsonStr = JSON.stringify(jsonObj);
-
-    const res = await fetch('/edit_redir', {
-        method: 'post',
-        body: jsonStr,
-    })
-
-    if (res.status == 200) {
-        showInfobox("Alias modified succesfully !");
-    } else {
-        showInfobox("An error occured while creating the alias...");
-    }
-}
-
-
-async function delRedir(form) {
-    showInfobox("Removing a redir...");
-
-    try {
-        const res = await fetch('/del_redir', {
-            method: 'post',
-            body: form,
-        });
-
-        const resText = await res.text();
-
-        if (resText.includes("'action': 'delete'")) {
-            showInfobox("Alias removed succesfully !");
-        } else {
-            showInfobox("Error: " + resText);
-        }
-
-    } catch (error) {
-        showInfobox(error);
-    }
-}
-
-
-/*
- * Fetch JSON alias list from server
- */
-async function getAliasList(e) {
-    const ele = e.target;
-    let sortKey;
-
-    if (ele.dataset.aliasItem) {
-        sortKey = ele.dataset.aliasItem;
-    }
-
-    const res = await fetch('/get_redirs', {
-        method: 'post',
-        body: sortKey,
-    });
-
-    if (res.status == 200) {
-        const resText = await res.text();
-
-        return JSON.parse(resText);
-    }
-}
-
-
-function setActionBtns() {
-    const delBtns = doc.querySelectorAll('.btn-del');
-    const editBtns = doc.querySelectorAll('.btn-edit');
-
-    // Delete buttons
-    for (const btn of delBtns) {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const parent = btn.parentElement.closest('tr');
-            const id = parent.id;
-            const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
-            const dialogText = "Remove alias " + alias + " ?";
-            delDialog.querySelector('p').innerHTML = dialogText;
-            delDialog.__delArr = [id];
-            delDialog.showModal();
-        })
-    }
-
-    // Edit buttons
-    for (const btn of editBtns) {
-        btn.addEventListener('click', editRow);
-    }
-}
 
 
 /*
@@ -249,7 +173,7 @@ function updateTable(jsonObj) {
     }
 
     tbody.innerHTML = newTbodyContent;
-    doc.querySelector('#redir-count').innerText = Object.keys(jsonObj).length;
+    redirCount.innerText = Object.keys(jsonObj).length;
 
     // Feather icons : replace <i data-feather> with icons
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
@@ -394,33 +318,6 @@ function saveAlias() {
 
 /*
  * Table
- * Disable use of Enter key to prevent line break
- */
-function disableEnterKey(e) {
-    if (e.keyCode === 13)
-        e.preventDefault();
-}
-
-
-/*
- * Button cancel + Table
- * Cancel all ongoing editions on table by,
- * rolling back values to initial ones
- */
-function cancelAliasOperations() {
-    const editedTdArr = doc.querySelectorAll('td[contenteditable]');
-
-    for (const td of editedTdArr)
-        if (td.__origContent) {
-            td.innerText = td.__origContent;
-        } else {
-            td.innerText = "";
-        }
-}
-
-
-/*
- * Table
  * Lock editable cells (td)
  */
 function lockRows() {
@@ -479,7 +376,130 @@ function lockRows() {
 }
 
 
+function setActionBtns() {
+    const delBtns = doc.querySelectorAll('.btn-del');
+    const editBtns = doc.querySelectorAll('.btn-edit');
 
+    // Delete buttons
+    for (const btn of delBtns) {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const parent = btn.parentElement.closest('tr');
+            const id = parent.id;
+            const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
+            const dialogText = "Remove alias " + alias + " ?";
+            delDialog.querySelector('p').innerHTML = dialogText;
+            delDialog.__delArr = [id];
+            delDialog.showModal();
+        })
+    }
+
+    // Edit buttons
+    for (const btn of editBtns) {
+        btn.addEventListener('click', editRow);
+    }
+}
+
+
+/*
+ *
+ * ███████ ███████ ████████  ██████ ██   ██ ███████ ███████ 
+ * ██      ██         ██    ██      ██   ██ ██      ██      
+ * █████   █████      ██    ██      ███████ █████   ███████ 
+ * ██      ██         ██    ██      ██   ██ ██           ██ 
+ * ██      ███████    ██     ██████ ██   ██ ███████ ███████ 
+ * 
+ */
+
+/*
+ * Backend call to create a redirection
+ */
+async function createRedir(jsonObj) {
+    showInfobox("Creating new redir " + jsonObj['alias']);
+
+    const jsonStr = JSON.stringify(jsonObj);
+
+    const res = await fetch('/set_redir', {
+        method: 'post',
+        body: jsonStr,
+    })
+
+    if (res.status == 200) {
+        showInfobox("Alias created succesfully !");
+    } else {
+        showInfobox("An error occured while creating the alias...");
+    }
+}
+
+
+/*
+ * Backend call to edit a redirection
+ */
+async function editRedir(jsonObj) {
+    const jsonStr = JSON.stringify(jsonObj);
+
+    const res = await fetch('/edit_redir', {
+        method: 'post',
+        body: jsonStr,
+    })
+
+    if (res.status == 200) {
+        showInfobox("Alias modified succesfully !");
+    } else {
+        showInfobox("An error occured while creating the alias...");
+    }
+}
+
+
+/*
+ * Backend call to remove a redirection
+ */
+async function delRedir(form) {
+    showInfobox("Removing a redir...");
+
+    try {
+        const res = await fetch('/del_redir', {
+            method: 'post',
+            body: form,
+        });
+
+        const resText = await res.text();
+
+        if (resText.includes("'action': 'delete'")) {
+            showInfobox("Alias removed succesfully !");
+        } else {
+            showInfobox("Error: " + resText);
+        }
+
+    } catch (error) {
+        showInfobox(error);
+    }
+}
+
+
+/*
+ * Backend call to get a string alias list
+ * return it as a JSON object (dict)
+ */
+async function getAliasList(e) {
+    const ele = e.target;
+    let sortKey;
+
+    if (ele.dataset.aliasItem) {
+        sortKey = ele.dataset.aliasItem;
+    }
+
+    const res = await fetch('/get_redirs', {
+        method: 'post',
+        body: sortKey,
+    });
+
+    if (res.status == 200) {
+        const resText = await res.text();
+
+        return JSON.parse(resText);
+    }
+}
 
 
 /*
@@ -570,21 +590,30 @@ delDialog.addEventListener('close', async (e) => {
 //
 // Find/search in table input : typing something
 //
-findInput.addEventListener('input', (e) => {
+findInput.addEventListener('input', () => {
+    const cnt = tbody.querySelectorAll('tr').length;
+    let cntFiltered = cnt;
+
+    // Hide all table's rows as user types...
     if (findInput.value.length > 0) {
-        for (let i = 1, row; row = redirTabl.rows[i]; i++) {
+        for (let i = 0, row; row = tbody.rows[i]; i++) {
             row.style.display = "none";
         }
     } else {
-        for (let i = 0, row; row = redirTabl.rows[i]; i++) {
+        for (let i = 0, row; row = tbody.rows[i]; i++) {
             row.removeAttribute('style');
+            redirCount.innerText = cnt;
         }
     }
 
-    for (let i = 1, row; row = redirTabl.rows[i]; i++) {
+    // ... and show the ones containing typed text
+    for (let i = 0, row; row = tbody.rows[i]; i++) {
         for (let j = 0, col; col = row.cells[j]; j++) {
-            if (findInput.value.length > 1 && col.innerHTML.includes(findInput.value)) {
+            if (findInput.value.length > 0 &&
+                col.innerText.includes(findInput.value)) {
                 row.removeAttribute('style');
+                cntFiltered = tbody.querySelectorAll('tr[style="display: none;"]').length;
+                redirCount.innerText = cnt - cntFiltered;
             }
         }
     }
@@ -612,3 +641,6 @@ submitAlias.addEventListener('submit', async (e) => {
     let aliasData = await getAliasList(e);
     updateTable(aliasData);
 });
+
+
+convertEpoch(dates);
