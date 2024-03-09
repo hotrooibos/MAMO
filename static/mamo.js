@@ -11,7 +11,7 @@
 
 const doc               = document;
 const wrapper           = doc.querySelector('#wrapper');
-const dates             = doc.querySelectorAll('time');
+let dates               = doc.querySelectorAll('time');
 
 const showHideBtn       = doc.querySelector('#show-hide');
 const refreshBtn        = doc.querySelector('#refresh-redirs');
@@ -124,28 +124,6 @@ function disableEnterKey(e) {
 }
 
 
-// function loadRedirs(jsonStr) {
-//     jsonObj = JSON.parse(jsonStr);
-//     redirList.innerHTML = "";
-//     r = [];
-
-//     for (const key of Object.keys(jsonObj)) { 
-//         // console.log(key + ": " + JSON.stringify(jsonObj[key]));
-//         r.push(key + ": " + JSON.stringify(jsonObj[key]));
-//     };
-
-//     let li = doc.createElement('li');
-//     li.innerHTML = "Alias count : " + r.length;
-//     redirList.appendChild(li);
-
-//     for (const item of r) {
-//         li = doc.createElement('li');
-//         li.innerHTML = item;
-//         redirList.appendChild(li);
-//     }
-// }
-
-
 /*
  *
  * ████████  █████  ██████  ██      ███████ 
@@ -163,15 +141,16 @@ function disableEnterKey(e) {
  */
 function updateTable(jsonObj) {
     let newTbodyContent = "";
+    dates = doc.querySelectorAll('time');
 
     for (const key in jsonObj) {
         newTbodyContent +=
             "<tr id=\"" + key + "\">" +
             "<td data-alias-item=\"name\">" + jsonObj[key]['name'] + "</td>" +
-            "<td data-alias-item=\"date\">" + jsonObj[key]['date'] + "</td>" +
+            "<td data-alias-item=\"date\"><time>" + jsonObj[key]['date'] + "</time></td>" +
             "<td data-alias-item=\"alias\">" + jsonObj[key]['alias'] + "</td>" +
             "<td data-alias-item=\"to\">" + jsonObj[key]['to'] + "</td>" +
-            "<td data-alias-item=\"edit\" class=\"text-center no-wrap\"><a class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></a></i><a class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></a></i></td>" +
+            "<td data-alias-item=\"edit\" class=\"text-center no-wrap\"><button class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></button></i><button class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></button></i></td>" +
             "</tr>"
     }
 
@@ -182,6 +161,7 @@ function updateTable(jsonObj) {
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
 
+    convertEpoch(dates);
     setActionBtns();
 }
 
@@ -639,6 +619,24 @@ findInput.addEventListener('input', () => {
 uuidBtn.addEventListener('click', (e) => {
     e.preventDefault();
     inputAlias.value = crypto.randomUUID();
+});
+
+
+//
+// Add alias form : clicking generate UUID link button
+//
+const testBtn = doc.querySelector('#test-btn');
+testBtn.addEventListener('click', (e) => {
+    const delBtns = doc.querySelectorAll('.btn-del');
+    const editBtns = doc.querySelectorAll('.btn-edit');
+    
+    for (const btn of delBtns) {
+        btn.disabled = true;
+    }
+
+    for (const btn of editBtns) {
+        btn.disabled = true;
+    }
 });
 
 
