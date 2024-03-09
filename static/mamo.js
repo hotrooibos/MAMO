@@ -95,29 +95,32 @@ function convertEpoch(dates) {
 
 
 /*
+ * Control that an alias (with attributes name, alias, to)
+ * format is valid (no linebreak, e-mail format...)
+ */
+function controlAlias(td) {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    switch (td.dataset.aliasItem) {
+        case "alias":
+        case "to":
+            return re.test(td.innerText);
+        case "name":
+            td.innerText = td.innerText.replace(/(\r\n|\n|\r)/gm, "");
+            return true;
+        default:
+            break;
+    }
+}
+
+
+/*
  * Table
  * Disable use of Enter key to prevent line break
  */
 function disableEnterKey(e) {
     if (e.keyCode === 13)
         e.preventDefault();
-}
-
-
-/*
- * Button cancel + Table
- * Cancel all ongoing editions on table by,
- * rolling back values to initial ones
- */
-function cancelAliasOperations() {
-    const editedTdArr = doc.querySelectorAll('td[contenteditable]');
-
-    for (const td of editedTdArr)
-        if (td.__origContent) {
-            td.innerText = td.__origContent;
-        } else {
-            td.innerText = "";
-        }
 }
 
 
@@ -269,48 +272,73 @@ function saveAlias() {
     const trArr = tbody.querySelectorAll('tr');
     const editTrArr = [];
     let newRedir;
+    let name;
+    let alias;
+    let to;
+    let isValidFormat = true;
+    let err = false;
 
     // Make array of edited modified rows
-    for (const tr of trArr) {
-        if (tr.__edit) {
-            editTrArr.push('tr');
-        }
-    }
+    for (const tr of trArr)
+        if (tr.__edit)
+            editTrArr.push(tr);
 
     // Loop through modified rows
-    // and process new aliases and edited ones
-    for (const tr of trArr) {
+    // - Check format validity for each edited cell
+    // - Process creation/edition if ok
+    for (const tr of editTrArr) {
+        console.log(tr.children)
+        // Format validation
+        for (const td of tr.children) {    
+            switch (td.dataset.aliasItem) {
+                case "name":
+                    controlAlias(td);
+                    name = td.innerText;
+                    continue;
 
-        // New aliases (row has no id)
-        if (!tr.id) {
-            newRedir = {};
+                case "alias":
+                    isValidFormat = controlAlias(td);
+                    if (isValidFormat)
+                        alias = td.innerText;
+                    else {
+                        console.log("Create: " + td.dataset.aliasItem + " format err")
+                        err = true;
+                    }
+                    continue;
 
-            for (const td of tr.children) {    
-                switch (td.dataset.aliasItem) {
-                    case "name":
-                        newRedir.name = td.innerText;
-                    case "alias":
-                        newRedir.alias = td.innerText;
-                    case "to":
-                        newRedir.to = td.innerText;
-                    default:
-                        break;
-                }
+                case "to":
+                    isValidFormat = controlAlias(td);
+                    if (isValidFormat)
+                        to = td.innerText;
+                    else {
+                        console.log("Create: " + td.dataset.aliasItem + " format err")
+                        err = true;
+                    }
+                    continue;
+
+                default:
+                    break;
             }
-
-            createRedir(newRedir);
         }
 
-        // Edited aliases
-        else if (tr.__edit) {
+        // Create/edit
+        if (!err) {
             newRedir = {
                 "id" : tr.id,
-                "name" : tr.querySelector('td[data-alias-item="name"]').innerText,
-                "alias" : tr.querySelector('td[data-alias-item="alias"]').innerText,
-                "to" : tr.querySelector('td[data-alias-item="to"]').innerText
+                "name" : name,
+                "alias" : alias,
+                "to" : to
             }
 
-            editRedir(newRedir);
+            // Creation : new alias (row has no id)
+            if (!tr.id) {
+                delete newRedir['id'];
+                createRedir(newRedir);
+            }
+
+            // Edition : alias with __edit property
+            else if (tr.__edit)
+                editRedir(newRedir);
         }
     }
 }
@@ -322,9 +350,9 @@ function saveAlias() {
  */
 function lockRows() {
     // Identify row/cells under edition
-    const editedTrArr = doc.querySelectorAll('tr[edition]');
+    const trArr = tbody.querySelectorAll('tr');
 
-    for (const tr of editedTrArr) {
+    for (const tr of trArr) {
 
         // Delete rows with no ID (cancelled new alias creation)
         if (!tr.id)
@@ -339,40 +367,25 @@ function lockRows() {
                 td.contentEditable = false;
                 td.classList.remove('td-editable');
             }
-
         }
     }
-
-        // // Process content modification
-        // // Get content from edited cells
-        // const content = {};
-
-        // editedTdArr.forEach((tdItem, index) => {
-        //     key = tdItem.dataset.aliasItem;
-
-        //     // Workaround to browsers' behaviour which adds a linebreak (<br>)
-        //     // when an contenteditable element's content is set empty by the user
-        //     tdItem.innerText = tdItem.innerText.replace(/(\r\n|\n|\r)/gm, "");
-
-        //     content[key] = tdItem.innerText;
-        // });
+}
 
 
-        // // Remove the table edition
-        // delete editedTr.__edit;
+/*
+ * Button cancel + Table
+ * Cancel all ongoing editions on table by,
+ * rolling back values to initial ones
+ */
+function cancelAliasOperations() {
+    const editedTdArr = tbody.querySelectorAll('td[contenteditable]');
 
-        // editedTdArr.forEach((tdItem, index) => {
-        //     tdItem.removeAttribute('contenteditable', '');
-        //     tdItem.classList.remove('td-editable');
-
-        //     key = tdItem.dataset.aliasItem;
-
-        //     if (!editedTr.__origContent ||
-        //         (editedTr.__editedContent[key] != editedTr.__origContent[key])) {
-        //         console.log("modified key: " + key);
-        //     }
-        // });
-    // }
+    for (const td of editedTdArr) {
+        if (td.__origContent)
+            td.innerText = td.__origContent;
+        else
+            td.innerText = "";
+    }
 }
 
 
