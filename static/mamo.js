@@ -24,12 +24,9 @@ const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
 const tbody             = redirTabl.querySelector('tbody');
 
-const submitAlias       = doc.querySelector('#redir-form');
-const uuidBtn           = doc.querySelector('#gen-uuid');
-const inputAlias        = doc.querySelector('#alias');
-
 const delDialog         = doc.querySelector('#dialog-del');
 
+let selDomain               = "tical.fr";
 
 
 
@@ -370,13 +367,21 @@ function cancelAliasOperations() {
 
 
 function setActionBtns() {
+    const uuidBtns = doc.querySelectorAll('.uuid-btn');
     const delBtns = doc.querySelectorAll('.btn-del');
     const editBtns = doc.querySelectorAll('.btn-edit');
 
+    // Generate UUID buttons
+    for (const btn of uuidBtns) {
+        btn.addEventListener('click', () => {
+            let newAlias = crypto.randomUUID() + "@" + selDomain;
+            btn.parentElement.childNodes[0].data = newAlias;
+        });
+    }
+
     // Delete buttons
     for (const btn of delBtns) {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
+        btn.addEventListener('click', () => {
             const parent = btn.parentElement.closest('tr');
             const id = parent.id;
             const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
@@ -388,9 +393,8 @@ function setActionBtns() {
     }
 
     // Edit buttons
-    for (const btn of editBtns) {
+    for (const btn of editBtns)
         btn.addEventListener('click', editRow);
-    }
 }
 
 
@@ -594,7 +598,7 @@ findInput.addEventListener('input', () => {
         }
     } else {
         for (let i = 0, row; row = tbody.rows[i]; i++) {
-            row.removeAttribute('style');
+            row.style.display = "";
             redirCount.innerText = cnt;
         }
     }
@@ -604,7 +608,7 @@ findInput.addEventListener('input', () => {
         for (let j = 0, col; col = row.cells[j]; j++) {
             if (findInput.value.length > 0 &&
                 col.innerText.includes(findInput.value)) {
-                row.removeAttribute('style');
+                row.style.display = "";
                 cntFiltered = tbody.querySelectorAll('tr[style="display: none;"]').length;
                 redirCount.innerText = cnt - cntFiltered;
             }
@@ -613,44 +617,28 @@ findInput.addEventListener('input', () => {
 });
 
 
-//
-// Add alias form : clicking generate UUID link button
-//
-uuidBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    inputAlias.value = crypto.randomUUID();
-});
-
 
 //
 // Add alias form : clicking generate UUID link button
 //
 const testBtn = doc.querySelector('#test-btn');
 testBtn.addEventListener('click', (e) => {
-    const delBtns = doc.querySelectorAll('.btn-del');
-    const editBtns = doc.querySelectorAll('.btn-edit');
-    
-    for (const btn of delBtns) {
-        btn.disabled = true;
+    // const delBtns = doc.querySelectorAll('.btn-del');
+    // const editBtns = doc.querySelectorAll('.btn-edit');
+    // for (const btn of delBtns)
+    //     btn.disabled = true;
+    // for (const btn of editBtns)
+    //     btn.disabled = true;
+
+    const editedCells = tbody.querySelectorAll('td[contenteditable="true"]');
+    let editRow;
+    for (const td of editedCells) {
+        editRow = td.parentElement.querySelector('td[data-alias-item="edit"]');
+        editRow.innerHTML = '<div class="dot-flashing"></div>';
+
+        td.setAttribute('style', 'color: var(--color-text-gray-1);');
     }
 
-    for (const btn of editBtns) {
-        btn.disabled = true;
-    }
-});
-
-
-//
-// Add alias form : clicking Create(submit) button
-//
-submitAlias.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    let newRedirForm = new FormData(submitAlias);
-    newRedirForm = Object.fromEntries(newRedirForm);
-    await createRedir(newRedirForm);
-
-    let aliasData = await getAliasList(e);
-    updateTable(aliasData);
 });
 
 

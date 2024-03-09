@@ -18,15 +18,6 @@
     <div id="redir-list" class="fade-bottom">
         {% include 'table.j2' %}
     </div>
-
-    <h2>Add redirection</h2>
-    <a href="" id="gen-uuid">Generate random UUID address</a>
-    <form method="post" id="redir-form" class="flex-utd">
-        <input type="text" id="name" class="input" name="name" maxlength="120" placeholder="Name/description">
-        <input type="text" id="alias" class="input" name="alias" maxlength="64" placeholder="my_alias@mail.com">
-        <input type="text" id="to" class="input" name="to" maxlength="64" placeholder="my_private@mail.com">
-        <input type="submit" class="submit" value="Create">
-    </form>
 </div>
 
 <dialog id="dialog-del">

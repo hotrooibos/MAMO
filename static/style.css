@@ -31,7 +31,7 @@ body {
 :root.dark {
     --color-text: rgb(225, 225, 225);
     --color-text-gray-1: rgb(180, 180, 180);
-    --color-text-gray-1: rgb(125, 125, 125);
+    --color-text-gray-2: rgb(125, 125, 125);
     --color-bg: rgb(11, 20, 22);
     --color-bg-z: rgba(20, 30, 36, 0.902);
     --color-link: rgb(119, 193, 209);
@@ -46,7 +46,7 @@ body {
 :root.light {
     --color-text: rgb(50, 50, 50);
     --color-text-gray-1: rgb(115, 115, 115);
-    --color-text-gray-1: rgb(170, 170, 170);
+    --color-text-gray-2: rgb(170, 170, 170);
     --color-bg: rgb(255, 255, 255);
     --color-bg-z: rgb(255, 255, 255);
     --color-link: rgb(0, 0, 0);
@@ -94,7 +94,7 @@ tr:nth-child(even) { background-color: var(--color-hover); }
 td, th {
     border: 1px #d8d8d8 dashed;
     text-align: left;
-    padding: 0 .5em;
+    padding: .2em .5em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -200,6 +200,16 @@ h1 {
 .hover:text-black:hover {
     color: var(--color-text);
 }
+.btn-del,
+.btn-edit {
+    background-color: transparent;
+    border: none;
+    overflow: hidden;
+}
+
+.uuid-btn {
+    float:right;
+}
 
 .fade-bottom {
     --mask: linear-gradient(to bottom, 
@@ -277,3 +287,52 @@ h1 {
     width: 100%;
     overflow: hidden;
 }
+
+/*
+ * Flashing dots animation
+ */
+ .dot-flashing {
+    margin: 0 auto;
+    position: relative;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #ffffff;
+    animation: dot-flashing 0.5s infinite linear alternate;
+    animation-delay: 0.25s;
+  }
+  .dot-flashing::before,
+  .dot-flashing::after {
+    content: "";
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    width: 10px;
+    height: 10px;
+  }
+  .dot-flashing::before {
+    left: -15px;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #ffffff;
+    animation: dot-flashing 0.5s infinite alternate;
+    animation-delay: 0s;
+  }
+  .dot-flashing::after {
+    left: 15px;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #ffffff;
+    animation: dot-flashing 0.5s infinite alternate;
+    animation-delay: 0.5s;
+  }
+  
+  @keyframes dot-flashing {
+    0% {
+      background-color: #ffffff;
+    }
+    50%, 100% {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }

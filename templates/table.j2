@@ -13,7 +13,7 @@
         <tr id="{{ r }}">
             <td data-alias-item="name">{{ redirs[r]['name'] }}</td>
             <td data-alias-item="date" class="no-wrap">{% if redirs[r]['date'] %}<time>{{ redirs[r]['date'] }}</time>{% endif %}</td>
-            <td data-alias-item="alias">{{ redirs[r]['alias'] }}</td>
+            <td data-alias-item="alias">{{ redirs[r]['alias'] }}<button class="uuid-btn">UUID</button></td>
             <td data-alias-item="to">{{ redirs[r]['to'] }}</td>
             <td data-alias-item="edit" class="text-center no-wrap"><button class="btn-edit" href=""><i data-feather="edit"></i></button><button class="btn-del" href=""><i data-feather="trash-2"></i></button></td>
         </tr>
