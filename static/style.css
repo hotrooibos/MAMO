@@ -103,6 +103,7 @@ th {
     background-color: var(--color-hover);
     font-size: 1.1em;
     font-variant: small-caps;
+    cursor: pointer;
 }
 
 .td-editable {

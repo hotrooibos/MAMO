@@ -217,7 +217,6 @@ function addRow(e) {
 
 
 /*
- * Table
  * Makes cells from a specific row editables
  * Called when clicking an edit row btn
  */
@@ -250,6 +249,68 @@ function editRow(e) {
 
     saveAliasBtn.disabled = false;
     cancelAliasBtn.disabled = false;
+}
+
+/*
+ * Table sort
+ */
+function sortTable(n) {
+    let rows,
+        i = 0,
+        x = "",
+        y = "",
+        count = 0;
+    let switching = true;
+    let shouldSwitch;
+
+    // Order is set as ascending
+    let direction = 'ascending';
+
+    // Run loop until no switching is needed
+    while (switching) {
+        switching = false;
+        rows = tbody.rows;
+
+        //Loop to go through all rows
+        for (i = 0; i < rows.length - 1; i++) {
+            shouldSwitch = false;
+
+            // Fetch 2 elements that need to be compared
+            x = rows[i].getElementsByTagName('TD')[n];
+            y = rows[i + 1].getElementsByTagName('TD')[n];
+
+            // Check the direction of order
+            if (direction == 'ascending') {
+                // Check if 2 rows need to be switched
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    // If yes, mark Switch as needed and break loop
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (direction == 'descending') {
+                // Check direction
+                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                    // If yes, mark Switch as needed and break loop
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            // Function to switch rows and mark switch as completed
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+
+            // Increase count for each switch
+            count++;
+        } else {
+            // Run while loop again for descending order
+            if (count == 0 && direction == 'ascending') {
+                direction = 'descending';
+                switching = true;
+            }
+        }
+    }
 }
 
 
