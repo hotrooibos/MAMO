@@ -11,7 +11,6 @@
 
 const doc               = document;
 const wrapper           = doc.querySelector('#wrapper');
-let dates               = doc.querySelectorAll('time');
 
 const showHideBtn       = doc.querySelector('#show-hide');
 const refreshBtn        = doc.querySelector('#refresh-redirs');
@@ -26,7 +25,7 @@ const tbody             = redirTabl.querySelector('tbody');
 
 const delDialog         = doc.querySelector('#dialog-del');
 
-let selDomain               = "tical.fr";
+let selDomain           = "tical.fr";
 
 
 
@@ -65,28 +64,27 @@ function showInfobox(msg) {
 
 
 /*
- * CONVERT EPOCH time to datetime
+ * CONVERT epoch dates from <time> tags into readable date
  */
-function convertEpoch(dates) {
+function convertEpoch() {
+    const dates = doc.querySelectorAll('time');
+
     for (const d of dates) {
-        dt = parseInt(d.innerHTML);
-        dt = new Date(dt * 1000);
+        if (d.innerText) {
+            dt = parseInt(d.innerText);
+            dt = new Date(dt * 1000);
 
-        const options = {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric'
-        };
+            const options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric'
+            };
 
-        // Show year if not in current year
-        if (dt.getFullYear() != new Date().getFullYear()) {
-            options["year"] = "numeric";
+            // GB time format (ex: 28 September 2022)
+            const formatedDate = new Intl.DateTimeFormat('en-GB', options).format(dt);
+
+            d.innerText = formatedDate;
         }
-
-        // GB time format (ex: 28 September 2022)
-        const formatedDate = new Intl.DateTimeFormat('en-GB', options).format(dt);
-
-        d.innerHTML = formatedDate;
     }
 }
 
@@ -97,17 +95,29 @@ function convertEpoch(dates) {
  */
 function controlAlias(td) {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    let text;
 
     switch (td.dataset.aliasItem) {
-        case "alias":
-        case "to":
-            return re.test(td.innerText);
         case "name":
-            td.innerText = td.innerText.replace(/(\r\n|\n|\r)/gm, "");
-            return true;
+            text = td.innerText;
+            break;
+        case "alias":
+            // Since we have a button (uuid gen) inside <td>
+            text = td.childNodes[0].data;
+            break;
+        case "to":
+            text = td.innerText;
+            break;
         default:
             break;
     }
+
+    // Clear line breaks
+    text = text.replace(/(\r\n|\n|\r)/gm, "");
+
+    // Return true if text matches the email format regex
+    return re.test(text);
+
 }
 
 
@@ -138,14 +148,13 @@ function disableEnterKey(e) {
  */
 function updateTable(jsonObj) {
     let newTbodyContent = "";
-    dates = doc.querySelectorAll('time');
 
     for (const key in jsonObj) {
         newTbodyContent +=
             "<tr id=\"" + key + "\">" +
             "<td data-alias-item=\"name\">" + jsonObj[key]['name'] + "</td>" +
             "<td data-alias-item=\"date\"><time>" + jsonObj[key]['date'] + "</time></td>" +
-            "<td data-alias-item=\"alias\">" + jsonObj[key]['alias'] + "</td>" +
+            "<td data-alias-item=\"alias\">" + jsonObj[key]['alias'] + "<button class=\"uuid-btn\">UUID</button></td>" +
             "<td data-alias-item=\"to\">" + jsonObj[key]['to'] + "</td>" +
             "<td data-alias-item=\"edit\" class=\"text-center no-wrap\"><button class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></button></i><button class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></button></i></td>" +
             "</tr>"
@@ -158,7 +167,7 @@ function updateTable(jsonObj) {
     // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
     feather.replace();
 
-    convertEpoch(dates);
+    convertEpoch();
     setActionBtns();
 }
 
@@ -171,9 +180,12 @@ function addRow(e) {
     // Create a new row (tr) node from a cloned one
     // so we get its classes, datasets...
     const newRow = tbody.children[0].cloneNode(true);
-
+    const uuidBtn = newRow.querySelector('.uuid-btn');
+    
     newRow.removeAttribute('id');
     newRow.__edit = true;
+    uuidBtn.style.visibility = "visible";
+
 
     // Make cells editables
     for (const td of newRow.children) {
@@ -226,7 +238,7 @@ function editRow(e) {
             case "to":
                 td.contentEditable = true;
                 td.classList.add('td-editable');
-                td.__origContent = td.innerText;
+                td.__origContent = td.innerHTML;
 
                 // And Enter key press listener to prevent line breaks
                 td.addEventListener('keydown', disableEnterKey, false);
@@ -264,7 +276,6 @@ function saveAlias() {
     // - Check format validity for each edited cell
     // - Process creation/edition if ok
     for (const tr of editTrArr) {
-        console.log(tr.children)
         // Format validation
         for (const td of tr.children) {    
             switch (td.dataset.aliasItem) {
@@ -276,7 +287,7 @@ function saveAlias() {
                 case "alias":
                     isValidFormat = controlAlias(td);
                     if (isValidFormat)
-                        alias = td.innerText;
+                        alias = td.childNodes[0].data;
                     else {
                         console.log("Create: " + td.dataset.aliasItem + " format err")
                         err = true;
@@ -359,9 +370,9 @@ function cancelAliasOperations() {
 
     for (const td of editedTdArr) {
         if (td.__origContent)
-            td.innerText = td.__origContent;
+            td.innerHTML = td.__origContent;
         else
-            td.innerText = "";
+            td.innerHTML = "";
     }
 }
 
@@ -371,7 +382,7 @@ function setActionBtns() {
     const delBtns = doc.querySelectorAll('.btn-del');
     const editBtns = doc.querySelectorAll('.btn-edit');
 
-    // Generate UUID buttons
+    // UUID gen buttons
     for (const btn of uuidBtns) {
         btn.addEventListener('click', () => {
             let newAlias = crypto.randomUUID() + "@" + selDomain;
@@ -384,7 +395,7 @@ function setActionBtns() {
         btn.addEventListener('click', () => {
             const parent = btn.parentElement.closest('tr');
             const id = parent.id;
-            const alias = parent.querySelector('td[data-alias-item="alias"]').innerText;
+            const alias = parent.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
             const dialogText = "Remove alias " + alias + " ?";
             delDialog.querySelector('p').innerHTML = dialogText;
             delDialog.__delArr = [id];
@@ -642,4 +653,4 @@ testBtn.addEventListener('click', (e) => {
 });
 
 
-convertEpoch(dates);
+convertEpoch();

@@ -208,7 +208,9 @@ h1 {
 }
 
 .uuid-btn {
-    float:right;
+    visibility: hidden;
+    float: right;
+    opacity: .6;
 }
 
 .fade-bottom {
