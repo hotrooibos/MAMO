@@ -122,7 +122,6 @@ function controlAlias(td) {
 
 
 /*
- * Table
  * Disable use of Enter key to prevent line break
  */
 function disableEnterKey(e) {
@@ -173,7 +172,6 @@ function updateTable(jsonObj) {
 
 
 /*
- * Table
  * Add a new alias row
  */
 function addRow(e) {
@@ -394,7 +392,6 @@ function saveAlias() {
 
 
 /*
- * Table
  * Lock editable cells (td)
  */
 function lockRows() {
@@ -422,8 +419,7 @@ function lockRows() {
 
 
 /*
- * Button cancel + Table
- * Cancel all ongoing editions on table by,
+ * Cancel all ongoing editions on table by
  * rolling back values to initial ones
  */
 function cancelAliasOperations() {
@@ -687,7 +683,6 @@ findInput.addEventListener('input', () => {
         }
     }
 });
-
 
 
 //
