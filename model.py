@@ -35,18 +35,26 @@ def get_redirs_remote(domain: str) -> dict:
 		raise
 		
 
-def get_redirs() -> dict:
-    redirs = {}
+def get_redirs(domain: str = 'all') -> dict:
+	'''
+		Get redirections dict for a given domain,
+		or for all domains (no filter) by default
+	'''
+	redirs = {}
 
-    for k, v in config_redir.items():
-        redirs[k] = {
-            "name": v["name"],
-            "date": v["date"],
-            "alias": v["alias"],
-            "to": v["to"]
-        }
-    
-    return(redirs)
+	for k, v in config_redir.items():
+		if (domain != 'all' and \
+	  		v["alias"].split('@')[1] != domain):
+			continue
+
+		redirs[k] = {
+			"name": v["name"],
+			"date": v["date"],
+			"alias": v["alias"],
+			"to": v["to"]
+		}
+
+	return(redirs)
 
 
 def find_id(alias: str, to: str) -> str:

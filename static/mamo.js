@@ -26,7 +26,7 @@ const tbody             = redirTabl.querySelector('tbody');
 const delDialog         = doc.querySelector('#dialog-del');
 
 let workingDomain       = domainSelect.value;
-if (workingDomain) {
+if (localStorage.getItem('workingDomain')) {
     workingDomain = localStorage.getItem('workingDomain');
     domainSelect.value = workingDomain;
 }
@@ -549,50 +549,24 @@ async function delRedir(form) {
  * Backend call to get a string alias list
  * return it as a JSON object (dict)
  */
-async function getAliasList(e) {
+async function getAliasList(e, selectedDomain) {
     const ele = e.target;
     let sortKey;
 
-    if (ele.dataset.aliasItem) {
+    if (ele.dataset.aliasItem)
         sortKey = ele.dataset.aliasItem;
-    }
 
     const res = await fetch('/get_redirs', {
         method: 'post',
-        body: sortKey,
+        body: JSON.stringify([selectedDomain, sortKey]),
     });
 
     if (res.status == 200) {
         const resText = await res.text();
-
         return JSON.parse(resText);
     }
 }
 
-
-/*
- * Backend call to get a string alias list
- * return it as a JSON object (dict)
- */
-async function getAliasList(e) {
-    const ele = e.target;
-    let sortKey;
-
-    if (ele.dataset.aliasItem) {
-        sortKey = ele.dataset.aliasItem;
-    }
-
-    const res = await fetch('/get_redirs', {
-        method: 'post',
-        body: sortKey,
-    });
-
-    if (res.status == 200) {
-        const resText = await res.text();
-
-        return JSON.parse(resText);
-    }
-}
 
 
 /*
@@ -651,12 +625,16 @@ cancelAliasBtn.addEventListener('click', (e) => {
 });
 
 
-//
-// Domain select : change working domain
-//
-domainSelect.addEventListener('change', () => {
+/*
+ * Domain select : change working domain
+ * Update localstorage to remember current selection,
+ * and update the table to show redirections
+ * for selected domain only
+ */
+domainSelect.addEventListener('change', (e) => {
     workingDomain = domainSelect.value;
     localStorage.setItem('workingDomain', workingDomain);
+    updateTable(getAliasList(e, workingDomain));
 });
 
 

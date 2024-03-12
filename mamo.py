@@ -30,15 +30,20 @@ async def index():
 
 @app.route('/get_domains')
 async def get_domains() -> str:
-	domain = model.domains
-	return domain, 200
+	domains = model.domains
+	return domains, 200
 
 
 @app.route('/get_redirs', methods=['POST'])
 async def get_redirs() -> str:
-	sort_key = await qr.request.data
+	body = await qr.request.data
+	b = json.loads(body)
+
+	selected_domain = b[0]
+	sort_key = b[1]
+
 	print(f"TODO sort key: {sort_key}")
-	redirs = model.get_redirs()
+	redirs = model.get_redirs(selected_domain)
 
 	return redirs, 200
 
