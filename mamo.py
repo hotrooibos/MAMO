@@ -19,11 +19,19 @@ app.jinja_env.lstrip_blocks = True
 
 @app.route('/')
 async def index():
+	domains = model.domains
 	redirs = model.get_redirs()
 	# TODO tri : date de création > ordre alphab 
 	# 			 du domaine > ordre alphab mail
 	return await qr.render_template('index.j2',
+								 	domains=domains,
 									redirs=redirs)
+
+
+@app.route('/get_domains')
+async def get_domains() -> str:
+	domain = model.domains
+	return domain, 200
 
 
 @app.route('/get_redirs', methods=['POST'])

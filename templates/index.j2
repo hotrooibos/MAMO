@@ -12,7 +12,23 @@
     </div> #}
 
     <h2 class="toggleshow">Aliases</h2>
-    <button id="show-hide" type="button"><i data-feather="eye"></i></button> <button id="new-alias" type="button"><i data-feather="plus"></i></button> <button id="save-alias" type="button" disabled><i data-feather="save"></i></button> <button id="cancel-alias" type="button" disabled><i data-feather="x"></i></button>
+    <button id="show-hide" type="button">
+        <i data-feather="eye"></i>
+    </button>
+    <button id="new-alias" type="button">
+        <i data-feather="plus"></i>
+    </button>
+    <button id="save-alias" type="button" disabled>
+        <i data-feather="save"></i>
+    </button>
+    <button id="cancel-alias" type="button" disabled>
+        <i data-feather="x"></i>
+    </button>
+        <select name="domain-select" id="domain-select">
+        {% for d in domains %}
+            <option value="{{ d }}">{{ d }}</option>
+        {% endfor %}
+    </select>
     <p><span id="redir-count">{{ redirs|length }}</span> aliases <button id="refresh-redirs" type="button"><i data-feather="refresh-cw"></i></button> <button id="test-btn" type="button">TEST</button>
     <input type="text" id="find" class="input" name="find" maxlength="80" placeholder="Search...">
     <div id="redir-list" class="fade-bottom">

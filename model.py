@@ -6,10 +6,13 @@ import strings
 import time
 
 
-def get_redirs_remote() -> dict:
+def get_redirs_remote(domain: str) -> dict:
 	'''
 		Download remote redirections and return it as a dict
 	'''
+	if domain not in domains:
+		raise
+
 	try:
 		redir_remote_ids = client.get(f'/email/domain/{domain}/redirection')
 		redirs_remote = {}
@@ -51,6 +54,9 @@ def find_id(alias: str, to: str) -> str:
 		Get a remove redirection ID by its alias/to
 		Return 0 if ID doesn't exists
 	'''
+	if alias.split('@')[1] not in domains:
+		raise
+	
 	id = None
 
 	# Try to get id from local config
@@ -74,8 +80,13 @@ def create_redir_remote(alias: str, to: str) -> str:
 	'''
 		Create a new redirection in remote
 	'''
+	domain = alias.split('@')[1]
+
+	if domain not in domains:
+		raise
+
 	try:
-		res = client.post('/email/domain/tical.fr/redirection',
+		res = client.post(f'/email/domain/{domain}.fr/redirection',
 						  _from=alias,
 						  localCopy=False,
 						  to=to)
@@ -176,6 +187,13 @@ def remove_redir(id: int) -> bool:
 	'''
 		Remove a redirection (remote + local)
 	'''
+	# Get the domain
+	for k, v in config_redir.items():
+		if k == id:
+			alias = v['alias']
+			domain = alias.split('@')[1]
+
+
 	# Delete remote, and then local if success
 	try:
 		res = client.delete(f'/email/domain/{domain}/redirection/{id}')
@@ -286,8 +304,7 @@ with open(file=CONFIG,
 
 config_redir = config['redirection']
 config_general = config['general']
-
-domain = config_general['domain']
+domains = config_general['domains']
 
 # Instantiate an OVH Client
 client = ovh.Client(

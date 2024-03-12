@@ -17,16 +17,19 @@ const refreshBtn        = doc.querySelector('#refresh-redirs');
 const newAliasBtn       = doc.querySelector('#new-alias');
 const saveAliasBtn      = doc.querySelector('#save-alias');
 const cancelAliasBtn    = doc.querySelector('#cancel-alias');
-const redirCount        = doc.querySelector('#redir-count')
+const domainSelect      = doc.querySelector('#domain-select');
+const redirCount        = doc.querySelector('#redir-count');
 const findInput         = doc.querySelector('#find');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
 const tbody             = redirTabl.querySelector('tbody');
-
 const delDialog         = doc.querySelector('#dialog-del');
 
-let selDomain           = "tical.fr";
-
+let workingDomain       = domainSelect.value;
+if (workingDomain) {
+    workingDomain = localStorage.getItem('workingDomain');
+    domainSelect.value = workingDomain;
+}
 
 
 /*
@@ -568,6 +571,31 @@ async function getAliasList(e) {
 
 
 /*
+ * Backend call to get a string alias list
+ * return it as a JSON object (dict)
+ */
+async function getAliasList(e) {
+    const ele = e.target;
+    let sortKey;
+
+    if (ele.dataset.aliasItem) {
+        sortKey = ele.dataset.aliasItem;
+    }
+
+    const res = await fetch('/get_redirs', {
+        method: 'post',
+        body: sortKey,
+    });
+
+    if (res.status == 200) {
+        const resText = await res.text();
+
+        return JSON.parse(resText);
+    }
+}
+
+
+/*
  *
  * ███████ ██    ██ ███████ ███    ██ ████████     ██      ██ ███████ ████████ ███████ ███    ██ ███████ ██████  ███████ 
  * ██      ██    ██ ██      ████   ██    ██        ██      ██ ██         ██    ██      ████   ██ ██      ██   ██ ██      
@@ -620,6 +648,15 @@ cancelAliasBtn.addEventListener('click', (e) => {
     lockRows();
     saveAliasBtn.disabled = true;
     cancelAliasBtn.disabled = true;
+});
+
+
+//
+// Domain select : change working domain
+//
+domainSelect.addEventListener('change', () => {
+    workingDomain = domainSelect.value;
+    localStorage.setItem('workingDomain', workingDomain);
 });
 
 

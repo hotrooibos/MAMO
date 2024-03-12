@@ -6,21 +6,23 @@ This mini project is at a very early stage, so there will be bugs or unexpected 
 
 Working features :
 - List all aliases
-- Create an alias
-- Two alias format : random uuid, or manually typed
+- Create and remove an alias
+- Edit an alias (any field including the alias address one, which is not available in OVH admin panel)
+- Generate an UUID format 
 - New alias metadatas : creation/edit date, name/description
-- Edit a redirection, including alias
-- Remove an alias
+- Filter/sort aliases
 
-WIP :
-- Web UI (porting to Quart + Uvicorn)
-
-Planned/ideas :
+WIP, or planned/ideas :
+- Better sort algorithm (may currently be very slow with high alias list)
 - Automatize config file initialization
 - Multi domain support
-- Filter/sort
 - Secrets and configuration centralization/hosting
-- Others hosting services support
+- Enhanced batch input : config injection, selection removal...
+- Other hosting services support
+
+Under the hood :
+- Backend : Uvicorn ASGI + Quart (async Flask) framework
+- Front/view : Jinja2 templates, vanilla JS
 
 ## Setup
 - Clone the repository localy : `git clone https://github.com/hotrooibos/MAMO.git`
