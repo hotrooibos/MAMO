@@ -2,8 +2,10 @@
 import json
 import os
 import ovh
+import re
 import strings
 import time
+import utils
 
 
 def get_redirs_remote(domain: str) -> dict:
@@ -44,7 +46,7 @@ def get_redirs(domain: str = 'all') -> dict:
 
 	for k, v in config_redir.items():
 		if (domain != 'all' and \
-	  		v["alias"].split('@')[1] != domain):
+	  		domain not in v["alias"]):
 			continue
 
 		redirs[k] = {

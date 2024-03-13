@@ -631,10 +631,12 @@ cancelAliasBtn.addEventListener('click', (e) => {
  * and update the table to show redirections
  * for selected domain only
  */
-domainSelect.addEventListener('change', (e) => {
+domainSelect.addEventListener('change', async (e) => {
     workingDomain = domainSelect.value;
     localStorage.setItem('workingDomain', workingDomain);
-    updateTable(getAliasList(e, workingDomain));
+
+    const aliasData = await getAliasList(e, workingDomain);
+    updateTable(aliasData);
 });
 
 

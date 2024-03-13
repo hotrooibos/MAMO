@@ -2,8 +2,6 @@
 import json
 import model
 import quart as qr
-import strings
-import utils
 from werkzeug.datastructures import MultiDict 
 
 app = qr.Quart(__name__)
