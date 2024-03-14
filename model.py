@@ -2,10 +2,8 @@
 import json
 import os
 import ovh
-import re
 import strings
 import time
-import utils
 
 
 def get_redirs_remote(domain: str) -> dict:
@@ -64,7 +62,9 @@ def find_id(alias: str, to: str) -> str:
 		Get a remove redirection ID by its alias/to
 		Return 0 if ID doesn't exists
 	'''
-	if alias.split('@')[1] not in domains:
+	domain = alias.split('@')[1]
+
+	if domain not in domains:
 		raise
 	
 	id = None
@@ -77,7 +77,7 @@ def find_id(alias: str, to: str) -> str:
 
 	# Try to get id from OVH
 	if id == None:
-		redirs_remote = get_redirs_remote()
+		redirs_remote = get_redirs_remote(domain)
 
 		for k, v in redirs_remote.items():
 			if v['alias'] == alias and v['to'] == to:
@@ -96,7 +96,7 @@ def create_redir_remote(alias: str, to: str) -> str:
 		raise
 
 	try:
-		res = client.post(f'/email/domain/{domain}.fr/redirection',
+		res = client.post(f'/email/domain/{domain}/redirection',
 						  _from=alias,
 						  localCopy=False,
 						  to=to)
@@ -132,6 +132,11 @@ def create_redir(name:str, alias: str, to: str) -> str:
 	'''
 		Create a new redirection (remote + local)
 	'''
+	domain = alias.split('@')[1]
+
+	if domain not in domains:
+		raise
+
 	try:
 		res = create_redir_remote(alias=alias,
 							   	  to=to)

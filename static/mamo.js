@@ -26,10 +26,7 @@ const tbody             = redirTabl.querySelector('tbody');
 const delDialog         = doc.querySelector('#dialog-del');
 
 let workingDomain       = domainSelect.value;
-if (localStorage.getItem('workingDomain')) {
-    workingDomain = localStorage.getItem('workingDomain');
-    domainSelect.value = workingDomain;
-}
+
 
 
 /*
@@ -445,7 +442,7 @@ function setActionBtns() {
     // UUID gen buttons
     for (const btn of uuidBtns) {
         btn.addEventListener('click', () => {
-            let newAlias = crypto.randomUUID() + "@" + selDomain;
+            let newAlias = crypto.randomUUID() + "@" + workingDomain;
             btn.parentElement.childNodes[0].data = newAlias;
         });
     }
@@ -549,16 +546,17 @@ async function delRedir(form) {
  * Backend call to get a string alias list
  * return it as a JSON object (dict)
  */
-async function getAliasList(e, selectedDomain) {
+async function getAliasList(e, domain=workingDomain) {
     const ele = e.target;
     let sortKey;
 
-    if (ele.dataset.aliasItem)
-        sortKey = ele.dataset.aliasItem;
+    if (ele.dataset)
+        if (ele.dataset.aliasItem)
+            sortKey = ele.dataset.aliasItem;
 
     const res = await fetch('/get_redirs', {
         method: 'post',
-        body: JSON.stringify([selectedDomain, sortKey]),
+        body: JSON.stringify([domain, sortKey]),
     });
 
     if (res.status == 200) {
@@ -644,7 +642,7 @@ domainSelect.addEventListener('change', async (e) => {
 // Table : Refresh link button
 //
 refreshBtn.addEventListener('click', async (e) => {
-    const aliasData = await getAliasList(e);
+    const aliasData = await getAliasList(e, workingDomain);
     updateTable(aliasData);
 });
 
@@ -663,7 +661,7 @@ delDialog.addEventListener('close', async (e) => {
         const delArr = JSON.stringify(delDialog.__delArr);
         await delRedir(delArr);
 
-        const aliasData = await getAliasList(e);
+        const aliasData = await getAliasList(e, workingDomain);
         updateTable(aliasData);
     }
 });
@@ -725,5 +723,14 @@ testBtn.addEventListener('click', (e) => {
 
 });
 
+window.addEventListener('load', async (e) => {
+    if (localStorage.getItem('workingDomain')) {
+        workingDomain = localStorage.getItem('workingDomain');
+        domainSelect.value = workingDomain;
+    }
 
-convertEpoch();
+    const aliasData = await getAliasList(e, workingDomain);
+    updateTable(aliasData);
+
+    convertEpoch();
+});
