@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MAMO/Quart debug",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "~/Git/hotrooibos/MAMO/venv/bin/uvicorn",
+            // "env": {
+            //     "QUART_APP": "QUART_APP=mamo:app quart run",
+            //     "QUART_DEBUG": "1"
+            // },
+            "args": [
+                "mamo:app",
+                "--reload",
+            ],
+            "console": "integratedTerminal",
+            "jinja": true,
+            "autoStartBrowser": false
+        }
+    ]
+}
+
+// Flask config :
+// "version": "0.2.0",
+// "configurations": [
+//     {
+//         "name": "Python: mdCMS",
+//         "type": "debugpy",
+//         "request": "launch",
+//         "cwd": "${workspaceFolder}",
+//         "program": "~/Git/hotrooibos/mdCMS/venv/bin/gunicorn",
+//         "args": [
+//             "-c",
+//             "${workspaceFolder}/gunicorn.conf.py",
+//             "src.mdcms.mdcms:flaskapp()",
+//             "--reload",
+//             "--timeout=9999",
+//             "--bind=127.0.0.1:8000"
+//         ],
+//         "console": "integratedTerminal",
+//         "postDebugTask": "killdebugger"
+//     }
+// ]
+// }

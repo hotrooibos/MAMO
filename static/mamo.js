@@ -18,7 +18,6 @@ const delDialog         = doc.querySelector('#dialog-del');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
 const tbody             = redirTabl.querySelector('tbody');
-const rowTempl          = doc.querySelector("#alias-row");
 
 // Table servitudes
 const showHideBtn       = doc.querySelector('#show-hide');
@@ -145,69 +144,43 @@ function disableEnterKey(e) {
  *
  */
 
-// WIP better method than the others
-function updateTable2(jsonObj) {
-    let startTime = performance.now()
+const rowTemplate = (key, name, date, alias, to) => {
+    const res =
+    `<tr id="${key}">
+        <td data-alias-item="name">${name}</td>
+        <td data-alias-item="date"><time>${date}</time></td>
+        <td data-alias-item="alias">${alias}<button class="uuid-btn">UUID</button></td>
+        <td data-alias-item="to">${to}</td>
+        <td data-alias-item="edit" class="text-center no-wrap">
+            <button class="btn-edit"><i data-feather="edit"></i></button>
+            <button class="btn-del"><i data-feather="trash-2"></i></button>
+        </td>
+    </tr>`;
 
-    const newTbody = tbody.cloneNode(false);
-    const trTempl = rowTempl.content.cloneNode(true);
-    const tr = trTempl.querySelector('tr');
-    const tdName = tr.querySelector('td[data-alias-item="name"]');
-    const time = tr.querySelector('time');
-    const tdAlias = tr.querySelector('td[data-alias-item="alias"]');
-    const tdTo = tr.querySelector('td[data-alias-item="to"]');
-
-    for (const key in jsonObj) {
-        let newTr = tr.cloneNode(true);
-        newTr.id = key;
-        tdName.textContent = jsonObj[key]['name'];
-        time.textContent = jsonObj[key]['date'];
-        tdAlias.textContent = jsonObj[key]['alias'];
-        tdTo.textContent = jsonObj[key]['name'];
-        newTbody.appendChild(newTr);
-    }
-
-    tbody.innerHTML = newTbody.innerHTML;
-
-    let endTime = performance.now()
-    console.log(`${endTime - startTime} milliseconds`)
-
-
-    redirCount.innerText = Object.keys(jsonObj).length;
-
-    // Feather icons : replace <i data-feather> with icons
-    // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
-    feather.replace();
-
-    convertEpoch();
-    setActionBtns();
-}
-
+    return res;
+};
 
 /*
  * Table
  * Update the table with JSON data in parameter
  */
 function updateTable(jsonObj) {
-    let startTime = performance.now()
+    // let startTime = performance.now()
 
     let newTbodyContent = "";
 
     for (const key in jsonObj) {
-        newTbodyContent +=
-            "<tr id=\"" + key + "\">" +
-            "<td data-alias-item=\"name\">" + jsonObj[key]['name'] + "</td>" +
-            "<td data-alias-item=\"date\"><time>" + jsonObj[key]['date'] + "</time></td>" +
-            "<td data-alias-item=\"alias\">" + jsonObj[key]['alias'] + "<button class=\"uuid-btn\">UUID</button></td>" +
-            "<td data-alias-item=\"to\">" + jsonObj[key]['to'] + "</td>" +
-            "<td data-alias-item=\"edit\" class=\"text-center no-wrap\"><button class=\"btn-edit\" href=\"\"><i data-feather=\"edit\"></button></i><button class=\"btn-del\" href=\"\"><i data-feather=\"trash-2\"></button></i></td>" +
-            "</tr>"
+        console.log("doh")
+        newTbodyContent += rowTemplate(key,
+                                       jsonObj[key]['name'],
+                                       jsonObj[key]['date'],
+                                       jsonObj[key]['alias'],
+                                       jsonObj[key]['to']);
     }
-
     tbody.innerHTML = newTbodyContent;
 
-    let endTime = performance.now()
-    console.log(`${endTime - startTime} milliseconds`)
+    // let endTime = performance.now()
+    // console.log(`${endTime - startTime} milliseconds`)
 
     redirCount.innerText = Object.keys(jsonObj).length;
 
@@ -224,9 +197,14 @@ function updateTable(jsonObj) {
  * Add a new alias row
  */
 function addRow(e) {
-    // Create a new row (tr) node from a cloned one
-    // so we get its classes, datasets...
-    const newRow = tbody.children[0].cloneNode(true);
+
+    const newRow = doc.createElement('tr');
+    newRow.innerHTML = rowTemplate("",
+                                   "New alias",
+                                   "",
+                                   `alias@${workingDomain}`,
+                                   "destination@address.com");
+
     const uuidBtn = newRow.querySelector('.uuid-btn');
     
     newRow.removeAttribute('id');
@@ -657,7 +635,7 @@ newAliasBtn.addEventListener('click', addRow);
 saveAliasBtn.addEventListener('click', async (e) => {
     saveAlias();
     const aliasData = await getAliasList(e);
-    updateTable2(aliasData);
+    updateTable(aliasData);
 });
 
 
@@ -692,7 +670,7 @@ domainSelect.addEventListener('change', async (e) => {
 //
 refreshBtn.addEventListener('click', async (e) => {
     const aliasData = await getAliasList(e, workingDomain);
-    updateTable2(aliasData);
+    updateTable(aliasData);
 });
 
 
@@ -711,7 +689,7 @@ delDialog.addEventListener('close', async (e) => {
         await delRedir(delArr);
 
         const aliasData = await getAliasList(e, workingDomain);
-        updateTable2(aliasData);
+        updateTable(aliasData);
     }
 });
 
@@ -779,7 +757,5 @@ window.addEventListener('load', async (e) => {
     }
 
     const aliasData = await getAliasList(e, workingDomain);
-    updateTable2(aliasData);
-
-    convertEpoch();
+    updateTable(aliasData);
 });
