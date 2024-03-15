@@ -9,9 +9,18 @@
  * ASCII comments : https://www.patorjk.com/software/taag/#p=display&f=ANSI%20Regular
  */
 
+// General
 const doc               = document;
 const wrapper           = doc.querySelector('#wrapper');
+const delDialog         = doc.querySelector('#dialog-del');
 
+// Table
+const redirList         = doc.querySelector('#redir-list');
+const redirTabl         = doc.querySelector('#redir-tab');
+const tbody             = redirTabl.querySelector('tbody');
+const rowTempl          = doc.querySelector("#alias-row");
+
+// Table servitudes
 const showHideBtn       = doc.querySelector('#show-hide');
 const refreshBtn        = doc.querySelector('#refresh-redirs');
 const newAliasBtn       = doc.querySelector('#new-alias');
@@ -20,13 +29,9 @@ const cancelAliasBtn    = doc.querySelector('#cancel-alias');
 const domainSelect      = doc.querySelector('#domain-select');
 const redirCount        = doc.querySelector('#redir-count');
 const findInput         = doc.querySelector('#find');
-const redirList         = doc.querySelector('#redir-list');
-const redirTabl         = doc.querySelector('#redir-tab');
-const tbody             = redirTabl.querySelector('tbody');
-const delDialog         = doc.querySelector('#dialog-del');
 
+// Global vars
 let workingDomain       = domainSelect.value;
-
 
 
 /*
@@ -140,12 +145,52 @@ function disableEnterKey(e) {
  *
  */
 
+// WIP better method than the others
+function updateTable2(jsonObj) {
+    let startTime = performance.now()
+
+    const newTbody = tbody.cloneNode(false);
+    const trTempl = rowTempl.content.cloneNode(true);
+    const tr = trTempl.querySelector('tr');
+    const tdName = tr.querySelector('td[data-alias-item="name"]');
+    const time = tr.querySelector('time');
+    const tdAlias = tr.querySelector('td[data-alias-item="alias"]');
+    const tdTo = tr.querySelector('td[data-alias-item="to"]');
+
+    for (const key in jsonObj) {
+        let newTr = tr.cloneNode(true);
+        newTr.id = key;
+        tdName.textContent = jsonObj[key]['name'];
+        time.textContent = jsonObj[key]['date'];
+        tdAlias.textContent = jsonObj[key]['alias'];
+        tdTo.textContent = jsonObj[key]['name'];
+        newTbody.appendChild(newTr);
+    }
+
+    tbody.innerHTML = newTbody.innerHTML;
+
+    let endTime = performance.now()
+    console.log(`${endTime - startTime} milliseconds`)
+
+
+    redirCount.innerText = Object.keys(jsonObj).length;
+
+    // Feather icons : replace <i data-feather> with icons
+    // https://github.com/feathericons/feather?tab=readme-ov-file#featherreplaceattrs
+    feather.replace();
+
+    convertEpoch();
+    setActionBtns();
+}
+
 
 /*
  * Table
  * Update the table with JSON data in parameter
  */
 function updateTable(jsonObj) {
+    let startTime = performance.now()
+
     let newTbodyContent = "";
 
     for (const key in jsonObj) {
@@ -160,6 +205,10 @@ function updateTable(jsonObj) {
     }
 
     tbody.innerHTML = newTbodyContent;
+
+    let endTime = performance.now()
+    console.log(`${endTime - startTime} milliseconds`)
+
     redirCount.innerText = Object.keys(jsonObj).length;
 
     // Feather icons : replace <i data-feather> with icons
@@ -608,7 +657,7 @@ newAliasBtn.addEventListener('click', addRow);
 saveAliasBtn.addEventListener('click', async (e) => {
     saveAlias();
     const aliasData = await getAliasList(e);
-    updateTable(aliasData);
+    updateTable2(aliasData);
 });
 
 
@@ -643,7 +692,7 @@ domainSelect.addEventListener('change', async (e) => {
 //
 refreshBtn.addEventListener('click', async (e) => {
     const aliasData = await getAliasList(e, workingDomain);
-    updateTable(aliasData);
+    updateTable2(aliasData);
 });
 
 
@@ -662,7 +711,7 @@ delDialog.addEventListener('close', async (e) => {
         await delRedir(delArr);
 
         const aliasData = await getAliasList(e, workingDomain);
-        updateTable(aliasData);
+        updateTable2(aliasData);
     }
 });
 
@@ -730,7 +779,7 @@ window.addEventListener('load', async (e) => {
     }
 
     const aliasData = await getAliasList(e, workingDomain);
-    updateTable(aliasData);
+    updateTable2(aliasData);
 
     convertEpoch();
 });
