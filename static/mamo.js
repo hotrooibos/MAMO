@@ -169,14 +169,13 @@ function updateTable(jsonObj) {
 
     let newTbodyContent = "";
 
-    for (const key in jsonObj) {
-        console.log("doh")
+    for (const key in jsonObj)
         newTbodyContent += rowTemplate(key,
                                        jsonObj[key]['name'],
                                        jsonObj[key]['date'],
                                        jsonObj[key]['alias'],
                                        jsonObj[key]['to']);
-    }
+
     tbody.innerHTML = newTbodyContent;
 
     // let endTime = performance.now()
@@ -197,40 +196,19 @@ function updateTable(jsonObj) {
  * Add a new alias row
  */
 function addRow(e) {
-
+    // Create row and removes its id
     const newRow = doc.createElement('tr');
     newRow.innerHTML = rowTemplate("",
                                    "New alias",
                                    "",
                                    `alias@${workingDomain}`,
                                    "destination@address.com");
-
-    const uuidBtn = newRow.querySelector('.uuid-btn');
-    
+  
     newRow.removeAttribute('id');
-    newRow.__edit = true;
-    uuidBtn.style.visibility = "visible";
 
-
-    // Make cells editables
-    for (const td of newRow.children) {
-        switch (td.dataset.aliasItem) {
-            case "name":
-            case "alias":
-            case "to":
-                td.contentEditable = "true";
-                td.classList.add('td-editable');
-
-                // And Enter key press listener to prevent line breaks
-                td.addEventListener('keydown', disableEnterKey, false);
-                break;
-            default:
-                break;
-        }
-    }
-
-    // Insert the new row
+    setEditable(newRow);
     tbody.insertAdjacentElement("afterbegin", newRow);
+    feather.replace();
 
     // Affect click listeners to the two buttons in
     // the edition column (edit + remove icons)
@@ -242,19 +220,17 @@ function addRow(e) {
 
 
 /*
- * Makes cells from a specific row editables
- * Called when clicking an edit row btn
+ * Transform the given row (<TR> element)
+ * and its children to an editable
  */
-function editRow(e) {
-    e.preventDefault();
-    const clickedEle = e.target;
-    const parentTr = clickedEle.parentElement.closest('tr');
-    const tdArr = parentTr.querySelectorAll('td');
+function setEditable(row) {
+    const tdArr = row.querySelectorAll('td');
+    const uuidBtn = row.querySelector('.uuid-btn');
 
-    parentTr.__edit = true;
+    row.__edit = true;
+    uuidBtn.style.visibility = "visible";
 
-    // Get data to be edited and
-    // make useful cells' (<td>) content editable
+    // Make TDs editables
     for (const td of tdArr) {
         switch (td.dataset.aliasItem) {
             case "name":
@@ -262,6 +238,7 @@ function editRow(e) {
             case "to":
                 td.contentEditable = true;
                 td.classList.add('td-editable');
+
                 td.__origContent = td.innerHTML;
 
                 // And Enter key press listener to prevent line breaks
@@ -271,10 +248,23 @@ function editRow(e) {
                 break;
         }
     }
+}
+
+
+/*
+ * Makes cells from a specific row editables
+ * Called when clicking an edit row btn
+ */
+function editRow(e) {
+    const clickedEle = e.target;
+    const parentTr = clickedEle.parentElement.closest('tr');
+
+    setEditable(parentTr);
 
     saveAliasBtn.disabled = false;
     cancelAliasBtn.disabled = false;
 }
+
 
 /*
  * Table sort
@@ -426,10 +416,14 @@ function lockRows() {
     const trArr = tbody.querySelectorAll('tr');
 
     for (const tr of trArr) {
-
         // Delete rows with no ID (cancelled new alias creation)
-        if (!tr.id)
+        if (!tr.id) {
             tr.remove();
+            continue;
+        }
+
+        const uuidBtn = tr.querySelector('.uuid-btn');
+        uuidBtn.style.visibility = "hidden";
 
         // For all rows under edition :
         //  - Terminate row/cells edition
@@ -452,12 +446,11 @@ function lockRows() {
 function cancelAliasOperations() {
     const editedTdArr = tbody.querySelectorAll('td[contenteditable]');
 
-    for (const td of editedTdArr) {
+    for (const td of editedTdArr)
         if (td.__origContent)
             td.innerHTML = td.__origContent;
-        else
-            td.innerHTML = "";
-    }
+
+    lockRows();
 }
 
 

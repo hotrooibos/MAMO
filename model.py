@@ -96,6 +96,7 @@ def create_redir_remote(alias: str, to: str) -> str:
 		raise
 
 	try:
+		print(f"CREATE {alias} -> {to}")
 		res = client.post(f'/email/domain/{domain}/redirection',
 						  _from=alias,
 						  localCopy=False,
@@ -104,7 +105,7 @@ def create_redir_remote(alias: str, to: str) -> str:
 		return res
 				
 	except ovh.APIError as e:
-		print(e)
+		print(f"create_redir_remote: {e}")
 		raise
 	
 
@@ -142,15 +143,12 @@ def create_redir(name:str, alias: str, to: str) -> str:
 							   	  to=to)
 
 		id = find_id(alias, to)
-		create_redir_local(id=id,
-						   name=name,
-						   alias=alias,
-						   to=to)
+		create_redir_local(id, name, alias, to)
 
 		return res
 	
 	except ovh.APIError as e:
-		print(e)
+		print(f"create_redir: {e}")
 		raise
 
 
@@ -178,9 +176,7 @@ def edit_redir(id: str, name: str, alias: str, to: str):
 					rm = remove_redir(id)
 
 					if rm:
-						create_redir(name=name,
-									alias=alias,
-									to=to)
+						create_redir(name, alias, to)
 					res = 0
 				
 				except ovh.APIError as e:
@@ -241,8 +237,7 @@ def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):
 			alias = config_redir[id]['alias']
 			to = config_redir[id]['to']
 			if not dry:
-				res = create_redir_remote(alias=alias,
-										  to=to)
+				res = create_redir_remote(alias, to)
 			# Update the ID
 				if res == 0:
 					id = find_id(alias, to)
@@ -261,10 +256,7 @@ def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):
 			alias = redirs_remote[id]['alias']
 			to = redirs_remote[id]['to']
 			if not dry:
-				create_redir_local(id=id,
-								   name=name,
-								   alias=alias,
-								   to=to)
+				create_redir_local(id, name, alias, to)
 			
 			if dry:
 				print(f"Dry creating local (id {id}, name {name}, alias {alias}, to {to}).")
