@@ -105,13 +105,20 @@ function controlAlias(td) {
         case "name":
             text = td.innerText;
             break;
+
         case "alias":
             // Since we have a button (uuid gen) inside <td>
             text = td.childNodes[0].data;
+
+            if (text.split('@')[1] != workingDomain) {
+                console.log("Wrong domain: " + text.split('@')[1] + " != " + workingDomain)
+            }
             break;
+
         case "to":
             text = td.innerText;
             break;
+
         default:
             break;
     }
@@ -121,7 +128,6 @@ function controlAlias(td) {
 
     // Return true if text matches the email format regex
     return re.test(text);
-
 }
 
 
