@@ -223,7 +223,12 @@ h1 {
     mask: var(--mask);
 }
 
-.input {
+.input-err {
+    color: #fff;
+    background-color: #9b2d2d;
+}
+
+/* .input {
     margin: .5em;
     padding: .3em;
     border: none;
@@ -256,7 +261,7 @@ h1 {
 .submit:hover {
     background-color: var(--color-text-hover);
     box-shadow: 0px 5px 10px #1e2229;
-}
+} */
 
 .msgbox {
     position: fixed;

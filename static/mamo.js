@@ -110,9 +110,8 @@ function controlAlias(td) {
             // Since we have a button (uuid gen) inside <td>
             text = td.childNodes[0].data;
 
-            if (text.split('@')[1] != workingDomain) {
+            if (text.split('@')[1] != workingDomain)
                 console.log("Wrong domain: " + text.split('@')[1] + " != " + workingDomain)
-            }
             break;
 
         case "to":
@@ -339,7 +338,7 @@ function sortTable(n) {
  * Create/save modified aliases 
  * Called when clicking the save btn
  */
-function saveAlias() {
+async function saveAlias(e) {
     const trArr = tbody.querySelectorAll('tr');
     const editTrArr = [];
     let newRedir;
@@ -371,7 +370,8 @@ function saveAlias() {
                     if (isValidFormat)
                         alias = td.childNodes[0].data;
                     else {
-                        console.log("Create: " + td.dataset.aliasItem + " format err")
+                        td.classList.add('input-err');
+                        showInfobox("Create alias : wrong alias address format");
                         err = true;
                     }
                     continue;
@@ -381,7 +381,8 @@ function saveAlias() {
                     if (isValidFormat)
                         to = td.innerText;
                     else {
-                        console.log("Create: " + td.dataset.aliasItem + " format err")
+                        td.classList.add('input-err');
+                        showInfobox("Create alias : wrong destination address format");
                         err = true;
                     }
                     continue;
@@ -409,6 +410,9 @@ function saveAlias() {
             // Edition : alias with __edit property
             else if (tr.__edit)
                 editRedir(newRedir);
+
+            const aliasData = await getAliasList(e);
+            updateTable(aliasData);
         }
     }
 }
@@ -622,25 +626,21 @@ showHideBtn.addEventListener('click', (e) => {
 });
 
 
-//
-// Table : New alias link button
-//
+/*
+ * Table : New alias link button
+ */
 newAliasBtn.addEventListener('click', addRow);
 
 
-//
-// Save button : save new/edit alias operations made in table
-//
-saveAliasBtn.addEventListener('click', async (e) => {
-    saveAlias();
-    const aliasData = await getAliasList(e);
-    updateTable(aliasData);
-});
+/*
+ * Save button : save new/edit alias operations made in table
+ */
+saveAliasBtn.addEventListener('click', saveAlias);
 
 
-//
-// Cancel button : cancel all "new" and/or "edit" alias operations in table
-//
+/*
+ * Cancel button : cancel all "new" and/or "edit" alias operations in table
+ */
 cancelAliasBtn.addEventListener('click', (e) => {
     cancelAliasOperations();
     lockRows();
