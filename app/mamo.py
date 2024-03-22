@@ -4,7 +4,9 @@ import model
 import quart as qr
 from werkzeug.datastructures import MultiDict 
 
-app = qr.Quart(__name__)
+app = qr.Quart(__name__,
+               template_folder='../templates',
+               static_folder='../static')
 
 # Jinja presets to avoid weird HTML formating
 app.jinja_env.trim_blocks = True

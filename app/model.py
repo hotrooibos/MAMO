@@ -301,7 +301,7 @@ def write_config(config_redir: dict):
 
 
 ROOTDIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG = ROOTDIR + "/config.json"
+CONFIG = ROOTDIR + "/../config.json"
 
 # Read config file
 with open(file=CONFIG,
