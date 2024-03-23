@@ -38,11 +38,7 @@ async def get_domains() -> str:
 async def get_redirs() -> str:
 	body = await qr.request.data
 	b = json.loads(body)
-
-	selected_domain = b[0]
-	sort_key = b[1]
-
-	print(f"TODO sort key: {sort_key}")
+	selected_domain = b
 	redirs = model.get_redirs(selected_domain)
 
 	return redirs, 200

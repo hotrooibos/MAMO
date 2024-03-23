@@ -578,15 +578,10 @@ async function delRedir(form) {
  */
 async function getAliasList(e, domain=workingDomain) {
     const ele = e.target;
-    let sortKey;
-
-    if (ele.dataset)
-        if (ele.dataset.aliasItem)
-            sortKey = ele.dataset.aliasItem;
 
     const res = await fetch('/get_redirs', {
         method: 'post',
-        body: JSON.stringify([domain, sortKey]),
+        body: JSON.stringify(domain),
     });
 
     if (res.status == 200) {
