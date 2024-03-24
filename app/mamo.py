@@ -8,6 +8,9 @@ app = qr.Quart(__name__,
                template_folder='../templates',
                static_folder='../static')
 
+# DEV : reload on template change
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
 # Jinja presets to avoid weird HTML formating
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
@@ -76,7 +79,7 @@ async def edit_redir() -> str:
 						 name=name,
 						 alias=alias,
 						 to=to)
-		return f"Alias edited succesfully", 200
+		return "Alias edited succesfully", 200
 	
 	except Exception as e:
 		qr.abort(400, description=e)

@@ -1,5 +1,23 @@
 {
+  "name": "mamo",
+  "description": "Mail Aliases Manager for OVH",
+  "version": "0.3",
   "devDependencies": {
     "tailwindcss": "^3.4.1"
-  }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx tailwindcss -i ./static/input.css -o ./static/output.css --watch=always"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hotrooibos/MAMO.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hotrooibos/MAMO/issues"
+  },
+  "homepage": "https://github.com/hotrooibos/MAMO#readme"
 }
