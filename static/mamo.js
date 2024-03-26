@@ -203,10 +203,12 @@ function updateTable(jsonObj) {
 function addRow(e) {
     // Create row and removes its id
     const newRow = doc.createElement('tr');
+    const domain = workingDomain == "all" ? "domain.com" : workingDomain;
+    
     newRow.innerHTML = rowTemplate("",
                                    "New alias",
                                    "",
-                                   `alias@${workingDomain}`,
+                                   `alias@${domain}`,
                                    "destination@address.com");
   
     newRow.removeAttribute('id');
@@ -711,7 +713,7 @@ findInput.addEventListener('input', () => {
     for (let i = 0, row; row = tbody.rows[i]; i++) {
         for (let j = 0, col; col = row.cells[j]; j++) {
             if (findInput.value.length > 0 &&
-                col.innerText.includes(findInput.value)) {
+                col.innerText.toLowerCase().includes(findInput.value.toLowerCase())) {
                 row.style.display = "";
                 cntFiltered = tbody.querySelectorAll('tr[style="display: none;"]').length;
                 redirCount.innerText = cnt - cntFiltered;
