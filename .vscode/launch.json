@@ -6,7 +6,7 @@
             "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}/app",
-            "program": "~/Git/hotrooibos/MAMO/venv/bin/uvicorn",
+            "program": "~/Git/MAMO/venv/bin/uvicorn",
             "args": [
                 "mamo:app",
                 "--reload",

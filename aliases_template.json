@@ -1,0 +1,16 @@
+{
+    "redirection": {
+        "000000001": {
+            "name": "My redir 1",
+            "date": 1708612428,
+            "alias": "7cd0637a-d0a2-4792-9d56-081189f26b3e@mydomain1.fr",
+            "to": "myprivate@email.com"
+        },
+        "000000002": {
+            "name": "My redir 2",
+            "date": 1708612428,
+            "alias": "80c03d46-b288-4a61-a0c9-0c587d7a853c@mydomain2.com",
+            "to": "myprivate@email.com"
+        }
+    }
+}

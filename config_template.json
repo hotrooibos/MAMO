@@ -1,15 +1,16 @@
 {
     "general": {
+        "alias_file": "aliases.json",
         "default_dest_addr": "myprivate@email.com",
-        "domains": ["mydomain.fr", "mydomain2.fr", "mydomain3.io"]
+        "domains": [
+            "mydomain1.fr",
+            "mydomain2.com"
+        ]
     },
     "token": {
         "endpoint": "ovh-eu",
         "app_key": "123456789abcdefg",
         "app_secret": "123456789abcdefghijklmnopqrstuvw",
         "consumer_key": "123456789abcdefghijklmnopqrstuvw"
-    },
-
-    "redirection": {
     }
 }

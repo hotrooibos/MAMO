@@ -300,18 +300,25 @@ def write_config(config_redir: dict):
 
 
 
-ROOTDIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG = ROOTDIR + "/../config.json"
+ROOTDIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
 
-# Read config file
-with open(file=CONFIG,
+# Read config
+with open(file=ROOTDIR + "config.json",
 		  mode='r',
           encoding='utf-8') as json_file:
 	config = json.load(json_file)
 
-config_redir = config['redirection']
 config_general = config['general']
 domains = config_general['domains']
+
+# Read aliases
+alias_file = config['general']['alias_file']
+with open(file=ROOTDIR + alias_file,
+		  mode='r',
+		  encoding='utf-8') as json_file:
+	aliases = json.load(json_file)
+
+config_redir = aliases['redirection']
 
 # Instantiate an OVH Client
 client = ovh.Client(
