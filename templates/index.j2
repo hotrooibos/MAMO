@@ -24,10 +24,15 @@
     <button id="cancel-alias" type="button" disabled>
         <i data-feather="x"></i>
     </button>
-        <select name="domain-select" id="domain-select">
-            <option value="all">All</option>
+    <select name="domain-select" id="domain-select">
+        <option value="all">All</option>
         {% for d in domains %}
-            <option value="{{ d }}">{{ d }}</option>
+        <option value="{{ d }}">{{ d }}</option>
+        {% endfor %}
+    </select>
+    <select name="dest-select" id="dest-select">
+        {% for d in def_dest %}
+        <option value="{{ d }}">{{ d }}</option>
         {% endfor %}
     </select>
     <p><span id="redir-count">{{ redirs|length }}</span> aliases <button id="refresh-redirs" type="button"><i data-feather="refresh-cw"></i></button> <button id="test-btn" type="button">TEST</button>

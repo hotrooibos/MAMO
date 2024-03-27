@@ -1,10 +1,12 @@
 {
     "general": {
         "alias_file": "aliases.json",
-        "default_dest_addr": "myprivate@email.com",
-        "domains": [
-            "mydomain1.fr",
-            "mydomain2.com"
+        "default_dest_addr": [
+            "my_priv_mail@pm.me",
+            "my_priv_mail@tuta.io"
+        ],        "domains": [
+            "my_domain1.fr",
+            "my_domain2.com"
         ]
     },
     "token": {

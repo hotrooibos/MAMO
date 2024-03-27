@@ -309,6 +309,7 @@ with open(file=ROOTDIR + "config.json",
 	config = json.load(json_file)
 
 config_general = config['general']
+default_dest_addr = config_general['default_dest_addr']
 domains = config_general['domains']
 
 # Read aliases

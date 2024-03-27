@@ -26,12 +26,13 @@ const newAliasBtn       = doc.querySelector('#new-alias');
 const saveAliasBtn      = doc.querySelector('#save-alias');
 const cancelAliasBtn    = doc.querySelector('#cancel-alias');
 const domainSelect      = doc.querySelector('#domain-select');
+const destSelect        = doc.querySelector('#dest-select');
 const redirCount        = doc.querySelector('#redir-count');
 const findInput         = doc.querySelector('#find');
 
 // Global vars
 let workingDomain       = domainSelect.value;
-
+let destAddr     = destSelect.value;
 
 /*
  *
@@ -209,7 +210,7 @@ function addRow(e) {
                                    "New alias",
                                    "",
                                    `alias@${domain}`,
-                                   "destination@address.com");
+                                   destAddr);
   
     newRow.removeAttribute('id');
 
@@ -661,6 +662,16 @@ domainSelect.addEventListener('change', async (e) => {
 });
 
 
+/*
+ * Destination address select : change default destination address
+ * Update localstorage to remember current selection,
+ */
+destSelect.addEventListener('change', async (e) => {
+    destAddr = destSelect.value;
+    localStorage.setItem('destAddr', destAddr);
+});
+
+
 //
 // Table : Refresh link button
 //
@@ -752,6 +763,11 @@ window.addEventListener('load', async (e) => {
         domainSelect.value = workingDomain;
     }
 
+    if (localStorage.getItem('destAddr')) {
+        destAddr = localStorage.getItem('destAddr');
+        destSelect.value = destAddr;
+    }
+    
     const aliasData = await getAliasList(e, workingDomain);
     updateTable(aliasData);
 });

@@ -22,11 +22,13 @@ app.jinja_env.lstrip_blocks = True
 
 @app.route('/')
 async def index():
+	def_dest = model.default_dest_addr
 	domains = model.domains
 	redirs = model.get_redirs()
 	# TODO tri : date de création > ordre alphab 
 	# 			 du domaine > ordre alphab mail
 	return await qr.render_template('index.j2',
+								 	def_dest=def_dest,
 								 	domains=domains,
 									redirs=redirs)
 
