@@ -594,6 +594,26 @@ async function getAliasList(e, domain=workingDomain) {
 }
 
 
+/*
+ * Check both local config and remote redirs,
+ * and return two lists :
+ *  - list of local entries unknown from remote
+ *  - list of remote entries unknown from local
+ */
+async function synCheck(e, domain=workingDomain) {
+    const res = await fetch('/syn_check', {
+        method: 'post',
+        body: JSON.stringify(domain),
+    });
+
+    if (res.status == 200) {
+        const resText = await res.text();
+        return resText;
+    }
+
+}
+
+
 
 /*
  *
@@ -682,22 +702,45 @@ refreshBtn.addEventListener('click', async (e) => {
 
 
 //
+// Sync remote button
+//
+syncBtn.addEventListener('click', synCheck);
+
+
+//
 // Table : actions btns (edit + delete)
 //
 setActionBtns();
 
 
 //
-// Delete dialog box : closing the box
+// Dialog box
 //
-delDialog.addEventListener('close', async (e) => {
-    if (delDialog.returnValue === "yes") {
-        const delArr = JSON.stringify(delDialog.__delArr);
+
+
+dialog.addEventListener('close', async (e) => {
+    // Remove alias dialbox
+    if (dialog.classList.contains('del')) {
+        if (dialog.returnValue === "opt1") {
+            const delArr = JSON.stringify(dialog.__delArr);
         await delRedir(delArr);
 
         const aliasData = await getAliasList(e, workingDomain);
         updateTable(aliasData);
     }
+    }
+
+    // Sync remote dialbox
+    if (dialog.classList.contains('syn-remote')) {
+        console.log("TODO: syn remote");
+    }
+
+    // Sync local dialbox
+    if (dialog.classList.contains('syn-local')) {
+        console.log("TODO: syn local");
+    }
+
+    dialog.removeAttribute('class');
 });
 
 

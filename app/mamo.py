@@ -45,8 +45,19 @@ async def get_redirs() -> str:
 	b = json.loads(body)
 	selected_domain = b
 	redirs = model.get_redirs(selected_domain)
-
 	return redirs, 200
+
+
+@app.route('/syn_check', methods=['POST'])
+async def syn_check() -> str:
+	body = await qr.request.data
+	b = json.loads(body)
+	selected_domain = b
+	res = model.syncheck(redirs_remote=model.get_redirs_remote(selected_domain),
+						 config_redir=model.config_redir)
+	
+	# Convert "res" tuple to JSON formatted str
+	return json.dumps(res), 200
 
 
 @app.route('/set_redir', methods=['POST'])

@@ -210,7 +210,7 @@ def remove_redir(id: int) -> bool:
 		res = client.delete(f'/email/domain/{domain}/redirection/{id}')
 		del config_redir[id]
 		write_config(config_redir)
-		
+		print(res)
 		return res
 		
 	except ovh.APIError as e:
@@ -218,17 +218,24 @@ def remove_redir(id: int) -> bool:
 		raise
 	
 
-def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):
+def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 	'''
 		Check both local config and remote redirs,
-		and sync them.
-		Set dry = True for a dry run (check without creating any entry)
+		and return two lists :
+
+			- list of local entries unknown from remote
+			- list of remote entries unknown from local
 	'''
+	dry = True # TODO remove. This function will always be "dry", it's just a check
+
+	list_local = []
+	list_remote = []
 
 	if (len(config_redir) != len(redirs_remote)):
-		print(" WARNING : local config length DIFFERS from remote !")
+		print(" MODEL.SYNCHECK: local config length differs from remote")
 
-	# Loop in the local config
+	# Loop in the local config and append
+	# to list_local redirections unknown from remote
 	for id, v in config_redir.items():
 		try:
 			compare(id, config_redir[id], redirs_remote[id])
@@ -236,30 +243,20 @@ def syncheck(redirs_remote: list, config_redir: list, dry: bool = False):
 		except KeyError:
 			alias = config_redir[id]['alias']
 			to = config_redir[id]['to']
-			if not dry:
-				res = create_redir_remote(alias, to)
-			# Update the ID
-				if res == 0:
-					id = find_id(alias, to)
-					config_redir[id]['alias'] = id
+			list_local.append((alias, to))
 
-			if dry:
-				print(f"Dry creating remote (alias {alias}, to {to}).")
-
-	# Loop in the remote config
+	# Loop in the remote config and append
+	# to list_remote redirections unknown from local
 	for id, v in redirs_remote.items():
 		try:
 			compare(id, config_redir[id], redirs_remote[id])
 
 		except KeyError:
-			name = strings.SYNCED_ENTRY_NAME
 			alias = redirs_remote[id]['alias']
 			to = redirs_remote[id]['to']
-			if not dry:
-				create_redir_local(id, name, alias, to)
+			list_remote.append((id, alias, to))
 			
-			if dry:
-				print(f"Dry creating local (id {id}, name {name}, alias {alias}, to {to}).")
+	return list_local, list_remote
 
 
 def compare(id: str, config_data: dict, remote_data: dict) -> int:
@@ -293,7 +290,7 @@ def write_config(config_redir: dict):
 	'''
 	config['redirection'] = config_redir
 
-	with open(file=CONFIG,
+	with open(file=ROOTDIR + alias_file,
 			  mode='w',
 			  encoding='utf-8') as json_file:
 		json.dump(config, json_file, indent=4)
