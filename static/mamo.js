@@ -22,6 +22,7 @@ const tbody             = redirTabl.querySelector('tbody');
 // Table servitudes
 const showHideBtn       = doc.querySelector('#show-hide');
 const refreshBtn        = doc.querySelector('#refresh-redirs');
+const syncBtn           = doc.querySelector('#sync-remote');
 const newAliasBtn       = doc.querySelector('#new-alias');
 const saveAliasBtn      = doc.querySelector('#save-alias');
 const cancelAliasBtn    = doc.querySelector('#cancel-alias');
@@ -718,11 +719,11 @@ setActionBtns();
 //
 
 
-dialog.addEventListener('close', async (e) => {
+delDialog.addEventListener('close', async (e) => {
     // Remove alias dialbox
-    if (dialog.classList.contains('del')) {
-        if (dialog.returnValue === "opt1") {
-            const delArr = JSON.stringify(dialog.__delArr);
+    if (delDialog.classList.contains('del')) {
+        if (delDialog.returnValue === "opt1") {
+            const delArr = JSON.stringify(delDialog.__delArr);
         await delRedir(delArr);
 
         const aliasData = await getAliasList(e, workingDomain);
@@ -731,16 +732,16 @@ dialog.addEventListener('close', async (e) => {
     }
 
     // Sync remote dialbox
-    if (dialog.classList.contains('syn-remote')) {
+    if (delDialog.classList.contains('syn-remote')) {
         console.log("TODO: syn remote");
     }
 
     // Sync local dialbox
-    if (dialog.classList.contains('syn-local')) {
+    if (delDialog.classList.contains('syn-local')) {
         console.log("TODO: syn local");
     }
 
-    dialog.removeAttribute('class');
+    delDialog.removeAttribute('class');
 });
 
 
