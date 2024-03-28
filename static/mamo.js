@@ -717,31 +717,15 @@ setActionBtns();
 //
 // Dialog box
 //
-
-
 delDialog.addEventListener('close', async (e) => {
     // Remove alias dialbox
-    if (delDialog.classList.contains('del')) {
-        if (delDialog.returnValue === "opt1") {
-            const delArr = JSON.stringify(delDialog.__delArr);
+    if (delDialog.returnValue === "yes") {
+        const delArr = JSON.stringify(delDialog.__delArr);
         await delRedir(delArr);
 
         const aliasData = await getAliasList(e, workingDomain);
         updateTable(aliasData);
     }
-    }
-
-    // Sync remote dialbox
-    if (delDialog.classList.contains('syn-remote')) {
-        console.log("TODO: syn remote");
-    }
-
-    // Sync local dialbox
-    if (delDialog.classList.contains('syn-local')) {
-        console.log("TODO: syn local");
-    }
-
-    delDialog.removeAttribute('class');
 });
 
 
