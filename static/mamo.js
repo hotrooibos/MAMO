@@ -13,6 +13,7 @@
 const doc               = document;
 const wrapper           = doc.querySelector('#wrapper');
 const delDialog         = doc.querySelector('#dialog-del');
+const synDialog         = doc.querySelector('#dialog-syn');
 
 // Table
 const redirList         = doc.querySelector('#redir-list');
@@ -33,7 +34,7 @@ const findInput         = doc.querySelector('#find');
 
 // Global vars
 let workingDomain       = domainSelect.value;
-let destAddr     = destSelect.value;
+let destAddr            = destSelect.value;
 
 /*
  *
@@ -481,14 +482,14 @@ function setActionBtns() {
         });
     }
 
-    // Delete buttons
+    // Delete buttons, show modal
     for (const btn of delBtns) {
         btn.addEventListener('click', () => {
             const parent = btn.parentElement.closest('tr');
             const id = parent.id;
             const alias = parent.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
-            const dialogText = "Remove alias " + alias + " ?";
-            delDialog.querySelector('p').innerHTML = dialogText;
+            const dialogText = `Remove alias ${alias} ?`;
+            delDialog.querySelector('p').innerText = dialogText;
             delDialog.__delArr = [id];
             delDialog.showModal();
         })
@@ -608,10 +609,28 @@ async function synCheck(e, domain=workingDomain) {
     });
 
     if (res.status == 200) {
-        const resText = await res.text();
-        return resText;
-    }
+        let resText = await res.text();
+        resText = JSON.parse(resText);
+        let p = doc.createElement('p');
+        
+        p.innerText = "Alias unknown from remote :"
+        synDialog.append(p);
+        for (const i of resText[0]) {
+            p = doc.createElement('p');
+            p.innerText = i;
+            synDialog.append(p);
+        }
 
+        p = doc.createElement('p');
+        p.innerText = "Alias unknown locally :"
+        synDialog.append(p);
+        for (const i of resText[1]) {
+            p = doc.createElement('p');
+            p.innerText = i;
+            synDialog.append(p);
+        }
+        synDialog.showModal();
+    }
 }
 
 
@@ -626,9 +645,9 @@ async function synCheck(e, domain=workingDomain) {
  *
  */
 
-//
-// Table : show/hide button
-//
+/*
+ * Table : show/hide button
+ */
 showHideBtn.addEventListener('click', (e) => {
     if (redirList.classList.contains('fade-bottom')) {
         redirList.classList.remove('fade-bottom');
@@ -693,30 +712,30 @@ destSelect.addEventListener('change', async (e) => {
 });
 
 
-//
-// Table : Refresh link button
-//
+/*
+ * Table refresh link button
+ */
 refreshBtn.addEventListener('click', async (e) => {
     const aliasData = await getAliasList(e, workingDomain);
     updateTable(aliasData);
 });
 
 
-//
-// Sync remote button
-//
+/*
+ * Sync remote button
+ */
 syncBtn.addEventListener('click', synCheck);
 
 
-//
-// Table : actions btns (edit + delete)
-//
+/*
+ * Table : actions btns (edit + delete)
+ */
 setActionBtns();
 
 
-//
-// Dialog box
-//
+/*
+ * Delete dialog box
+ */
 delDialog.addEventListener('close', async (e) => {
     // Remove alias dialbox
     if (delDialog.returnValue === "yes") {
@@ -729,9 +748,17 @@ delDialog.addEventListener('close', async (e) => {
 });
 
 
-//
-// Find/search in table input : typing something
-//
+/*
+ * Sync dialog box
+ */
+synDialog.addEventListener('close', async (e) => {
+    alert("TODO");
+});
+
+
+/*
+ * Find/search in table input : typing something
+ */
 findInput.addEventListener('input', () => {
     const cnt = tbody.querySelectorAll('tr').length;
     let cntFiltered = cnt;
@@ -762,9 +789,9 @@ findInput.addEventListener('input', () => {
 });
 
 
-//
-// Add alias form : clicking generate UUID link button
-//
+/*
+ * Add alias form : clicking generate UUID link button
+ */
 const testBtn = doc.querySelector('#test-btn');
 testBtn.addEventListener('click', (e) => {
     // const delBtns = doc.querySelectorAll('.btn-del');
