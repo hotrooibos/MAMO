@@ -4,7 +4,8 @@
         "default_dest_addr": [
             "my_priv_mail@pm.me",
             "my_priv_mail@tuta.io"
-        ],        "domains": [
+        ],
+        "domains": [
             "my_domain1.fr",
             "my_domain2.com"
         ]
