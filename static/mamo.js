@@ -515,19 +515,26 @@ function setActionBtns() {
  * Backend call to create a redirection
  */
 async function createRedir(jsonObj) {
-    showInfobox("Creating new redir " + jsonObj['alias']);
+    showInfobox("Creating new alias " + jsonObj['alias']);
 
     const jsonStr = JSON.stringify(jsonObj);
+    
+    try {
+        const res = await fetch('/set_redir', {
+            method: 'post',
+            body: jsonStr,
+        })
 
-    const res = await fetch('/set_redir', {
-        method: 'post',
-        body: jsonStr,
-    })
+        const resText = await res.text();
 
-    if (res.status == 200) {
-        showInfobox("Alias created succesfully !");
-    } else {
-        showInfobox("An error occured while creating the alias...");
+        if (res.status == 200) {
+            showInfobox("Alias created succesfully !");
+        } else {
+            showInfobox("Create error:\n" + resText);
+        }
+
+    } catch (error) {
+        showInfobox(error);
     }
 }
 
@@ -536,17 +543,26 @@ async function createRedir(jsonObj) {
  * Backend call to edit a redirection
  */
 async function editRedir(jsonObj) {
+    showInfobox("Editing alias " + jsonObj['alias']);
+
     const jsonStr = JSON.stringify(jsonObj);
 
-    const res = await fetch('/edit_redir', {
-        method: 'post',
-        body: jsonStr,
-    })
+    try {
+        const res = await fetch('/edit_redir', {
+            method: 'post',
+            body: jsonStr,
+        });
 
-    if (res.status == 200) {
-        showInfobox("Alias modified succesfully !");
-    } else {
-        showInfobox("An error occured while creating the alias...");
+        const resText = await res.text();
+
+        if (res.status == 200) {
+            showInfobox("Alias edited succesfully !");
+        } else {
+            showInfobox("Edit error:\n" + resText);
+        }
+
+    } catch (error) {
+        showInfobox(error);
     }
 }
 
@@ -555,7 +571,7 @@ async function editRedir(jsonObj) {
  * Backend call to remove a redirection
  */
 async function delRedir(form) {
-    showInfobox("Removing a redir...");
+    showInfobox("Removing alias " + jsonObj['alias']);
 
     try {
         const res = await fetch('/del_redir', {
@@ -568,7 +584,7 @@ async function delRedir(form) {
         if (resText.includes("'action': 'delete'")) {
             showInfobox("Alias removed succesfully !");
         } else {
-            showInfobox("Error: " + resText);
+            showInfobox("Remove error:\n" + resText);
         }
 
     } catch (error) {

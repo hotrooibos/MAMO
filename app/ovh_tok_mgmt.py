@@ -7,7 +7,7 @@ import json
 import os
 import ovh
 
-ROOTDIR = os.path.dirname(os.path.abspath(__file__))
+ROOTDIR = os.path.dirname(os.path.abspath(__file__)) + "/../"
 CONFIG = ROOTDIR + "/config.json"
 
 
@@ -27,7 +27,7 @@ def purge_ovh_tokens(client: ovh.Client):
     result = client.get("/me/api/application")
     for id in result:
         token = client.delete(f"/me/api/application/{id}")
-        print("All tokens have been deleted")
+    print("All tokens have been deleted")
 
 
 # Read config file
@@ -45,7 +45,7 @@ client = ovh.Client(
 )
 
 try:
-    delete_ovh_token(client, "249041")
+    # delete_ovh_token(client, "249041")
     # purge_ovh_tokens(client) # !!! Delete ALL existing tokens !!!
     list_ovh_tokens(client)
 
