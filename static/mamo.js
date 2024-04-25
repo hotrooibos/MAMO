@@ -157,7 +157,7 @@ const rowTemplate = (key, name, date, alias, to) => {
     `<tr id="${key}">
         <td data-alias-item="name">${name}</td>
         <td data-alias-item="date"><time>${date}</time></td>
-        <td data-alias-item="alias">${alias}<button class="uuid-btn">UUID</button></td>
+        <td data-alias-item="alias">${alias}<button class="randword-btn">random-word</button><button class="uuid-btn">UUID</button></td>
         <td data-alias-item="to">${to}</td>
         <td data-alias-item="edit" class="text-center no-wrap">
             <button class="btn-edit"><i data-feather="edit"></i></button>
@@ -236,9 +236,11 @@ function addRow(e) {
 function setEditable(row) {
     const tdArr = row.querySelectorAll('td');
     const uuidBtn = row.querySelector('.uuid-btn');
+    const randwordBtn = row.querySelector('.randword-btn');
 
     row.__edit = true;
     uuidBtn.style.visibility = "visible";
+    randwordBtn.style.visibility = "visible";
 
     // Make TDs editables
     for (const td of tdArr) {
@@ -438,7 +440,9 @@ function lockRows() {
         }
 
         const uuidBtn = tr.querySelector('.uuid-btn');
+        const randwordBtn = tr.querySelector('.randword-btn');
         uuidBtn.style.visibility = "hidden";
+        randwordBtn.style.visibility = "hidden";
 
         // For all rows under edition :
         //  - Terminate row/cells edition
@@ -471,6 +475,7 @@ function cancelAliasOperations() {
 
 function setActionBtns() {
     const uuidBtns = doc.querySelectorAll('.uuid-btn');
+    const randwordBtns = doc.querySelectorAll('.randword-btn');
     const delBtns = doc.querySelectorAll('.btn-del');
     const editBtns = doc.querySelectorAll('.btn-edit');
 
@@ -478,6 +483,14 @@ function setActionBtns() {
     for (const btn of uuidBtns) {
         btn.addEventListener('click', () => {
             let newAlias = crypto.randomUUID() + "@" + workingDomain;
+            btn.parentElement.childNodes[0].data = newAlias;
+        });
+    }
+
+    // Random word gen buttons
+    for (const btn of randwordBtns) {
+        btn.addEventListener('click', async () => {
+            let newAlias = await genName() + "@" + workingDomain;
             btn.parentElement.childNodes[0].data = newAlias;
         });
     }
@@ -650,6 +663,20 @@ async function synCheck(e, domain=workingDomain) {
 }
 
 
+/*
+ * Generate a random word from adjectives + nouns dictionnaries
+ */
+async function genName(e) {
+    const res = await fetch('/gen_name', {
+        method: 'post'
+    });
+
+    if (res.status == 200) {
+        const resText = await res.text();
+        console.log(resText);
+        return resText;
+    }
+}
 
 /*
  *

@@ -113,7 +113,17 @@ async def del_redir() -> str:
 
 	except Exception as e:
 		qr.abort(400, description=e)
-	
+
+
+@app.route('/gen_name', methods=['POST'])
+async def gen_name() -> str:
+	try:
+		r = model.generate_name()
+
+		return r, 200
+
+	except Exception as e:
+		qr.abort(400, description=e)
 
 
 """	Main app

@@ -2,7 +2,7 @@
 import json
 import os
 import ovh
-import strings
+import random
 import time
 
 
@@ -295,6 +295,19 @@ def write_config(config_redir: dict):
 			  encoding='utf-8') as json_file:
 		json.dump(config, json_file, indent=4)
 
+
+def generate_name() -> str:
+	with open(file=ROOTDIR + "static/adjectives.json",
+			mode='r',
+			encoding='utf-8') as json_file:
+		adjectives = json.load(json_file)
+
+	with open(file=ROOTDIR + "static/nouns.json",
+			mode='r',
+			encoding='utf-8') as json_file:
+		nouns = json.load(json_file)
+
+	return f"{random.choice(adjectives)}-{random.choice(nouns)}"
 
 
 ROOTDIR = os.path.dirname(os.path.abspath(__file__)) + "/../"

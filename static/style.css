@@ -208,7 +208,8 @@ h1 {
     overflow: hidden;
 }
 
-.uuid-btn {
+.uuid-btn,
+.randword-btn {
     visibility: hidden;
     float: right;
     opacity: .6;
