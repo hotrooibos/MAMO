@@ -584,7 +584,7 @@ async function editRedir(jsonObj) {
  * Backend call to remove a redirection
  */
 async function delRedir(form) {
-    showInfobox("Removing alias " + jsonObj['alias']);
+    showInfobox("Removing alias");
 
     try {
         const res = await fetch('/del_redir', {
