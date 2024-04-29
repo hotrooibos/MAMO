@@ -637,28 +637,58 @@ async function synCheck(e, domain=workingDomain) {
         body: JSON.stringify(domain),
     });
 
+    let resText = await res.text();
+    resText = JSON.parse(resText);
+
+    // Add elements to the modal window
+    
+    // Remote alias count
+    let p = doc.createElement('p');
+    p.innerText = "Alias count in remote : " + resText[0];
+    synDialog.append(p);
+
     if (res.status == 200) {
-        let resText = await res.text();
-        resText = JSON.parse(resText);
-        let p = doc.createElement('p');
-        
-        p.innerText = "Alias unknown from remote :"
-        synDialog.append(p);
-        for (const i of resText[0]) {
-            p = doc.createElement('p');
-            p.innerText = i;
+        let addBtn;
+
+        // List of aliases unknown from remote
+        if (resText[1].length > 0) {
+            let p = doc.createElement('p');
+            p.innerText = "Alias unknown from remote :"
             synDialog.append(p);
+            
+            for (const i of resText[1]) {
+                p = doc.createElement('p');
+                p.innerText = i;
+                synDialog.append(p);
+
+                addBtn = doc.createElement('button');
+                addBtn.value = "add";
+                addBtn.innerText = "ADD";
+                p.append(addBtn);
+            }
         }
 
-        p = doc.createElement('p');
-        p.innerText = "Alias unknown locally :"
-        synDialog.append(p);
-        for (const i of resText[1]) {
+        // List of aliases unknown from local alias config
+        if (resText[2].length > 0) {
             p = doc.createElement('p');
-            p.innerText = i;
+            p.innerText = "Alias unknown locally :"
             synDialog.append(p);
+            
+            for (const i of resText[2]) {
+                p = doc.createElement('p');
+                p.innerText = i;
+                synDialog.append(p);
+
+                addBtn = doc.createElement('button');
+                addBtn.value = "add";
+                addBtn.innerText = "ADD";
+                p.append(addBtn);
+            }
         }
+        
         synDialog.showModal();
+    } else {
+        showInfobox("Error:\n" + resText);
     }
 }
 
@@ -673,7 +703,6 @@ async function genName(e) {
 
     if (res.status == 200) {
         const resText = await res.text();
-        console.log(resText);
         return resText;
     }
 }

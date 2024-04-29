@@ -3,6 +3,7 @@ import json
 import os
 import ovh
 import random
+import re
 import time
 
 
@@ -226,8 +227,6 @@ def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 			- list of local entries unknown from remote
 			- list of remote entries unknown from local
 	'''
-	dry = True # TODO remove. This function will always be "dry", it's just a check
-
 	list_local = []
 	list_remote = []
 
@@ -236,7 +235,7 @@ def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 
 	# Loop in the local config and append
 	# to list_local redirections unknown from remote
-	for id, v in config_redir.items():
+	for id in config_redir:
 		try:
 			compare(id, config_redir[id], redirs_remote[id])
 
@@ -247,7 +246,7 @@ def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 
 	# Loop in the remote config and append
 	# to list_remote redirections unknown from local
-	for id, v in redirs_remote.items():
+	for id in redirs_remote:
 		try:
 			compare(id, config_redir[id], redirs_remote[id])
 
@@ -255,8 +254,10 @@ def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 			alias = redirs_remote[id]['alias']
 			to = redirs_remote[id]['to']
 			list_remote.append((id, alias, to))
-			
-	return list_local, list_remote
+	
+	# Return a tuple containing the count of remote redirections,
+	# and two tuples containing tuples of missing redirs
+	return len(redirs_remote), list_local, list_remote
 
 
 def compare(id: str, config_data: dict, remote_data: dict) -> int:
