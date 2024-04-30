@@ -157,7 +157,12 @@ const rowTemplate = (key, name, date, alias, to) => {
     `<tr id="${key}">
         <td data-alias-item="name">${name}</td>
         <td data-alias-item="date"><time>${date}</time></td>
-        <td data-alias-item="alias">${alias}<button class="randword-btn">random-word</button><button class="uuid-btn">UUID</button></td>
+        <td data-alias-item="alias">
+            ${alias}
+            <button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i> random-word</button>
+            <button class="uuid-btn"><i class="feather-16" data-feather="refresh-cw"></i> UUID</button>
+            <button class="clipboard-btn"><i class="feather-16" data-feather="clipboard"></i></button>
+        </td>
         <td data-alias-item="to">${to}</td>
         <td data-alias-item="edit" class="text-center no-wrap">
             <button class="btn-edit"><i data-feather="edit"></i></button>
@@ -235,10 +240,12 @@ function addRow(e) {
  */
 function setEditable(row) {
     const tdArr = row.querySelectorAll('td');
+    const clipboardBtn = row.querySelector('.clipboard-btn');
     const uuidBtn = row.querySelector('.uuid-btn');
     const randwordBtn = row.querySelector('.randword-btn');
 
     row.__edit = true;
+    clipboardBtn.style.visibility = "visible";
     uuidBtn.style.visibility = "visible";
     randwordBtn.style.visibility = "visible";
 
@@ -439,8 +446,10 @@ function lockRows() {
             continue;
         }
 
+        const clipboardBtn = tr.querySelector('.clipboard-btn');
         const uuidBtn = tr.querySelector('.uuid-btn');
         const randwordBtn = tr.querySelector('.randword-btn');
+        clipboardBtn.style.visibility = "hidden";
         uuidBtn.style.visibility = "hidden";
         randwordBtn.style.visibility = "hidden";
 
@@ -474,15 +483,28 @@ function cancelAliasOperations() {
 
 
 function setActionBtns() {
+    const clipboardBtns = doc.querySelectorAll('.clipboard-btn');
     const uuidBtns = doc.querySelectorAll('.uuid-btn');
     const randwordBtns = doc.querySelectorAll('.randword-btn');
     const delBtns = doc.querySelectorAll('.btn-del');
     const editBtns = doc.querySelectorAll('.btn-edit');
 
+    // Copy to clipboard buttons
+    for (const btn of clipboardBtns) {
+        btn.addEventListener('click', () => {
+            const parentTd = btn.parentElement;
+            let copyText = parentTd.childNodes[0].data;
+
+            navigator.clipboard.writeText(copyText);
+            console.log(copyText);
+            showInfobox(copyText + " copied to clipboard");
+        });
+    }
+
     // UUID gen buttons
     for (const btn of uuidBtns) {
         btn.addEventListener('click', () => {
-            let newAlias = crypto.randomUUID() + "@" + workingDomain;
+            const newAlias = crypto.randomUUID() + "@" + workingDomain;
             btn.parentElement.childNodes[0].data = newAlias;
         });
     }
@@ -490,7 +512,7 @@ function setActionBtns() {
     // Random word gen buttons
     for (const btn of randwordBtns) {
         btn.addEventListener('click', async () => {
-            let newAlias = await genName() + "@" + workingDomain;
+            const newAlias = await genName() + "@" + workingDomain;
             btn.parentElement.childNodes[0].data = newAlias;
         });
     }

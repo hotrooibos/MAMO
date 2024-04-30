@@ -201,6 +201,15 @@ h1 {
 .hover:text-black:hover {
     color: var(--color-text);
 }
+.feather-16{
+    width: 16px;
+    height: 16px;
+}
+.feather-32{
+    width: 32px;
+    height: 32px;
+}
+
 .btn-del,
 .btn-edit {
     background-color: transparent;
@@ -208,6 +217,7 @@ h1 {
     overflow: hidden;
 }
 
+.clipboard-btn,
 .uuid-btn,
 .randword-btn {
     visibility: hidden;
