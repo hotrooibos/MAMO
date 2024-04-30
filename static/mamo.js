@@ -494,9 +494,8 @@ function setActionBtns() {
         btn.addEventListener('click', () => {
             const parentTd = btn.parentElement;
             let copyText = parentTd.childNodes[0].data;
-
+            copyText = copyText.trim();
             navigator.clipboard.writeText(copyText);
-            console.log(copyText);
             showInfobox(copyText + " copied to clipboard");
         });
     }
