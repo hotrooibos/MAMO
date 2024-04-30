@@ -159,7 +159,7 @@ const rowTemplate = (key, name, date, alias, to) => {
         <td data-alias-item="date"><time>${date}</time></td>
         <td data-alias-item="alias">
             ${alias}
-            <button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i> random-word</button>
+            <button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i> word</button>
             <button class="uuid-btn"><i class="feather-16" data-feather="refresh-cw"></i> UUID</button>
             <button class="clipboard-btn"><i class="feather-16" data-feather="clipboard"></i></button>
         </td>
@@ -496,7 +496,7 @@ function setActionBtns() {
             let copyText = parentTd.childNodes[0].data;
             copyText = copyText.trim();
             navigator.clipboard.writeText(copyText);
-            showInfobox(copyText + " copied to clipboard");
+            showInfobox(`${copyText} copied to clipboard`);
         });
     }
 

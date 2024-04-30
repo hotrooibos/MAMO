@@ -92,7 +92,7 @@ tr:nth-child(odd) { background-color: var(--color-bg); }
 tr:nth-child(even) { background-color: var(--color-hover); }
 
 td, th {
-    border: 1px #d8d8d8 dashed;
+    border: 1px #d8d8d849 dashed;
     text-align: left;
     padding: .2em .5em;
     overflow: hidden;
@@ -222,7 +222,23 @@ h1 {
 .randword-btn {
     visibility: hidden;
     float: right;
-    opacity: .6;
+    margin: 0 .2em 0;
+    padding: .4em;
+    border: none;
+    border-radius: .2em;
+    opacity: .4;
+}
+
+.clipboard-btn:hover,
+.uuid-btn:hover,
+.randword-btn:hover {
+    opacity: .8;
+}
+
+.clipboard-btn:focus,
+.uuid-btn:focus,
+.randword-btn:focus {
+    outline: none;
 }
 
 .fade-bottom {
