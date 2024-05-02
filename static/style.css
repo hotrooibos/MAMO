@@ -220,13 +220,17 @@ h1 {
 .clipboard-btn,
 .uuid-btn,
 .randword-btn {
-    visibility: hidden;
     float: right;
     margin: 0 .2em 0;
     padding: .4em;
     border: none;
     border-radius: .2em;
     opacity: .4;
+}
+
+.uuid-btn,
+.randword-btn {
+    display: none;
 }
 
 .clipboard-btn:hover,

@@ -240,14 +240,12 @@ function addRow(e) {
  */
 function setEditable(row) {
     const tdArr = row.querySelectorAll('td');
-    const clipboardBtn = row.querySelector('.clipboard-btn');
     const uuidBtn = row.querySelector('.uuid-btn');
     const randwordBtn = row.querySelector('.randword-btn');
 
     row.__edit = true;
-    clipboardBtn.style.visibility = "visible";
-    uuidBtn.style.visibility = "visible";
-    randwordBtn.style.visibility = "visible";
+    uuidBtn.style.display = " block";
+    randwordBtn.style.display = "block";
 
     // Make TDs editables
     for (const td of tdArr) {
@@ -446,12 +444,10 @@ function lockRows() {
             continue;
         }
 
-        const clipboardBtn = tr.querySelector('.clipboard-btn');
         const uuidBtn = tr.querySelector('.uuid-btn');
         const randwordBtn = tr.querySelector('.randword-btn');
-        clipboardBtn.style.visibility = "hidden";
-        uuidBtn.style.visibility = "hidden";
-        randwordBtn.style.visibility = "hidden";
+        uuidBtn.style.display = "none";
+        randwordBtn.style.display = "none";
 
         // For all rows under edition :
         //  - Terminate row/cells edition
