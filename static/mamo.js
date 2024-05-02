@@ -19,7 +19,6 @@ const synDialog         = doc.querySelector('#dialog-syn');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
 const tbody             = redirTabl.querySelector('tbody');
-const clipboardBtns     = doc.querySelectorAll('.clipboard-btn');
 
 // Table servitudes
 const showHideBtn       = doc.querySelector('#show-hide');
@@ -228,10 +227,11 @@ function addRow(e) {
     tbody.insertAdjacentElement("afterbegin", newRow);
     feather.replace();
 
-    // Affect click listeners to the two buttons in
-    // the edition column (edit + remove icons)
+    // Affect click listeners to all the
+    // buttons belonging to the row
     setActionBtns();
 
+    // Enable Save / Cancel btn
     saveAliasBtn.disabled = false;
     cancelAliasBtn.disabled = false;
 }
@@ -482,10 +482,12 @@ function cancelAliasOperations() {
 
 
 /*
- * Copy a string to clipboard
+ * Copy alias to clipboard
  */
-function clipboardCopy(str) {
-    let copyText = str;
+function aliasCopy() {
+    console.log("trest");
+    let parentTd = this.parentElement;
+    let copyText = parentTd.childNodes[0].data;
     copyText = copyText.trim();
     navigator.clipboard.writeText(copyText);
     showInfobox(`${copyText} copied to clipboard`);
@@ -493,58 +495,54 @@ function clipboardCopy(str) {
 
 
 /*
- * Alias generators
+ * Add action for tool buttons
  */
-async function genAlias() {
-    console.log(this);
-
+async function toolBtnAction() {
+    // UUID generation for alias
     if (this.classList.contains('uuid-btn')) {
         const newAlias = crypto.randomUUID() + "@" + workingDomain;
         this.parentElement.childNodes[0].data = newAlias;
-        showInfobox(`UUID generated`);
 
+    // Random word generation for alias
     } else if (this.classList.contains('randword-btn')) {
         const newAlias = await genName() + "@" + workingDomain;
         this.parentElement.childNodes[0].data = newAlias;
+    
+    // Delete btn
+    } else if (this.classList.contains('btn-del')) {
+        const parent = this.parentElement.closest('tr');
+        const id = parent.id;
+        const alias = parent.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
+        const dialogText = `Remove alias ${alias} ?`;
+        delDialog.querySelector('p').innerText = dialogText;
+        delDialog.__delArr = [id];
+        delDialog.showModal();
     }
 }
 
 
 function setActionBtns() {
+    const clipboardBtns = doc.querySelectorAll('.clipboard-btn');
     const uuidBtns = doc.querySelectorAll('.uuid-btn');
     const randwordBtns = doc.querySelectorAll('.randword-btn');
     const delBtns = doc.querySelectorAll('.btn-del');
     const editBtns = doc.querySelectorAll('.btn-edit');
 
     // Copy to clipboard buttons
-    for (const btn of clipboardBtns) {
-        let parentTd = btn.parentElement;
-            let copyText = parentTd.childNodes[0].data;
-        btn.addEventListener('click', clipboardCopy(copyText));
-    }
+    for (const btn of clipboardBtns)
+        btn.addEventListener('click', aliasCopy);
 
     // UUID gen buttons
     for (const btn of uuidBtns)
-        btn.addEventListener('click', genAlias);
+        btn.addEventListener('click', toolBtnAction);
 
     // Random word gen buttons
-    for (const btn of randwordBtns) {
-        btn.addEventListener('click', genAlias);
-    }
+    for (const btn of randwordBtns)
+        btn.addEventListener('click', toolBtnAction);
 
     // Delete buttons, show modal
-    for (const btn of delBtns) {
-        btn.addEventListener('click', () => {
-            const parent = btn.parentElement.closest('tr');
-            const id = parent.id;
-            const alias = parent.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
-            const dialogText = `Remove alias ${alias} ?`;
-            delDialog.querySelector('p').innerText = dialogText;
-            delDialog.__delArr = [id];
-            delDialog.showModal();
-        },
-        { once: true });
-    }
+    for (const btn of delBtns)
+        btn.addEventListener('click', toolBtnAction);
 
     // Edit buttons
     for (const btn of editBtns)
