@@ -643,6 +643,8 @@ async function delRedir(form) {
             showInfobox("Remove error:\n" + resText);
         }
 
+        return res.status;
+
     } catch (error) {
         showInfobox(error);
     }
@@ -841,17 +843,23 @@ refreshBtn.addEventListener('click', async (e) => {
  */
 syncBtn.addEventListener('click', synCheck);
 
+
 /*
  * Delete dialog box
  */
 delDialog.addEventListener('close', async (e) => {
-    // Remove alias dialbox
     if (delDialog.returnValue === "yes") {
-        const delArr = JSON.stringify(delDialog.__delArr);
-        await delRedir(delArr);
+        const delIdArr = JSON.stringify(delDialog.__delArr);
 
-        const aliasData = await getAliasList(e, workingDomain);
-        updateTable(aliasData);
+        // Remove alias
+        res = await delRedir(delIdArr);
+
+        if (res == 200) {
+            // Remove row from table
+            for (const tr of tbody.querySelectorAll('tr'))
+                if (delIdArr.includes(tr.id))
+                    tr.remove();
+        }
     }
 });
 
