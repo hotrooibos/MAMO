@@ -510,13 +510,20 @@ async function toolBtnAction() {
     
     // Delete btn
     } else if (this.classList.contains('btn-del')) {
-        const parent = this.parentElement.closest('tr');
-        const id = parent.id;
-        const alias = parent.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
-        const dialogText = `Remove alias ${alias} ?`;
-        delDialog.querySelector('p').innerText = dialogText;
-        delDialog.__delArr = [id];
-        delDialog.showModal();
+        const parentTr = this.parentElement.closest('tr');
+        const id = parentTr.id;
+
+        // If parent row has an ID, we want to delete an existing alias,
+        // Else, we are just canceling/removing a new alias creation row
+        if (id) {
+            const alias = parentTr.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
+            const dialogText = `Remove alias ${alias} ?`;
+            delDialog.querySelector('p').innerText = dialogText;
+            delDialog.__delArr = [id];
+            delDialog.showModal();            
+        } else {
+            parentTr.remove();
+        }
     }
 }
 
