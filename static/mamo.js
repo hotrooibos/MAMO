@@ -19,6 +19,7 @@ const synDialog         = doc.querySelector('#dialog-syn');
 const redirList         = doc.querySelector('#redir-list');
 const redirTabl         = doc.querySelector('#redir-tab');
 const tbody             = redirTabl.querySelector('tbody');
+const clipboardBtns     = doc.querySelectorAll('.clipboard-btn');
 
 // Table servitudes
 const showHideBtn       = doc.querySelector('#show-hide');
@@ -182,6 +183,7 @@ function updateTable(jsonObj) {
 
     let newTbodyContent = "";
 
+    // For each alias, add row to HTML string from row template
     for (const key in jsonObj)
         newTbodyContent += rowTemplate(key,
                                        jsonObj[key]['name'],
@@ -189,6 +191,7 @@ function updateTable(jsonObj) {
                                        jsonObj[key]['alias'],
                                        jsonObj[key]['to']);
 
+    // Apply the HTML string to the table body HTML
     tbody.innerHTML = newTbodyContent;
 
     // let endTime = performance.now()
@@ -478,8 +481,36 @@ function cancelAliasOperations() {
 }
 
 
+/*
+ * Copy a string to clipboard
+ */
+function clipboardCopy(str) {
+    let copyText = str;
+    copyText = copyText.trim();
+    navigator.clipboard.writeText(copyText);
+    showInfobox(`${copyText} copied to clipboard`);
+}
+
+
+/*
+ * Alias generators
+ */
+async function genAlias() {
+    console.log(this);
+
+    if (this.classList.contains('uuid-btn')) {
+        const newAlias = crypto.randomUUID() + "@" + workingDomain;
+        this.parentElement.childNodes[0].data = newAlias;
+        showInfobox(`UUID generated`);
+
+    } else if (this.classList.contains('randword-btn')) {
+        const newAlias = await genName() + "@" + workingDomain;
+        this.parentElement.childNodes[0].data = newAlias;
+    }
+}
+
+
 function setActionBtns() {
-    const clipboardBtns = doc.querySelectorAll('.clipboard-btn');
     const uuidBtns = doc.querySelectorAll('.uuid-btn');
     const randwordBtns = doc.querySelectorAll('.randword-btn');
     const delBtns = doc.querySelectorAll('.btn-del');
@@ -487,29 +518,18 @@ function setActionBtns() {
 
     // Copy to clipboard buttons
     for (const btn of clipboardBtns) {
-        btn.addEventListener('click', () => {
-            const parentTd = btn.parentElement;
+        let parentTd = btn.parentElement;
             let copyText = parentTd.childNodes[0].data;
-            copyText = copyText.trim();
-            navigator.clipboard.writeText(copyText);
-            showInfobox(`${copyText} copied to clipboard`);
-        });
+        btn.addEventListener('click', clipboardCopy(copyText));
     }
 
     // UUID gen buttons
-    for (const btn of uuidBtns) {
-        btn.addEventListener('click', () => {
-            const newAlias = crypto.randomUUID() + "@" + workingDomain;
-            btn.parentElement.childNodes[0].data = newAlias;
-        });
-    }
+    for (const btn of uuidBtns)
+        btn.addEventListener('click', genAlias);
 
     // Random word gen buttons
     for (const btn of randwordBtns) {
-        btn.addEventListener('click', async () => {
-            const newAlias = await genName() + "@" + workingDomain;
-            btn.parentElement.childNodes[0].data = newAlias;
-        });
+        btn.addEventListener('click', genAlias);
     }
 
     // Delete buttons, show modal
@@ -522,7 +542,8 @@ function setActionBtns() {
             delDialog.querySelector('p').innerText = dialogText;
             delDialog.__delArr = [id];
             delDialog.showModal();
-        })
+        },
+        { once: true });
     }
 
     // Edit buttons
@@ -815,13 +836,6 @@ refreshBtn.addEventListener('click', async (e) => {
  */
 syncBtn.addEventListener('click', synCheck);
 
-
-/*
- * Table : actions btns (edit + delete)
- */
-setActionBtns();
-
-
 /*
  * Delete dialog box
  */
@@ -901,6 +915,12 @@ testBtn.addEventListener('click', (e) => {
 
 });
 
+
+/*
+ * On page load :
+ *  - get last user parameters from local storage
+ *  - fetch all locally known aliases and build table
+ */
 window.addEventListener('load', async (e) => {
     if (localStorage.getItem('workingDomain')) {
         workingDomain = localStorage.getItem('workingDomain');
