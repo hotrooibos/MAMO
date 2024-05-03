@@ -211,11 +211,9 @@ def remove_redir(id: int) -> bool:
 		res = client.delete(f'/email/domain/{domain}/redirection/{id}')
 		del config_redir[id]
 		write_config(config_redir)
-		print(res)
 		return res
 		
-	except ovh.APIError as e:
-		print(e)
+	except ovh.APIError:
 		raise
 	
 

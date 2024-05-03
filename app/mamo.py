@@ -35,17 +35,25 @@ async def index():
 
 @app.route('/get_domains')
 async def get_domains() -> str:
-	domains = model.domains
-	return domains, 200
+	try:
+		domains = model.domains
+		return domains, 200
+
+	except Exception as e:
+		return str(e), 400
 
 
 @app.route('/get_redirs', methods=['POST'])
 async def get_redirs() -> str:
-	body = await qr.request.data
-	b = json.loads(body)
-	selected_domain = b
-	redirs = model.get_redirs(selected_domain)
-	return redirs, 200
+	try:
+		body = await qr.request.data
+		b = json.loads(body)
+		selected_domain = b
+		redirs = model.get_redirs(selected_domain)
+		return redirs, 200
+
+	except Exception as e:
+		return str(e), 400
 
 
 @app.route('/syn_check', methods=['POST'])
@@ -62,7 +70,7 @@ async def syn_check() -> str:
 		return json.dumps(res), 200
 	
 	except Exception as e:
-		qr.abort(400, description=e)
+		return str(e), 400
 
 
 @app.route('/set_redir', methods=['POST'])
@@ -80,7 +88,7 @@ async def set_redir() -> str:
 		return res, 200
 	
 	except Exception as e:
-		qr.abort(400, description=e)
+		return str(e), 400
 
 
 @app.route('/edit_redir', methods=['POST'])
@@ -100,7 +108,7 @@ async def edit_redir() -> str:
 		return "Alias edited succesfully", 200
 	
 	except Exception as e:
-		qr.abort(400, description=e)
+		return str(e), 400
 
 
 @app.route('/del_redir', methods=['POST'])
@@ -117,7 +125,7 @@ async def del_redir() -> str:
 		return str(r), 200
 
 	except Exception as e:
-		qr.abort(400, description=e)
+		return str(e), 400
 
 
 @app.route('/gen_name', methods=['POST'])
@@ -128,13 +136,12 @@ async def gen_name() -> str:
 		return r, 200
 
 	except Exception as e:
-		qr.abort(400, description=e)
+		return str(e), 400
 
 
 """	Main app
 
 """
-
 # If local config is empty, try to retrieve
 # an existing remote redirections
 if len(model.config_redir) < 1:

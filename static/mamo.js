@@ -506,6 +506,16 @@ async function toolBtnAction() {
     // Random word generation for alias
     } else if (this.classList.contains('randword-btn')) {
         const newAlias = await genName() + "@" + workingDomain;
+
+        // TODO : check if generated alias doesnt already exist, and if so, generate another
+        // const aliasData = await getAliasList(workingDomain);
+        // let aliasArr = [];
+        // console.log(Object.entries(aliasData));
+
+        // for (const [k, v] in Object.entries(aliasData)) {
+        //     console.log(typeof(v['0']));
+        // }
+
         this.parentElement.childNodes[0].data = newAlias;
     
     // Delete btn
@@ -519,7 +529,10 @@ async function toolBtnAction() {
             const alias = parentTr.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
             const dialogText = `Remove alias ${alias} ?`;
             delDialog.querySelector('p').innerText = dialogText;
+            // TODO using an array for future bulk deletion
+            // atm, there will only be one id in the __delArr
             delDialog.__delArr = [id];
+            delDialog.returnValue = 'no';
             delDialog.showModal();            
         } else {
             parentTr.remove();
