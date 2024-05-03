@@ -1,13 +1,13 @@
-/*
- * MAMO web view
- * https://github.com/hotrooibos/MAMO
- *
- * Copyright Antoine Marzin
- * Released under the MIT license
- * https://github.com/hotrooibos/MAMO?tab=MIT-1-ov-file
- *
- * ASCII comments : https://www.patorjk.com/software/taag/#p=display&f=ANSI%20Regular
- */
+/*! *****************************************************************************
+MAMO web view
+https://github.com/hotrooibos/MAMO
+
+Author: Antoine Marzin
+Released under the MIT license
+https://github.com/hotrooibos/MAMO?tab=MIT-1-ov-file
+
+ASCII comments : https://www.patorjk.com/software/taag/#p=display&f=ANSI%20Regular
+***************************************************************************** */
 
 // General
 const doc               = document;
@@ -70,7 +70,7 @@ function showInfobox(msg) {
 }
 
 
-/*
+/**
  * CONVERT epoch dates from <time> tags into readable date
  */
 function convertEpoch() {
@@ -96,7 +96,7 @@ function convertEpoch() {
 }
 
 
-/*
+/**
  * Control that an alias (with attributes name, alias, to)
  * format is valid (no linebreak, e-mail format...)
  */
@@ -133,7 +133,7 @@ function controlAlias(td) {
 }
 
 
-/*
+/**
  * Disable use of Enter key to prevent line break
  */
 function disableEnterKey(e) {
@@ -173,7 +173,7 @@ const rowTemplate = (key, name, date, alias, to) => {
     return res;
 };
 
-/*
+/**
  * Table
  * Update the table with JSON data in parameter
  */
@@ -207,7 +207,7 @@ function updateTable(jsonObj) {
 }
 
 
-/*
+/**
  * Add a new alias row
  */
 function addRow(e) {
@@ -237,7 +237,7 @@ function addRow(e) {
 }
 
 
-/*
+/**
  * Transform the given row (<TR> element)
  * and its children to an editable
  */
@@ -271,7 +271,7 @@ function setEditable(row) {
 }
 
 
-/*
+/**
  * Makes cells from a specific row editables
  * Called when clicking an edit row btn
  */
@@ -286,7 +286,7 @@ function editRow(e) {
 }
 
 
-/*
+/**
  * Table sort
  */
 function sortTable(n) {
@@ -349,7 +349,7 @@ function sortTable(n) {
 }
 
 
-/*
+/**
  * Create/save modified aliases 
  * Called when clicking the save btn
  */
@@ -433,7 +433,7 @@ async function saveAlias(e) {
 }
 
 
-/*
+/**
  * Lock editable cells (td)
  */
 function lockRows() {
@@ -466,7 +466,7 @@ function lockRows() {
 }
 
 
-/*
+/**
  * Cancel all ongoing editions on table by
  * rolling back values to initial ones
  */
@@ -481,7 +481,7 @@ function cancelAliasOperations() {
 }
 
 
-/*
+/**
  * Copy alias to clipboard
  */
 function aliasCopy() {
@@ -494,7 +494,28 @@ function aliasCopy() {
 }
 
 
-/*
+/**
+ * Synchronisation : add alias
+ */
+function synAddAlias() {
+    switch (this.name) {
+        case "create-alias":
+            alert('CREATE ALIAS in OVH : ' + this);
+            console.log(this);
+            break;
+        
+        case "remote-alias-id":
+            alert('Add exiting alias localy : ' + this);
+            console.log(this);
+            break;
+    
+        default:
+            break;
+    }
+}
+
+
+/**
  * Add action for tool buttons
  */
 async function toolBtnAction() {
@@ -541,6 +562,9 @@ async function toolBtnAction() {
 }
 
 
+/**
+ * Set actions for buttons of each row
+ */
 function setActionBtns() {
     const clipboardBtns = doc.querySelectorAll('.clipboard-btn');
     const uuidBtns = doc.querySelectorAll('.uuid-btn');
@@ -580,7 +604,7 @@ function setActionBtns() {
  * 
  */
 
-/*
+/**
  * Backend call to create a redirection
  */
 async function createRedir(jsonObj) {
@@ -608,7 +632,7 @@ async function createRedir(jsonObj) {
 }
 
 
-/*
+/**
  * Backend call to edit a redirection
  */
 async function editRedir(jsonObj) {
@@ -636,7 +660,7 @@ async function editRedir(jsonObj) {
 }
 
 
-/*
+/**
  * Backend call to remove a redirection
  */
 async function delRedir(form) {
@@ -664,7 +688,7 @@ async function delRedir(form) {
 }
 
 
-/*
+/**
  * Backend call to get a string alias list
  * return it as a JSON object (dict)
  */
@@ -683,7 +707,7 @@ async function getAliasList(e, domain=workingDomain) {
 }
 
 
-/*
+/**
  * Check both local config and remote redirs,
  * and return two lists :
  *  - list of local entries unknown from remote
@@ -720,8 +744,10 @@ async function synCheck(e, domain=workingDomain) {
                 synDialog.append(p);
 
                 addBtn = doc.createElement('button');
-                addBtn.value = "add";
-                addBtn.innerText = "ADD";
+                addBtn.name = "create-alias";
+                addBtn.value = i;
+                addBtn.innerText = "Create alias";
+                addBtn.addEventListener('click', synAddAlias);
                 p.append(addBtn);
             }
         }
@@ -732,18 +758,21 @@ async function synCheck(e, domain=workingDomain) {
             p.innerText = "Alias unknown locally :"
             synDialog.append(p);
             
-            for (const i of resText[2]) {
+            for (const [k, v] of resText[2].entries()) {
                 p = doc.createElement('p');
-                p.innerText = i;
+                p.innerText = v;
                 synDialog.append(p);
 
                 addBtn = doc.createElement('button');
-                addBtn.value = "add";
-                addBtn.innerText = "ADD";
+                addBtn.innerText = "Add";
+                addBtn.name = "remote-alias-id";
+                addBtn.value = resText[2][k][0];
+                addBtn.addEventListener('click', synAddAlias);
                 p.append(addBtn);
             }
         }
         
+        synDialog.returnValue = null;
         synDialog.showModal();
     } else {
         showInfobox("Error:\n" + resText);
@@ -751,7 +780,7 @@ async function synCheck(e, domain=workingDomain) {
 }
 
 
-/*
+/**
  * Generate a random word from adjectives + nouns dictionnaries
  */
 async function genName(e) {
@@ -775,7 +804,7 @@ async function genName(e) {
  *
  */
 
-/*
+/**
  * Table : show/hide button
  */
 showHideBtn.addEventListener('click', (e) => {
@@ -794,19 +823,19 @@ showHideBtn.addEventListener('click', (e) => {
 });
 
 
-/*
+/**
  * Table : New alias link button
  */
 newAliasBtn.addEventListener('click', addRow);
 
 
-/*
+/**
  * Save button : save new/edit alias operations made in table
  */
 saveAliasBtn.addEventListener('click', saveAlias);
 
 
-/*
+/**
  * Cancel button : cancel all "new" and/or "edit" alias operations in table
  */
 cancelAliasBtn.addEventListener('click', (e) => {
@@ -817,7 +846,7 @@ cancelAliasBtn.addEventListener('click', (e) => {
 });
 
 
-/*
+/**
  * Domain select : change working domain
  * Update localstorage to remember current selection,
  * and update the table to show redirections
@@ -832,7 +861,7 @@ domainSelect.addEventListener('change', async (e) => {
 });
 
 
-/*
+/**
  * Destination address select : change default destination address
  * Update localstorage to remember current selection,
  */
@@ -842,7 +871,7 @@ destSelect.addEventListener('change', async (e) => {
 });
 
 
-/*
+/**
  * Table refresh link button
  */
 refreshBtn.addEventListener('click', async (e) => {
@@ -857,7 +886,7 @@ refreshBtn.addEventListener('click', async (e) => {
 syncBtn.addEventListener('click', synCheck);
 
 
-/*
+/**
  * Delete dialog box
  */
 delDialog.addEventListener('close', async (e) => {
@@ -877,7 +906,7 @@ delDialog.addEventListener('close', async (e) => {
 });
 
 
-/*
+/**
  * Sync dialog box
  */
 synDialog.addEventListener('close', async (e) => {
@@ -885,7 +914,7 @@ synDialog.addEventListener('close', async (e) => {
 });
 
 
-/*
+/**
  * Find/search in table input : typing something
  */
 findInput.addEventListener('input', () => {
@@ -918,7 +947,7 @@ findInput.addEventListener('input', () => {
 });
 
 
-/*
+/**
  * Add alias form : clicking generate UUID link button
  */
 const testBtn = doc.querySelector('#test-btn');
@@ -942,7 +971,7 @@ testBtn.addEventListener('click', (e) => {
 });
 
 
-/*
+/**
  * On page load :
  *  - get last user parameters from local storage
  *  - fetch all locally known aliases and build table
