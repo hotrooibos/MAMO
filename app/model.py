@@ -58,35 +58,6 @@ def get_redirs(domain: str = 'all') -> dict:
 	return(redirs)
 
 
-def find_id(alias: str, to: str) -> str:
-	'''
-		Get a remove redirection ID by its alias/to
-		Return 0 if ID doesn't exists
-	'''
-	domain = alias.split('@')[1]
-
-	if domain not in domains:
-		raise
-	
-	id = None
-
-	# Try to get id from local config
-	for k, v in config_redir.items():
-		if v['alias'] == alias and v['to'] == to:
-			id = k
-			break
-
-	# Try to get id from OVH
-	if id == None:
-		redirs_remote = get_redirs_remote(domain)
-
-		for k, v in redirs_remote.items():
-			if v['alias'] == alias and v['to'] == to:
-				id = k
-
-	return id
-
-
 def create_redir_remote(alias: str, to: str) -> str:
 	'''
 		Create a new redirection in remote
@@ -107,17 +78,16 @@ def create_redir_remote(alias: str, to: str) -> str:
 				
 	except ovh.APIError as e:
 		print(f"create_redir_remote: {e}")
-		raise
 	
 
-def create_redir_local(id: int, name:str, alias: str, to: str):
+def create_redir_local(id: int, name:str, date:int, alias: str, to: str):
 	'''
 		Create a new redirection entry in configuration
 	'''
 	try:
 		new_redir = {
 			"name": name,
-			"date": int(time.time()),
+			"date": date,
 			"alias": alias,
 			"to": to
 		}
@@ -130,9 +100,12 @@ def create_redir_local(id: int, name:str, alias: str, to: str):
 		raise
 
 	
-def create_redir(name:str, alias: str, to: str) -> str:
+def create_redir(name:str, alias: str, to: str) -> tuple:
 	'''
 		Create a new redirection (remote + local)
+		Returns the redirection id if successful
+
+		Returns tuple of (id, name, date, alias, to)
 	'''
 	domain = alias.split('@')[1]
 
@@ -140,13 +113,21 @@ def create_redir(name:str, alias: str, to: str) -> str:
 		raise
 
 	try:
-		res = create_redir_remote(alias=alias,
-							   	  to=to)
+		create_redir_remote(alias=alias,
+							to=to)
+		
+		# Get ID from OVH
+		redirs_remote = get_redirs_remote(domain)
 
-		id = find_id(alias, to)
-		create_redir_local(id, name, alias, to)
+		for k, v in redirs_remote.items():
+			if v['alias'] == alias and v['to'] == to:
+				id = k
 
-		return res
+		date = int(time.time())
+
+		create_redir_local(id, name, date, alias, to)
+
+		return id, name, date, alias, to
 	
 	except ovh.APIError as e:
 		print(f"create_redir: {e}")
@@ -204,18 +185,27 @@ def remove_redir(id: int) -> bool:
 		if k == id:
 			alias = v['alias']
 			domain = alias.split('@')[1]
+			break
 
-
-	# Delete remote, and then local if success
+	# Delete remote
 	try:
 		res = client.delete(f'/email/domain/{domain}/redirection/{id}')
-		del config_redir[id]
-		write_config(config_redir)
-		return res
-		
+	
+	# If id (redirection not found), do not raise
+	# an error and proceed with local entry deletion
+	except ovh.ResourceNotFoundError as e:
+		print(e)
+		res = e
+
 	except ovh.APIError:
 		raise
 	
+	# Local entry deletion
+	del config_redir[id]
+	write_config(config_redir)
+
+	return res
+
 
 def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 	'''
@@ -240,7 +230,7 @@ def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 		except KeyError:
 			alias = config_redir[id]['alias']
 			to = config_redir[id]['to']
-			list_local.append((alias, to))
+			list_local.append((id, alias, to))
 
 	# Loop in the remote config and append
 	# to list_remote redirections unknown from local

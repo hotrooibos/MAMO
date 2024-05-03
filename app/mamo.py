@@ -76,16 +76,17 @@ async def syn_check() -> str:
 @app.route('/set_redir', methods=['POST'])
 async def set_redir() -> str:
 	form = await qr.request.data
+	print(f"FORM : {form}")
 	f = json.loads(form)
 	name = f['name']
-	alias = f['alias']
-	to = f['to']
+	alias = f['alias'].lower()
+	to = f['to'].lower()
 	
 	try:
 		res = model.create_redir(name=name,
 						   		 alias=alias,
 						   		 to=to)
-		return res, 200
+		return str(res), 200
 	
 	except Exception as e:
 		return str(e), 400
@@ -120,9 +121,9 @@ async def del_redir() -> str:
 	# atm, there will only be one id in the del_arr
 	try:
 		for id in del_arr:
-			r = model.remove_redir(id)
+			res = model.remove_redir(id)
 
-		return str(r), 200
+		return str(res), 200
 
 	except Exception as e:
 		return str(e), 400

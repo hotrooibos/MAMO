@@ -210,30 +210,48 @@ function updateTable(jsonObj) {
 /**
  * Add a new alias row
  */
-function addRow(e) {
-    // Create row and removes its id
+function addRow(context) {
     const newRow = doc.createElement('tr');
-    const domain = workingDomain == "all" ? "domain.com" : workingDomain;
-    
-    newRow.innerHTML = rowTemplate("",
-                                   "New alias",
-                                   "",
-                                   `alias@${domain}`,
-                                   destAddr);
-  
-    newRow.removeAttribute('id');
+    let id, name, date, alias, to;
 
-    setEditable(newRow);
+    // Context given, insert row with context informations
+    if (context) {
+        id = context.id;
+        name = context.name;
+        date = context.date;
+        alias = context.alias;
+        to = context.to;
+    }
+
+    // No context, create a new blank editable row
+    if (!context) {
+        const domain = workingDomain == "all" ? "domain.com" : workingDomain;
+        
+        name = "New alias";
+        alias = "alias@" + domain;
+        to = destAddr;
+    
+        // newRow.removeAttribute('id');
+        setEditable(newRow);
+        
+        // Enable Save / Cancel btn
+        saveAliasBtn.disabled = false;
+        cancelAliasBtn.disabled = false;
+    }
+
+    newRow.innerHTML = rowTemplate( context.id,
+                                    context.name,
+                                    context.date,
+                                    context.alias,
+                                    context.to);
+
     tbody.insertAdjacentElement("afterbegin", newRow);
+
     feather.replace();
 
     // Affect click listeners to all the
     // buttons belonging to the row
     setActionBtns();
-
-    // Enable Save / Cancel btn
-    saveAliasBtn.disabled = false;
-    cancelAliasBtn.disabled = false;
 }
 
 
@@ -283,6 +301,14 @@ function editRow(e) {
 
     saveAliasBtn.disabled = false;
     cancelAliasBtn.disabled = false;
+}
+
+/**
+ * Delete a row
+ */
+function delRow(row) {
+    console.log(row);
+    row.parentNode.removeChild(row);
 }
 
 
@@ -497,13 +523,51 @@ function aliasCopy() {
 /**
  * Synchronisation : add alias
  */
-function synAddAlias() {
+async function synAddAlias() {
     switch (this.name) {
+
+        // Create "locally known" alias in remote
+        // The alias doesn't really exists yet,
+        // so this actually creates the alias
         case "create-alias":
-            alert('CREATE ALIAS in OVH : ' + this);
-            console.log(this);
+            const value = this.value.split(',');
+            const name = "Alias created from sync";
+            const oldId = value[0];
+            const alias = value[1];
+            const to = value[2];
+
+            // Remove the old/local redirection
+            const arr = []
+            arr.push(oldId);
+
+            await delRedir(JSON.stringify(arr));
+
+            // Create the redirection
+            newRedir = {
+                "name" : name,
+                "alias" : alias,
+                "to" : to
+            }
+            const res = await createRedir(newRedir);
+            
+            if (res) {
+                const newId = res[0];
+                const date = res[2];
+    
+                // Remove the old row with the old ID
+                const oldRow = doc.querySelector(`tr[id="${oldId}"]`);
+    
+                delRow(oldRow);
+    
+                // Create the new row
+                addRow(newId, name, date, alias, to);
+            }
+
             break;
         
+        // Create "remotely known" alias in local
+        // The alias already exists and works,
+        // so this just makes the app know the alias
         case "remote-alias-id":
             alert('Add exiting alias localy : ' + this);
             console.log(this);
@@ -606,12 +670,19 @@ function setActionBtns() {
 
 /**
  * Backend call to create a redirection
+ * 
+ *  jsonObj = {
+ *      "name" : name,
+ *      "alias" : alias,
+ *      "to" : to
+ *  }
+ * 
+ * Returns a JSON Object {id, name, date, alias, to}
  */
 async function createRedir(jsonObj) {
     showInfobox("Creating new alias " + jsonObj['alias']);
 
     const jsonStr = JSON.stringify(jsonObj);
-    
     try {
         const res = await fetch('/set_redir', {
             method: 'post',
@@ -621,7 +692,8 @@ async function createRedir(jsonObj) {
         const resText = await res.text();
 
         if (res.status == 200) {
-            showInfobox("Alias created succesfully !");
+            showInfobox("Alias created succesfully");
+            return JSON.parse(resText);
         } else {
             showInfobox("Create error:\n" + resText);
         }
@@ -661,15 +733,21 @@ async function editRedir(jsonObj) {
 
 
 /**
- * Backend call to remove a redirection
+ * Backend call to remove redirections
+ * 
+ * Take an array of redirection(s) ID(s) as argument
+ * 
+ *      example : delRedir(['123456789', '234567891']);
+ * 
+ * Returns status code
  */
-async function delRedir(form) {
+async function delRedir(array) {
     showInfobox("Removing alias");
 
     try {
         const res = await fetch('/del_redir', {
             method: 'post',
-            body: form,
+            body: array,
         });
 
         const resText = await res.text();
@@ -721,7 +799,6 @@ async function synCheck(e, domain=workingDomain) {
 
     let resText = await res.text();
     resText = JSON.parse(resText);
-
     // Add elements to the modal window
     
     // Remote alias count
