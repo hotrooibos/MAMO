@@ -210,12 +210,12 @@ function updateTable(jsonObj) {
 /**
  * Add a new alias row
  */
-function addRow(context) {
+async function addRow(context) {
     const newRow = doc.createElement('tr');
     let id, name, date, alias, to;
 
     // Context given, insert row with context informations
-    if (context) {
+    if (context.id) {
         id = context.id;
         name = context.name;
         date = context.date;
@@ -223,27 +223,20 @@ function addRow(context) {
         to = context.to;
     }
 
-    // No context, create a new blank editable row
-    if (!context) {
+    // No context, create generic row (new redir)
+    if (!context.id) {
         const domain = workingDomain == "all" ? "domain.com" : workingDomain;
-        
         name = "New alias";
-        alias = "alias@" + domain;
+        date = "";
+        alias = await genName() + "@" + domain;
         to = destAddr;
-    
-        // newRow.removeAttribute('id');
-        setEditable(newRow);
-        
-        // Enable Save / Cancel btn
-        saveAliasBtn.disabled = false;
-        cancelAliasBtn.disabled = false;
     }
 
-    newRow.innerHTML = rowTemplate( context.id,
-                                    context.name,
-                                    context.date,
-                                    context.alias,
-                                    context.to);
+    newRow.innerHTML = rowTemplate( id,
+                                    name,
+                                    date,
+                                    alias,
+                                    to);
 
     tbody.insertAdjacentElement("afterbegin", newRow);
 
@@ -252,6 +245,15 @@ function addRow(context) {
     // Affect click listeners to all the
     // buttons belonging to the row
     setActionBtns();
+
+    // No context, set row as editable
+    if (!context.id) {
+        setEditable(newRow);
+            
+        // Enable Save / Cancel btn
+        saveAliasBtn.disabled = false;
+        cancelAliasBtn.disabled = false;
+    }
 }
 
 
@@ -560,7 +562,7 @@ async function synAddAlias() {
                 delRow(oldRow);
     
                 // Create the new row
-                addRow(newId, name, date, alias, to);
+                await addRow(newId, name, date, alias, to);
             }
 
             break;
@@ -860,7 +862,7 @@ async function synCheck(e, domain=workingDomain) {
 /**
  * Generate a random word from adjectives + nouns dictionnaries
  */
-async function genName(e) {
+async function genName() {
     const res = await fetch('/gen_name', {
         method: 'post'
     });
