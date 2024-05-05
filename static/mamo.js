@@ -538,12 +538,6 @@ async function synAddAlias() {
             const alias = value[1];
             const to = value[2];
 
-            // Remove the old/local redirection
-            const arr = []
-            arr.push(oldId);
-
-            await delRedir(JSON.stringify(arr));
-
             // Create the redirection
             newRedir = {
                 "name" : name,
@@ -552,17 +546,13 @@ async function synAddAlias() {
             }
             const res = await createRedir(newRedir);
             
-            if (res) {
-                const newId = res[0];
-                const date = res[2];
-    
+            if (res.status == 200) {
                 // Remove the old row with the old ID
-                const oldRow = doc.querySelector(`tr[id="${oldId}"]`);
-    
+                const oldRow = doc.querySelector(`tr[id="${oldId}"]`);    
                 delRow(oldRow);
     
                 // Create the new row
-                await addRow(newId, name, date, alias, to);
+                // await addRow(newId, name, date, alias, to);
             }
 
             break;
@@ -573,6 +563,23 @@ async function synAddAlias() {
         case "remote-alias-id":
             alert('Add exiting alias localy : ' + this);
             console.log(this);
+            break;
+    
+        default:
+            break;
+    }
+}
+
+
+/**
+ * Synchronisation : add alias
+ */
+async function synDelAlias() {
+    switch (this.name) {
+
+        // Remove local entry/row
+        case "delete-row":
+            alert('Remove row');
             break;
     
         default:
@@ -685,6 +692,7 @@ async function createRedir(jsonObj) {
     showInfobox("Creating new alias " + jsonObj['alias']);
 
     const jsonStr = JSON.stringify(jsonObj);
+
     try {
         const res = await fetch('/set_redir', {
             method: 'post',
@@ -695,10 +703,11 @@ async function createRedir(jsonObj) {
 
         if (res.status == 200) {
             showInfobox("Alias created succesfully");
-            return JSON.parse(resText);
         } else {
             showInfobox("Create error:\n" + resText);
         }
+
+        return res
 
     } catch (error) {
         showInfobox(error);
@@ -827,6 +836,13 @@ async function synCheck(e, domain=workingDomain) {
                 addBtn.value = i;
                 addBtn.innerText = "Create alias";
                 addBtn.addEventListener('click', synAddAlias);
+                p.append(addBtn);
+
+                addBtn = doc.createElement('button');
+                addBtn.name = "delete-row";
+                addBtn.value = i;
+                addBtn.innerText = "Delete";
+                addBtn.addEventListener('click', synDelAlias);
                 p.append(addBtn);
             }
         }

@@ -85,6 +85,14 @@ def create_redir_local(id: int, name:str, date:int, alias: str, to: str):
 		Create a new redirection entry in configuration
 	'''
 	try:
+		# If alias already exists, just update the entry's key
+		for k, v in config_redir.items():
+			if v['alias'] == alias and v['to'] == to:
+				config_redir[id] = config_redir.pop(k)
+				write_config(config_redir)
+				return
+
+		# Create new entry
 		new_redir = {
 			"name": name,
 			"date": date,
@@ -96,7 +104,6 @@ def create_redir_local(id: int, name:str, date:int, alias: str, to: str):
 		write_config(config_redir)
 	
 	except Exception as e:
-		print(e)
 		raise
 
 	
