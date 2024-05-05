@@ -157,9 +157,7 @@ const rowTemplate = (key, name, date, alias, to) => {
     `<tr id="${key}">
         <td data-alias-item="name">${name}</td>
         <td data-alias-item="date"><time>${date}</time></td>
-        <td data-alias-item="alias">
-            ${alias}
-            <button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i> word</button>
+        <td data-alias-item="alias">${alias}<button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i> word</button>
             <button class="uuid-btn"><i class="feather-16" data-feather="refresh-cw"></i> UUID</button>
             <button class="clipboard-btn"><i class="feather-16" data-feather="clipboard"></i></button>
         </td>
@@ -523,72 +521,6 @@ function aliasCopy() {
 
 
 /**
- * Synchronisation : add alias
- */
-async function synAddAlias() {
-    switch (this.name) {
-
-        // Create "locally known" alias in remote
-        // The alias doesn't really exists yet,
-        // so this actually creates the alias
-        case "create-alias":
-            const value = this.value.split(',');
-            const name = "Alias created from sync";
-            const oldId = value[0];
-            const alias = value[1];
-            const to = value[2];
-
-            // Create the redirection
-            newRedir = {
-                "name" : name,
-                "alias" : alias,
-                "to" : to
-            }
-            const res = await createRedir(newRedir);
-            
-            if (res.status == 200) {
-                // Remove the old row with the old ID
-                const oldRow = doc.querySelector(`tr[id="${oldId}"]`);    
-                delRow(oldRow);
-    
-                // Create the new row
-                // await addRow(newId, name, date, alias, to);
-            }
-
-            break;
-        
-        // Create "remotely known" alias in local
-        // The alias already exists and works,
-        // so this just makes the app know the alias
-        case "remote-alias-id":
-            alert('Add exiting alias localy : ' + this);
-            console.log(this);
-            break;
-    
-        default:
-            break;
-    }
-}
-
-
-/**
- * Synchronisation : add alias
- */
-async function synDelAlias() {
-    switch (this.name) {
-
-        // Remove local entry/row
-        case "delete-row":
-            alert('Remove row');
-            break;
-    
-        default:
-            break;
-    }
-}
-
-
-/**
  * Add action for tool buttons
  */
 async function toolBtnAction() {
@@ -753,23 +685,13 @@ async function editRedir(jsonObj) {
  * Returns status code
  */
 async function delRedir(array) {
-    showInfobox("Removing alias");
-
     try {
         const res = await fetch('/del_redir', {
             method: 'post',
             body: array,
         });
 
-        const resText = await res.text();
-
-        if (resText.includes("'action': 'delete'")) {
-            showInfobox("Alias removed succesfully !");
-        } else {
-            showInfobox("Remove error:\n" + resText);
-        }
-
-        return res.status;
+        return res;
 
     } catch (error) {
         showInfobox(error);
@@ -871,6 +793,86 @@ async function synCheck(e, domain=workingDomain) {
         synDialog.showModal();
     } else {
         showInfobox("Error:\n" + resText);
+    }
+}
+
+
+/**
+ * Synchronisation : add alias
+ */
+async function synAddAlias() {
+    switch (this.name) {
+
+        // Create "locally known" alias in remote
+        // The alias doesn't really exists yet,
+        // so this actually creates the alias
+        case "create-alias":
+            const value = this.value.split(',');
+            const name = "Alias created from sync";
+            const oldId = value[0];
+            const alias = value[1];
+            const to = value[2];
+
+            // Create the redirection
+            newRedir = {
+                "name" : name,
+                "alias" : alias,
+                "to" : to
+            }
+            const res = await createRedir(newRedir);
+            
+            if (res.status == 200) {
+                // Remove the old row with the old ID
+                const oldRow = doc.querySelector(`tr[id="${oldId}"]`);    
+                delRow(oldRow);
+    
+                // Create the new row
+                // await addRow(newId, name, date, alias, to);
+            }
+
+            break;
+        
+        // Create "remotely known" alias in local
+        // The alias already exists and works,
+        // so this just makes the app know the alias
+        case "remote-alias-id":
+            alert('Add exiting alias localy : ' + this);
+            console.log(this);
+            break;
+    
+        default:
+            break;
+    }
+}
+
+
+/**
+ * Synchronisation : add alias
+ */
+async function synDelAlias() {
+    switch (this.name) {
+
+        // Remove local entry/row
+        case "delete-row":
+            const value = this.value.split(',');
+            const id = value[0];
+            const delIdArr = JSON.stringify([id]);
+            const res = await delRedir(delIdArr);
+
+            if (res.status == 200) {
+                showInfobox("Local entry " + value[1] + " removed");
+
+                // Remove row from table
+                for (const tr of tbody.querySelectorAll('tr'))
+                    if (tr.id == id)
+                        tr.remove();
+            } else {
+                showInfobox("An error occured while removing local entry :\n" + await res.text());
+            }
+            break;
+    
+        default:
+            break;
     }
 }
 
@@ -991,11 +993,17 @@ delDialog.addEventListener('close', async (e) => {
         // Remove alias
         res = await delRedir(delIdArr);
 
-        if (res == 200) {
+        const resText = await res.text();
+
+        if (res.status == 200) {
+            showInfobox("Alias removed succesfully");
+
             // Remove row from table
             for (const tr of tbody.querySelectorAll('tr'))
                 if (delIdArr.includes(tr.id))
                     tr.remove();
+        } else {
+            showInfobox("Remove error :\n" + resText);
         }
     }
 });
