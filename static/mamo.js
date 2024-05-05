@@ -863,9 +863,12 @@ async function synDelAlias() {
                 showInfobox("Local entry " + value[1] + " removed");
 
                 // Remove row from table
-                for (const tr of tbody.querySelectorAll('tr'))
-                    if (tr.id == id)
+                for (const tr of tbody.querySelectorAll('tr')) {
+                    if (tr.id == id) {
                         tr.remove();
+                        this.parentElement.remove();
+                    }
+                }
             } else {
                 showInfobox("An error occured while removing local entry :\n" + await res.text());
             }
