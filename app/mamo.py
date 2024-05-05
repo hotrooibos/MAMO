@@ -76,7 +76,6 @@ async def syn_check() -> str:
 @app.route('/set_redir', methods=['POST'])
 async def set_redir() -> str:
 	form = await qr.request.data
-	print(f"FORM : {form}")
 	f = json.loads(form)
 	name = f['name']
 	alias = f['alias'].lower()

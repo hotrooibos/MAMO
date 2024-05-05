@@ -68,7 +68,6 @@ def create_redir_remote(alias: str, to: str) -> str:
 		raise
 
 	try:
-		print(f"CREATE {alias} -> {to}")
 		res = client.post(f'/email/domain/{domain}/redirection',
 						  _from=alias,
 						  localCopy=False,
@@ -129,6 +128,7 @@ def create_redir(name:str, alias: str, to: str) -> tuple:
 		for k, v in redirs_remote.items():
 			if v['alias'] == alias and v['to'] == to:
 				id = k
+				break
 
 		date = int(time.time())
 
@@ -137,7 +137,6 @@ def create_redir(name:str, alias: str, to: str) -> tuple:
 		return id, name, date, alias, to
 	
 	except ovh.APIError as e:
-		print(f"create_redir: {e}")
 		raise
 
 
