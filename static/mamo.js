@@ -725,6 +725,15 @@ async function getAliasList(e, domain=workingDomain) {
  *  - list of remote entries unknown from local
  */
 async function synCheck(e, domain=workingDomain) {
+    // Show modal window
+    let p = doc.createElement('p');
+    p.innerText = "Loading...";
+    synDialog.append(p);
+
+    synDialog.returnValue = null;
+    synDialog.showModal();
+
+    // Start sync
     const res = await fetch('/syn_check', {
         method: 'post',
         body: JSON.stringify(domain),
@@ -732,19 +741,15 @@ async function synCheck(e, domain=workingDomain) {
 
     let resText = await res.text();
     resText = JSON.parse(resText);
-    // Add elements to the modal window
-    
-    // Remote alias count
-    let p = doc.createElement('p');
-    p.innerText = "Alias count in remote : " + resText[0];
-    synDialog.append(p);
 
     if (res.status == 200) {
         let addBtn;
+        // Remote alias count
+        p.innerText = "Alias count in remote : " + resText[0];
 
         // List of aliases unknown from remote
         if (resText[1].length > 0) {
-            let p = doc.createElement('p');
+            p = doc.createElement('p');
             p.innerText = "Alias unknown from remote :"
             synDialog.append(p);
             
@@ -772,9 +777,9 @@ async function synCheck(e, domain=workingDomain) {
         // List of aliases unknown from local alias config
         if (resText[2].length > 0) {
             p = doc.createElement('p');
-            p.innerText = "Alias unknown locally :"
+            p.innerText = "Alias unknown locally :";
             synDialog.append(p);
-            
+
             for (const [k, v] of resText[2].entries()) {
                 p = doc.createElement('p');
                 p.innerText = v;
@@ -789,8 +794,6 @@ async function synCheck(e, domain=workingDomain) {
             }
         }
         
-        synDialog.returnValue = null;
-        synDialog.showModal();
     } else {
         showInfobox("Error:\n" + resText);
     }
