@@ -725,10 +725,12 @@ async function getAliasList(e, domain=workingDomain) {
  *  - list of remote entries unknown from local
  */
 async function synCheck(e, domain=workingDomain) {
+    const synForm = synDialog.querySelector('form');
+
     // Show modal window
-    let p = doc.createElement('p');
-    p.innerText = "Loading...";
-    synDialog.append(p);
+    let ele = doc.createElement('p');
+    ele.innerText = "Loading...";
+    synForm.append(ele);
 
     synDialog.returnValue = null;
     synDialog.showModal();
@@ -745,54 +747,61 @@ async function synCheck(e, domain=workingDomain) {
     if (res.status == 200) {
         let addBtn;
         // Remote alias count
-        p.innerText = "Alias count in remote : " + resText[0];
+        ele.innerText = "Alias count in remote : " + resText[0];
 
         // List of aliases unknown from remote
         if (resText[1].length > 0) {
-            p = doc.createElement('p');
-            p.innerText = "Alias unknown from remote :"
-            synDialog.append(p);
+            ele = doc.createElement('h2');
+            ele.innerText = "Alias unknown from remote :"
+            synForm.append(ele);
             
             for (const i of resText[1]) {
-                p = doc.createElement('p');
-                p.innerText = i;
-                synDialog.append(p);
+                ele = doc.createElement('p');
+                ele.innerText = i;
+                synForm.append(ele);
 
                 addBtn = doc.createElement('button');
                 addBtn.name = "create-alias";
                 addBtn.value = i;
                 addBtn.innerText = "Create alias";
                 addBtn.addEventListener('click', synAddAlias);
-                p.append(addBtn);
+                ele.append(addBtn);
 
                 addBtn = doc.createElement('button');
                 addBtn.name = "delete-row";
                 addBtn.value = i;
                 addBtn.innerText = "Delete";
                 addBtn.addEventListener('click', synDelAlias);
-                p.append(addBtn);
+                ele.append(addBtn);
             }
         }
 
         // List of aliases unknown from local alias config
         if (resText[2].length > 0) {
-            p = doc.createElement('p');
-            p.innerText = "Alias unknown locally :";
-            synDialog.append(p);
+            ele = doc.createElement('h2');
+            ele.innerText = "Alias unknown locally :";
+            synForm.append(ele);
 
             for (const [k, v] of resText[2].entries()) {
-                p = doc.createElement('p');
-                p.innerText = v;
-                synDialog.append(p);
+                ele = doc.createElement('p');
+                ele.innerText = v;
+                synForm.append(ele);
 
                 addBtn = doc.createElement('button');
                 addBtn.innerText = "Add";
                 addBtn.name = "remote-alias-id";
                 addBtn.value = resText[2][k][0];
                 addBtn.addEventListener('click', synAddAlias);
-                p.append(addBtn);
+                ele.append(addBtn);
             }
         }
+
+        ele = doc.createElement('button');
+        ele.value = "cancel"
+        ele.autofocus = true;
+        ele.setAttribute("formmethod", "dialog");
+        ele.innerText = "Cancel";
+        synForm.append(ele);
         
     } else {
         showInfobox("Error:\n" + resText);
@@ -1018,8 +1027,8 @@ delDialog.addEventListener('close', async (e) => {
 /**
  * Sync dialog box
  */
-synDialog.addEventListener('close', async (e) => {
-    alert("TODO");
+synDialog.addEventListener('close', (e) => {
+    synDialog.querySelector('form').innerHTML = "";
 });
 
 
