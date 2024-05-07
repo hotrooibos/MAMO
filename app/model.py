@@ -106,12 +106,20 @@ def create_redir_local(id: int, name:str, date:int, alias: str, to: str):
 		raise
 
 	
-def create_redir(name:str, alias: str, to: str) -> tuple:
+def create_redir(name:str, alias: str, to: str) -> dict:
 	'''
 		Create a new redirection (remote + local)
 		Returns the redirection id if successful
 
-		Returns tuple of (id, name, date, alias, to)
+		Returns a dict of created redirection :
+
+		{
+			"id": id,
+			"name": name,
+			"date": date,
+			"alias": alias,
+			"to": to
+		}
 	'''
 	domain = alias.split('@')[1]
 
@@ -134,7 +142,15 @@ def create_redir(name:str, alias: str, to: str) -> tuple:
 
 		create_redir_local(id, name, date, alias, to)
 
-		return id, name, date, alias, to
+		r = {
+			"id": id,
+			"name": name,
+			"date": date,
+			"alias": alias,
+			"to": to
+		}
+
+		return r
 	
 	except ovh.APIError as e:
 		raise

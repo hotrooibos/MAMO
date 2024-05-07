@@ -71,11 +71,22 @@ function showInfobox(msg) {
 
 
 /**
- * CONVERT epoch dates from <time> tags into readable date
+ * Convert epoch dates from <time> tags into readable date
+ * 
+ * Takes an optional parameter of nodes list (array) of <time> elements to convert
+ * 
+ * If no parameter is set, it will convert all <time> founds on page
  */
-function convertEpoch() {
-    const dates = doc.querySelectorAll('time');
+function convertEpoch(timeElements) {
+    let dates;
 
+    if (timeElements) {
+        dates = timeElements;
+    } else {
+        dates = doc.querySelectorAll('time');
+    }
+
+    // Convert epoch integers to dd/mm/yyyy
     for (const d of dates) {
         if (d.innerText) {
             dt = parseInt(d.innerText);
@@ -87,7 +98,6 @@ function convertEpoch() {
                 day: 'numeric'
             };
 
-            // GB time format (ex: 28 September 2022)
             const formatedDate = new Intl.DateTimeFormat('en-GB', options).format(dt);
 
             d.innerText = formatedDate;
@@ -629,17 +639,9 @@ async function createRedir(jsonObj) {
         const res = await fetch('/set_redir', {
             method: 'post',
             body: jsonStr,
-        })
+        });
 
-        const resText = await res.text();
-
-        if (res.status == 200) {
-            showInfobox("Alias created succesfully");
-        } else {
-            showInfobox("Create error:\n" + resText);
-        }
-
-        return res
+        return res;
 
     } catch (error) {
         showInfobox(error);
@@ -832,14 +834,20 @@ async function synAddAlias() {
                 "to" : to
             }
             const res = await createRedir(newRedir);
-            
+            let resText = await res.text();
+            resText = JSON.parse(resText);
+
             if (res.status == 200) {
-                // Remove the old row with the old ID
-                const oldRow = doc.querySelector(`tr[id="${oldId}"]`);    
-                delRow(oldRow);
-    
-                // Create the new row
-                // await addRow(newId, name, date, alias, to);
+                // TODO update the row id and date
+                const tr = doc.querySelector(`tr[id="${oldId}"]`);    
+                const date = tr.querySelectorAll('time');
+                tr.id = resText['id'];
+                date[0].innerText = resText['date'];
+                convertEpoch(date);
+
+                showInfobox("Sync : alias created succesfully");
+            } else {
+                showInfobox("Sync : create error:\n" + resText);
             }
 
             break;

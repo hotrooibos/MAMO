@@ -85,7 +85,7 @@ async def set_redir() -> str:
 		res = model.create_redir(name=name,
 						   		 alias=alias,
 						   		 to=to)
-		return str(res), 200
+		return json.dumps(res), 200
 	
 	except Exception as e:
 		return str(e), 400
