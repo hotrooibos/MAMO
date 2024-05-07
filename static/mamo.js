@@ -842,9 +842,12 @@ async function synAddAlias() {
                 const tr = doc.querySelector(`tr[id="${oldId}"]`);    
                 const date = tr.querySelectorAll('time');
                 tr.id = resText['id'];
-                date[0].innerText = resText['date'];
-                convertEpoch(date);
 
+                if (date[0].innerText == "") {
+                    date[0].innerText = resText['date'];
+                    convertEpoch(date);
+                }
+                
                 showInfobox("Sync : alias created succesfully");
             } else {
                 showInfobox("Sync : create error:\n" + resText);
