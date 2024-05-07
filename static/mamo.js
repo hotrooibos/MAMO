@@ -36,6 +36,65 @@ const findInput         = doc.querySelector('#find');
 let workingDomain       = domainSelect.value;
 let destAddr            = destSelect.value;
 
+class Redir {
+    constructor(id, name, date, alias, to) {
+        this.id = id;
+        this.name = name;
+        this.date = date;
+        this.alias = alias;
+        this.to = to;
+    }
+
+    getJsonStr() {
+        const jsonObj = {
+            "id" : this.id,
+            "name" : this.name,
+            "date" : this.date,
+            "alias" : this.alias,
+            "to" : this.to
+        }
+
+        return JSON.stringify(jsonObj);
+    }
+
+    /**
+     * Backend call to create a redirection
+     * 
+     *  jsonObj = {
+     *      "name" : name,
+     *      "alias" : alias,
+     *      "to" : to
+     *  }
+     * 
+     * Reponse text : JSON string of the created redir
+     * 
+     * {
+     *      "id" : id,
+     *      "name" : name,
+     *      "date" : date,
+     *      "alias" : alias,
+     *      "to" : to
+     * }
+     */
+    async create() {
+        const res = await fetch('/set_redir', {
+            method: 'post',
+            body: this.getJsonStr(),
+        });
+
+        return res;
+    }
+
+    async remove() {
+        const res = await fetch('/del_redir', {
+            method: 'post',
+            body: array,
+        });
+
+        return res;
+    }
+}
+
 /*
  *
  *  ██████  ██████  ███    ███ ███    ███  ██████  ███    ██ ███████ 
@@ -454,8 +513,8 @@ async function saveAlias(e) {
 
             // Creation : new alias (row has no id)
             if (!tr.id) {
-                delete newRedir['id'];
-                createRedir(newRedir);
+                const redir = new Redir("", name, "", alias, to);
+                const res = await redir.create();
             }
 
             // Edition : alias with __edit property
@@ -619,35 +678,6 @@ function setActionBtns() {
  * 
  */
 
-/**
- * Backend call to create a redirection
- * 
- *  jsonObj = {
- *      "name" : name,
- *      "alias" : alias,
- *      "to" : to
- *  }
- * 
- * Returns a JSON Object {id, name, date, alias, to}
- */
-async function createRedir(jsonObj) {
-    showInfobox("Creating new alias " + jsonObj['alias']);
-
-    const jsonStr = JSON.stringify(jsonObj);
-
-    try {
-        const res = await fetch('/set_redir', {
-            method: 'post',
-            body: jsonStr,
-        });
-
-        return res;
-
-    } catch (error) {
-        showInfobox(error);
-    }
-}
-
 
 /**
  * Backend call to edit a redirection
@@ -727,9 +757,10 @@ async function getAliasList(e, domain=workingDomain) {
  *  - list of remote entries unknown from local
  */
 async function synCheck(e, domain=workingDomain) {
+    let ele, btn;
 
     // Show modal window
-    let ele = doc.createElement('p');
+    ele = doc.createElement('p');
     ele.innerText = "Loading...";
     synDialog.append(ele);
 
@@ -746,7 +777,6 @@ async function synCheck(e, domain=workingDomain) {
     resText = JSON.parse(resText);
 
     if (res.status == 200) {
-        let addBtn;
         // Remote alias count
         ele.innerText = "Alias count in remote : " + resText[0];
 
@@ -761,19 +791,19 @@ async function synCheck(e, domain=workingDomain) {
                 ele.innerText = i;
                 synDialog.append(ele);
 
-                addBtn = doc.createElement('button');
-                addBtn.name = "create-alias";
-                addBtn.value = i;
-                addBtn.innerText = "Create alias";
-                addBtn.addEventListener('click', synAddAlias);
-                ele.append(addBtn);
+                btn = doc.createElement('button');
+                btn.name = "create-alias";
+                btn.value = i;
+                btn.innerText = "Create alias";
+                btn.addEventListener('click', synAddAlias);
+                ele.append(btn);
 
-                addBtn = doc.createElement('button');
-                addBtn.name = "delete-row";
-                addBtn.value = i;
-                addBtn.innerText = "Delete";
-                addBtn.addEventListener('click', synDelAlias);
-                ele.append(addBtn);
+                btn = doc.createElement('button');
+                btn.name = "delete-row";
+                btn.value = i;
+                btn.innerText = "Delete";
+                btn.addEventListener('click', synDelAlias);
+                ele.append(btn);
             }
         }
 
@@ -788,24 +818,31 @@ async function synCheck(e, domain=workingDomain) {
                 ele.innerText = v;
                 synDialog.append(ele);
 
-                addBtn = doc.createElement('button');
-                addBtn.innerText = "Add";
-                addBtn.name = "remote-alias-id";
-                addBtn.value = resText[2][k][0];
-                addBtn.addEventListener('click', synAddAlias);
-                ele.append(addBtn);
+                btn = doc.createElement('button');
+                btn.innerText = "Add";
+                btn.name = "remote-alias-id";
+                btn.value = resText[2][k][0];
+                btn.addEventListener('click', synAddAlias);
+                ele.append(btn);
+
+                btn = doc.createElement('button');
+                btn.innerText = "Remove";
+                btn.name = "remote-alias-id";
+                btn.value = resText[2][k][0];
+                btn.addEventListener('click', synDelAlias);
+                ele.append(btn);
             }
         }
 
-        ele = doc.createElement('button');
-        ele.value = "cancel";
-        ele.autofocus = true;
-        ele.setAttribute("formmethod", "dialog");
-        ele.innerText = "Cancel";
-        ele.addEventListener('click', () => {
+        btn = doc.createElement('button');
+        btn.value = "cancel";
+        btn.autofocus = true;
+        btn.setAttribute("formmethod", "dialog");
+        btn.innerText = "Cancel";
+        btn.addEventListener('click', () => {
             synDialog.close();
         });
-        synDialog.append(ele);
+        synDialog.append(btn);
         
     } else {
         showInfobox("Error:\n" + resText);
@@ -823,20 +860,15 @@ async function synAddAlias() {
         // so this actually creates the alias
         case "create-alias":
             const value = this.value.split(',');
-            const name = "Alias created from sync";
             const oldId = value[0];
-            const alias = value[1];
-            const to = value[2];
+            const name = value[1];
+            const alias = value[2];
+            const to = value[3];
 
             // Create the redirection
-            newRedir = {
-                "name" : name,
-                "alias" : alias,
-                "to" : to
-            }
-            const res = await createRedir(newRedir);
-            let resText = await res.text();
-            resText = JSON.parse(resText);
+            const newRedir = new Redir ("", name, "", alias, to);
+            const res = await newRedir.create();
+            const resText = JSON.parse(await res.text());
 
             if (res.status == 200) {
                 // TODO update the row id and date
@@ -849,6 +881,9 @@ async function synAddAlias() {
                     convertEpoch(date);
                 }
 
+                // Clear line from dialog
+                this.parentElement.remove();
+
                 showInfobox("Sync : alias created succesfully");
             } else {
                 showInfobox("Sync : create error:\n" + resText);
@@ -860,8 +895,7 @@ async function synAddAlias() {
         // The alias already exists and works,
         // so this just makes the app know the alias
         case "remote-alias-id":
-            alert('Add exiting alias localy : ' + this);
-            console.log(this);
+            alert('TODO add existing alias localy : ' + this.value);
             break;
     
         default:
@@ -874,19 +908,18 @@ async function synAddAlias() {
  * Synchronisation : add alias
  */
 async function synDelAlias() {
-    switch (this.name) {
+    const value = this.value.split(',');
+    const id = value[0];
+    const delIdArr = JSON.stringify([id]);
+    const res = await delRedir(delIdArr);
 
+    switch (this.name) {
         // Remove local entry/row
         case "delete-row":
-            const value = this.value.split(',');
-            const id = value[0];
-            const delIdArr = JSON.stringify([id]);
-            const res = await delRedir(delIdArr);
-
             if (res.status == 200) {
                 showInfobox("Local entry " + value[1] + " removed");
 
-                // Remove row from table
+                // Remove row from table and modal
                 for (const tr of tbody.querySelectorAll('tr')) {
                     if (tr.id == id) {
                         tr.remove();
@@ -897,7 +930,17 @@ async function synDelAlias() {
                 showInfobox("An error occured while removing local entry :\n" + await res.text());
             }
             break;
-    
+
+        // Remove remote entry
+        case "remote-alias-id":
+            if (res.status == 200) {
+                showInfobox("Remote entry " + value[1] + " removed");
+                // Clear line from dialog
+                this.parentElement.remove();
+            } else {
+                showInfobox("An error occured while removing remote entry :\n" + await res.text());
+            }
+
         default:
             break;
     }

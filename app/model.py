@@ -250,9 +250,10 @@ def syncheck(redirs_remote: list, config_redir: list) -> tuple:
 			compare(id, config_redir[id], redirs_remote[id])
 
 		except KeyError:
+			name = config_redir[id]['name']
 			alias = config_redir[id]['alias']
 			to = config_redir[id]['to']
-			list_local.append((id, alias, to))
+			list_local.append((id, name, alias, to))
 
 	# Loop in the remote config and append
 	# to list_remote redirections unknown from local
