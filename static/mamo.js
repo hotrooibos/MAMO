@@ -727,12 +727,11 @@ async function getAliasList(e, domain=workingDomain) {
  *  - list of remote entries unknown from local
  */
 async function synCheck(e, domain=workingDomain) {
-    const synForm = synDialog.querySelector('form');
 
     // Show modal window
     let ele = doc.createElement('p');
     ele.innerText = "Loading...";
-    synForm.append(ele);
+    synDialog.append(ele);
 
     synDialog.returnValue = null;
     synDialog.showModal();
@@ -754,13 +753,13 @@ async function synCheck(e, domain=workingDomain) {
         // List of aliases unknown from remote
         if (resText[1].length > 0) {
             ele = doc.createElement('h2');
-            ele.innerText = "Alias unknown from remote :"
-            synForm.append(ele);
+            ele.innerText = "Alias unknown from remote :";
+            synDialog.append(ele);
             
             for (const i of resText[1]) {
                 ele = doc.createElement('p');
                 ele.innerText = i;
-                synForm.append(ele);
+                synDialog.append(ele);
 
                 addBtn = doc.createElement('button');
                 addBtn.name = "create-alias";
@@ -782,12 +781,12 @@ async function synCheck(e, domain=workingDomain) {
         if (resText[2].length > 0) {
             ele = doc.createElement('h2');
             ele.innerText = "Alias unknown locally :";
-            synForm.append(ele);
+            synDialog.append(ele);
 
             for (const [k, v] of resText[2].entries()) {
                 ele = doc.createElement('p');
                 ele.innerText = v;
-                synForm.append(ele);
+                synDialog.append(ele);
 
                 addBtn = doc.createElement('button');
                 addBtn.innerText = "Add";
@@ -799,11 +798,14 @@ async function synCheck(e, domain=workingDomain) {
         }
 
         ele = doc.createElement('button');
-        ele.value = "cancel"
+        ele.value = "cancel";
         ele.autofocus = true;
         ele.setAttribute("formmethod", "dialog");
         ele.innerText = "Cancel";
-        synForm.append(ele);
+        ele.addEventListener('click', () => {
+            synDialog.close();
+        });
+        synDialog.append(ele);
         
     } else {
         showInfobox("Error:\n" + resText);
@@ -816,7 +818,6 @@ async function synCheck(e, domain=workingDomain) {
  */
 async function synAddAlias() {
     switch (this.name) {
-
         // Create "locally known" alias in remote
         // The alias doesn't really exists yet,
         // so this actually creates the alias
@@ -847,7 +848,7 @@ async function synAddAlias() {
                     date[0].innerText = resText['date'];
                     convertEpoch(date);
                 }
-                
+
                 showInfobox("Sync : alias created succesfully");
             } else {
                 showInfobox("Sync : create error:\n" + resText);
@@ -1038,8 +1039,8 @@ delDialog.addEventListener('close', async (e) => {
 /**
  * Sync dialog box
  */
-synDialog.addEventListener('close', (e) => {
-    synDialog.querySelector('form').innerHTML = "";
+synDialog.addEventListener('close', () => {
+    synDialog.innerHTML = "";
 });
 
 
