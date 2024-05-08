@@ -34,7 +34,26 @@ def get_redirs_remote(domain: str) -> dict:
 	except ovh.APIError as e:
 		print(e)
 		raise
+
+
+def get_redir(id: int) -> dict:
+	'''
+		Get redirection from given id
 		
+		Returns a full redirection dict
+	'''
+	for k, v in config_redir.items():
+		if (k == id):
+			r = {
+				"id": k,
+				"name": v["name"],
+				"date": v["date"],
+				"alias": v["alias"],
+				"to": v["to"]
+			}
+
+			return(r)
+
 
 def get_redirs(domain: str = 'all') -> dict:
 	'''
@@ -198,16 +217,14 @@ def edit_redir(id: str, name: str, alias: str, to: str):
 		write_config(config_redir)
 			
 
-def remove_redir(id: int) -> bool:
+def remove_redir(id: int, alias: str, to: str) -> dict:
 	'''
 		Remove a redirection (remote + local)
 	'''
-	# Get the domain
-	for k, v in config_redir.items():
-		if k == id:
-			alias = v['alias']
-			domain = alias.split('@')[1]
-			break
+	domain = alias.split('@')[1]
+
+	if domain not in domains:
+		raise
 
 	# Delete remote
 	try:

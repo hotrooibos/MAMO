@@ -43,12 +43,23 @@ async def get_domains() -> str:
 		return str(e), 400
 
 
-@app.route('/get_redirs', methods=['POST'])
-async def get_redirs() -> str:
+@app.route('/get_redir', methods=['POST'])
+async def get_redir() -> dict:
 	try:
 		body = await qr.request.data
-		b = json.loads(body)
-		selected_domain = b
+		id = json.loads(body)
+		redir = model.get_redir(id)
+		return redir, 200
+
+	except Exception as e:
+		return str(e), 400
+
+
+@app.route('/get_redirs', methods=['POST'])
+async def get_redirs() -> dict:
+	try:
+		body = await qr.request.data
+		selected_domain = json.loads(body)
 		redirs = model.get_redirs(selected_domain)
 		return redirs, 200
 
@@ -113,16 +124,17 @@ async def edit_redir() -> str:
 
 @app.route('/del_redir', methods=['POST'])
 async def del_redir() -> str:
-	del_arr = await qr.request.data
-	del_arr = json.loads(del_arr)
+	form = await qr.request.data
+	f = json.loads(form)
+	id = f['id']
+	alias = f['alias'].lower()
+	to = f['to'].lower()
 
-	# TODO using an array for future bulk deletion
-	# atm, there will only be one id in the del_arr
 	try:
-		for id in del_arr:
-			res = model.remove_redir(id)
-
-		return str(res), 200
+		res = model.remove_redir(id=id,
+						   		 alias=alias,
+						   		 to=to)
+		return json.dumps(res), 200
 
 	except Exception as e:
 		return str(e), 400

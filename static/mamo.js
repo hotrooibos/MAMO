@@ -58,15 +58,27 @@ class Redir {
     }
 
     /**
+     * Backend call to fill redirection object attributes from its ID
+     */
+        async fillFromId() {
+            const res = await fetch('/get_redir', {
+                method: 'post',
+                body: JSON.stringify(this.id),
+            });
+    
+            let resText = await res.text();
+            resText = JSON.parse(resText);
+
+            this.name = resText['name'];
+            this.date = resText['date'];
+            this.alias = resText['alias'];
+            this.to = resText['to'];
+        }
+
+    /**
      * Backend call to create a redirection
      * 
-     *  jsonObj = {
-     *      "name" : name,
-     *      "alias" : alias,
-     *      "to" : to
-     *  }
-     * 
-     * Reponse text : JSON string of the created redir
+     * Reponse text : (string) JSON string of the created redir
      * 
      * {
      *      "id" : id,
@@ -85,10 +97,15 @@ class Redir {
         return res;
     }
 
+    /**
+     * Backend call to remove redirections
+     * 
+     * Reponse text : (string) provider return message
+     */
     async remove() {
         const res = await fetch('/del_redir', {
             method: 'post',
-            body: array,
+            body: this.getJsonStr(),
         });
 
         return res;
@@ -622,16 +639,50 @@ async function toolBtnAction() {
         // Else, we are just canceling/removing a new alias creation row
         if (id) {
             const alias = parentTr.querySelector('td[data-alias-item="alias"]').childNodes[0].data;
-            const dialogText = `Remove alias ${alias} ?`;
-            delDialog.querySelector('p').innerText = dialogText;
-            // TODO using an array for future bulk deletion
-            // atm, there will only be one id in the __delArr
-            delDialog.__delArr = [id];
-            delDialog.returnValue = 'no';
+            const yesBtn = delDialog.querySelector('button[name="delete-id"]');
+
+            yesBtn.value = id;
+            yesBtn.addEventListener('click', delAlias);
+            delDialog.querySelector('p').innerText = `Remove alias ${alias} ?`;
+            delDialog.returnValue = 'cancel';
             delDialog.showModal();            
         } else {
             parentTr.remove();
         }
+    }
+}
+
+
+/**
+ * Delete alias
+ */
+async function delAlias() {
+    const id = this.value;
+
+    // Delete redirection
+    const redir = new Redir (id);
+    redir.fillFromId();
+    const res = await redir.remove();
+
+    switch (this.name) {
+
+        // "Yes" btn from delete confirmation dialog
+        case "delete-id":
+            if (res.status == 200) {
+                showInfobox(await res.text());
+
+                // Remove row from table
+                for (const tr of tbody.querySelectorAll('tr')) {
+                    if (tr.id == id)
+                        tr.remove();
+                }
+            } else {
+                showInfobox("An error occured while removing alias :\n" + await res.text());
+            }
+            break;
+
+        default:
+            break;
     }
 }
 
@@ -700,30 +751,6 @@ async function editRedir(jsonObj) {
         } else {
             showInfobox("Edit error:\n" + resText);
         }
-
-    } catch (error) {
-        showInfobox(error);
-    }
-}
-
-
-/**
- * Backend call to remove redirections
- * 
- * Take an array of redirection(s) ID(s) as argument
- * 
- *      example : delRedir(['123456789', '234567891']);
- * 
- * Returns status code
- */
-async function delRedir(array) {
-    try {
-        const res = await fetch('/del_redir', {
-            method: 'post',
-            body: array,
-        });
-
-        return res;
 
     } catch (error) {
         showInfobox(error);
@@ -905,13 +932,18 @@ async function synAddAlias() {
 
 
 /**
- * Synchronisation : add alias
+ * Synchronisation : delete alias
  */
 async function synDelAlias() {
     const value = this.value.split(',');
     const id = value[0];
-    const delIdArr = JSON.stringify([id]);
-    const res = await delRedir(delIdArr);
+    const name = value[1];
+    const alias = value[2];
+    const to = value[3];
+
+    // Delete redirection
+    const newRedir = new Redir (id, name, "", alias, to);
+    const res = await newRedir.remove();
 
     switch (this.name) {
         // Remove local entry/row
@@ -1051,32 +1083,6 @@ refreshBtn.addEventListener('click', async (e) => {
  * Sync remote button
  */
 syncBtn.addEventListener('click', synCheck);
-
-
-/**
- * Delete dialog box
- */
-delDialog.addEventListener('close', async (e) => {
-    if (delDialog.returnValue === "yes") {
-        const delIdArr = JSON.stringify(delDialog.__delArr);
-
-        // Remove alias
-        res = await delRedir(delIdArr);
-
-        const resText = await res.text();
-
-        if (res.status == 200) {
-            showInfobox("Alias removed succesfully");
-
-            // Remove row from table
-            for (const tr of tbody.querySelectorAll('tr'))
-                if (delIdArr.includes(tr.id))
-                    tr.remove();
-        } else {
-            showInfobox("Remove error :\n" + resText);
-        }
-    }
-});
 
 
 /**
