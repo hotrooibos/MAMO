@@ -661,7 +661,7 @@ async function delAlias() {
 
     // Delete redirection
     const redir = new Redir (id);
-    redir.fillFromId();
+    await redir.fillFromId();
     const res = await redir.remove();
 
     switch (this.name) {
