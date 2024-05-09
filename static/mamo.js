@@ -531,7 +531,17 @@ async function saveAlias(e) {
             // Creation : new alias (row has no id)
             if (!tr.id) {
                 const redir = new Redir("", name, "", alias, to);
+                
+                // Blinking dots / loading signal
+                const editCell = tr.querySelector('td[data-alias-item="edit"]');
+                const editCellOld = editCell.innerHTML;
+                editCell.innerHTML = '<div class="dot-flashing"></div>';
+            
+                // td.setAttribute('style', 'color: var(--color-text-gray-1);');
+                                
                 const res = await redir.create();
+
+                editCell.innerHTML = editCellOld;
             }
 
             // Edition : alias with __edit property
@@ -669,7 +679,7 @@ async function delAlias() {
         // "Yes" btn from delete confirmation dialog
         case "delete-id":
             if (res.status == 200) {
-                showInfobox(await res.text());
+                showInfobox("Removed alias " + redir.alias);
 
                 // Remove row from table
                 for (const tr of tbody.querySelectorAll('tr')) {
@@ -677,7 +687,7 @@ async function delAlias() {
                         tr.remove();
                 }
             } else {
-                showInfobox("An error occured while removing alias :\n" + await res.text());
+                showInfobox("An error occured while removing alias " + redir.alias + " :\n" + await res.text());
             }
             break;
 
@@ -1127,7 +1137,7 @@ findInput.addEventListener('input', () => {
 
 
 /**
- * Add alias form : clicking generate UUID link button
+ * Test btn
  */
 const testBtn = doc.querySelector('#test-btn');
 testBtn.addEventListener('click', (e) => {
