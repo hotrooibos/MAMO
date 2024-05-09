@@ -49,7 +49,7 @@ async def get_redir() -> dict:
 		body = await qr.request.data
 		id = json.loads(body)
 		redir = model.get_redir(id)
-		return redir, 200
+		return json.dumps(redir), 200
 
 	except Exception as e:
 		return str(e), 400
