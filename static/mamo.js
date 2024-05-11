@@ -393,7 +393,6 @@ function editRow(e) {
  * Delete a row
  */
 function delRow(row) {
-    console.log(row);
     row.parentNode.removeChild(row);
 }
 
@@ -484,6 +483,8 @@ async function saveAlias(e) {
     // - Check format validity for each edited cell
     // - Process creation/edition if ok
     for (const tr of editTrArr) {
+        let editCellOld;
+        
         // Format validation
         for (const td of tr.children) {    
             switch (td.dataset.aliasItem) {
@@ -514,6 +515,13 @@ async function saveAlias(e) {
                     }
                     continue;
 
+                case "edit":
+                    // Blinking dots / loading signal
+                    editCellOld = td.innerHTML;
+                    td.innerHTML = '<div class="dot-flashing"></div>';
+
+                    break;
+
                 default:
                     break;
             }
@@ -530,26 +538,24 @@ async function saveAlias(e) {
 
             // Creation : new alias (row has no id)
             if (!tr.id) {
-                const redir = new Redir("", name, "", alias, to);
-                
-                // Blinking dots / loading signal
-                const editCell = tr.querySelector('td[data-alias-item="edit"]');
-                const editCellOld = editCell.innerHTML;
-                editCell.innerHTML = '<div class="dot-flashing"></div>';
-            
-                // td.setAttribute('style', 'color: var(--color-text-gray-1);');
-                                
-                const res = await redir.create();
+                const redir = new Redir("", name, "", alias, to);                                    
+                redir.create()
+                .then(res => res.text())
+                .then((resText) => {
+                    let id = JSON.parse(resText).id;
+                    let td = tr.querySelector("td[data-alias-item='edit'");
+                    tr.id = id;
+                    td.innerHTML = editCellOld;
+                });
 
-                editCell.innerHTML = editCellOld;
             }
 
             // Edition : alias with __edit property
             else if (tr.__edit)
                 editRedir(newRedir);
 
-            const aliasData = await getAliasList(e);
-            updateTable(aliasData);
+            // const aliasData = await getAliasList(e);
+            // updateTable(aliasData);
         }
     }
 }
@@ -607,7 +613,6 @@ function cancelAliasOperations() {
  * Copy alias to clipboard
  */
 function aliasCopy() {
-    console.log("trest");
     let parentTd = this.parentElement;
     let copyText = parentTd.childNodes[0].data;
     copyText = copyText.trim();
