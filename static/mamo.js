@@ -292,7 +292,9 @@ function updateTable(jsonObj) {
 
 
 /**
- * Add a new alias row
+ * Add a new alias row filled with data from 
+ * the given redirection object (context)
+ * or from a generic template (no context) 
  */
 async function addRow(context) {
     const newRow = doc.createElement('tr');
@@ -539,13 +541,19 @@ async function saveAlias(e) {
             // Creation : new alias (row has no id)
             if (!tr.id) {
                 const redir = new Redir("", name, "", alias, to);                                    
+                
                 redir.create()
                 .then(res => res.text())
                 .then((resText) => {
-                    let id = JSON.parse(resText).id;
-                    let td = tr.querySelector("td[data-alias-item='edit'");
-                    tr.id = id;
-                    td.innerHTML = editCellOld;
+                    const resObj = JSON.parse(resText);
+                    const date = tr.querySelector('time');
+                    const editTd = tr.querySelector("td[data-alias-item='edit'");
+                    tr.id = resObj.id;
+                    date.innerText = resObj.date;
+                    convertEpoch([date]);
+                    editTd.innerHTML = editCellOld;
+                    lockRows(tr);
+                    setActionBtns(tr);
                 });
 
             }
@@ -562,11 +570,20 @@ async function saveAlias(e) {
 
 
 /**
- * Lock editable cells (td)
+ * Lock editable cells for a given row (context)
+ * or every cells within the table if no context
+ * specified
  */
-function lockRows() {
-    // Identify row/cells under edition
-    const trArr = tbody.querySelectorAll('tr');
+function lockRows(context) {
+    // Identify row/cells under edition within the given row
+    // or, if no row's specified, within the whole table
+    let trArr;
+
+    if (context != undefined && context.nodeName === "TR") {
+        trArr = [context];
+    } else {
+        trArr = tbody.querySelectorAll('tr');
+    }
 
     for (const tr of trArr) {
         // Delete rows with no ID (cancelled new alias creation)
@@ -703,14 +720,30 @@ async function delAlias() {
 
 
 /**
- * Set actions for buttons of each row
+ * Set actions for buttons of a given row (context)
+ * or every buttons within the table if no context
+ * specified
  */
-function setActionBtns() {
-    const clipboardBtns = doc.querySelectorAll('.clipboard-btn');
-    const uuidBtns = doc.querySelectorAll('.uuid-btn');
-    const randwordBtns = doc.querySelectorAll('.randword-btn');
-    const delBtns = doc.querySelectorAll('.btn-del');
-    const editBtns = doc.querySelectorAll('.btn-edit');
+function setActionBtns(context) {
+    let clipboardBtns;
+    let uuidBtns;
+    let randwordBtns;
+    let delBtns;
+    let editBtns;
+
+    if (context != undefined && context.nodeName === "TR") {
+        clipboardBtns = context.querySelectorAll('.clipboard-btn');
+        uuidBtns = context.querySelectorAll('.uuid-btn');
+        randwordBtns = context.querySelectorAll('.randword-btn');
+        delBtns = context.querySelectorAll('.btn-del');
+        editBtns = context.querySelectorAll('.btn-edit');
+    } else {
+        clipboardBtns = doc.querySelectorAll('.clipboard-btn');
+        uuidBtns = doc.querySelectorAll('.uuid-btn');
+        randwordBtns = doc.querySelectorAll('.randword-btn');
+        delBtns = doc.querySelectorAll('.btn-del');
+        editBtns = doc.querySelectorAll('.btn-edit');
+    }
 
     // Copy to clipboard buttons
     for (const btn of clipboardBtns)
@@ -820,12 +853,12 @@ async function synCheck(e, domain=workingDomain) {
 
     if (res.status == 200) {
         // Remote alias count
-        ele.innerText = "Alias count in remote : " + resText[0];
+        ele.innerText = resText[0] + " aliases known in remote";
 
         // List of aliases unknown from remote
         if (resText[1].length > 0) {
             ele = doc.createElement('h2');
-            ele.innerText = "Alias unknown from remote :";
+            ele.innerText = resText[1].length + " aliases unknown from remote :";
             synDialog.append(ele);
             
             for (const i of resText[1]) {
@@ -852,7 +885,7 @@ async function synCheck(e, domain=workingDomain) {
         // List of aliases unknown from local alias config
         if (resText[2].length > 0) {
             ele = doc.createElement('h2');
-            ele.innerText = "Alias unknown locally :";
+            ele.innerText = resText[2].length + " aliases unknown locally :";
             synDialog.append(ele);
 
             for (const [k, v] of resText[2].entries()) {
@@ -920,7 +953,7 @@ async function synAddAlias() {
 
                 if (date[0].innerText == "") {
                     date[0].innerText = resText['date'];
-                    convertEpoch(date);
+                    convertEpoch([date]);
                 }
 
                 // Clear line from dialog
@@ -1054,7 +1087,6 @@ saveAliasBtn.addEventListener('click', saveAlias);
  */
 cancelAliasBtn.addEventListener('click', (e) => {
     cancelAliasOperations();
-    lockRows();
     saveAliasBtn.disabled = true;
     cancelAliasBtn.disabled = true;
 });
