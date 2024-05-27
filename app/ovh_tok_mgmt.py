@@ -45,7 +45,7 @@ client = ovh.Client(
 )
 
 try:
-    # delete_ovh_token(client, "249041")
+    # delete_ovh_token(client, "259588")
     # purge_ovh_tokens(client) # !!! Delete ALL existing tokens !!!
     list_ovh_tokens(client)
 

@@ -197,7 +197,7 @@ function controlAlias(td) {
 
         case "alias":
             // Since we have a button (uuid gen) inside <td>
-            text = td.childNodes[0].data;
+            text = td.childNodes[0].innerText;
 
             if (text.split('@')[1] != workingDomain)
                 console.log("Wrong domain: " + text.split('@')[1] + " != " + workingDomain)
@@ -243,9 +243,7 @@ const rowTemplate = (key, name, date, alias, to) => {
     `<tr id="${key}">
         <td data-alias-item="name">${name}</td>
         <td data-alias-item="date"><time>${date}</time></td>
-        <td data-alias-item="alias">${alias}<button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i> word</button>
-            <button class="uuid-btn"><i class="feather-16" data-feather="refresh-cw"></i> UUID</button>
-            <button class="clipboard-btn"><i class="feather-16" data-feather="clipboard"></i></button>
+        <td data-alias-item="alias"><div>${alias}</div><div><button class="randword-btn"><i class="feather-16" data-feather="refresh-cw"></i></button><button class="uuid-btn">UUID</button><button class="clipboard-btn"><i class="feather-16" data-feather="clipboard"></i></button></div>
         </td>
         <td data-alias-item="to">${to}</td>
         <td data-alias-item="edit" class="text-center no-wrap">
@@ -298,6 +296,7 @@ function updateTable(jsonObj) {
  */
 async function addRow(context) {
     const newRow = doc.createElement('tr');
+    let newInput 
     let id, name, date, alias, to;
 
     // Context given, insert row with context informations
@@ -498,7 +497,7 @@ async function saveAlias(e) {
                 case "alias":
                     isValidFormat = controlAlias(td);
                     if (isValidFormat)
-                        alias = td.childNodes[0].data;
+                        alias = td.childNodes[0].innerText;
                     else {
                         td.classList.add('input-err');
                         showInfobox("Create alias : wrong alias address format");
@@ -630,8 +629,8 @@ function cancelAliasOperations() {
  * Copy alias to clipboard
  */
 function aliasCopy() {
-    let parentTd = this.parentElement;
-    let copyText = parentTd.childNodes[0].data;
+    let parentTd = this.closest('td');
+    let copyText = parentTd.childNodes[0].innerText;
     copyText = copyText.trim();
     navigator.clipboard.writeText(copyText);
     showInfobox(`${copyText} copied to clipboard`);
