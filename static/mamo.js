@@ -629,8 +629,8 @@ function cancelAliasOperations() {
  * Copy alias to clipboard
  */
 function aliasCopy() {
-    let parentTd = this.closest('td');
-    let copyText = parentTd.childNodes[0].innerText;
+    const parentTd = this.closest('td');
+    const copyText = parentTd.childNodes[0].innerText;
     copyText = copyText.trim();
     navigator.clipboard.writeText(copyText);
     showInfobox(`${copyText} copied to clipboard`);
@@ -641,15 +641,18 @@ function aliasCopy() {
  * Add action for tool buttons
  */
 async function toolBtnAction() {
+    const parentTr = this.parentElement.closest('tr');
+    const parentTd = this.parentElement.closest('td');
+
     // UUID generation for alias
     if (this.classList.contains('uuid-btn')) {
         const newAlias = crypto.randomUUID() + "@" + workingDomain;
-        this.parentElement.childNodes[0].data = newAlias;
+        parentTd.firstChild.innerText = newAlias;
 
     // Random word generation for alias
     } else if (this.classList.contains('randword-btn')) {
         const newAlias = await genName() + "@" + workingDomain;
-
+ 
         // TODO : check if generated alias doesnt already exist, and if so, generate another
         // const aliasData = await getAliasList(workingDomain);
         // let aliasArr = [];
@@ -659,11 +662,11 @@ async function toolBtnAction() {
         //     console.log(typeof(v['0']));
         // }
 
-        this.parentElement.childNodes[0].data = newAlias;
+        parentTd.firstChild.innerText = newAlias;
+        console.log(parentTd);
     
     // Delete btn
     } else if (this.classList.contains('btn-del')) {
-        const parentTr = this.parentElement.closest('tr');
         const id = parentTr.id;
 
         // If parent row has an ID, we want to delete an existing alias,
