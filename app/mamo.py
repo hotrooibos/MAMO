@@ -93,9 +93,9 @@ async def set_redir() -> str:
 	to = f['to'].lower()
 	
 	try:
-		res = model.create_redir(name=name,
-						   		 alias=alias,
-						   		 to=to)
+		res = await model.create_redir(name=name,
+									   alias=alias,
+									   to=to)
 		return json.dumps(res), 200
 	
 	except Exception as e:

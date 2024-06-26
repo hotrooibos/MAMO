@@ -617,6 +617,9 @@ function lockRows(context) {
 function cancelAliasOperations() {
     const editedTdArr = tbody.querySelectorAll('td[contenteditable]');
 
+    saveAliasBtn.disabled = true;
+    cancelAliasBtn.disabled = true;
+
     for (const td of editedTdArr)
         if (td.__origContent)
             td.innerHTML = td.__origContent;
@@ -630,7 +633,7 @@ function cancelAliasOperations() {
  */
 function aliasCopy() {
     const parentTd = this.closest('td');
-    const copyText = parentTd.childNodes[0].innerText;
+    let copyText = parentTd.childNodes[0].innerText;
     copyText = copyText.trim();
     navigator.clipboard.writeText(copyText);
     showInfobox(`${copyText} copied to clipboard`);
@@ -663,7 +666,6 @@ async function toolBtnAction() {
         // }
 
         parentTd.firstChild.innerText = newAlias;
-        console.log(parentTd);
     
     // Delete btn
     } else if (this.classList.contains('btn-del')) {
@@ -1089,8 +1091,6 @@ saveAliasBtn.addEventListener('click', saveAlias);
  */
 cancelAliasBtn.addEventListener('click', (e) => {
     cancelAliasOperations();
-    saveAliasBtn.disabled = true;
-    cancelAliasBtn.disabled = true;
 });
 
 

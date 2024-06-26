@@ -77,7 +77,7 @@ def get_redirs(domain: str = 'all') -> dict:
 	return(redirs)
 
 
-def create_redir_remote(alias: str, to: str) -> str:
+async def create_redir_remote(alias: str, to: str) -> str:
 	'''
 		Create a new redirection in remote
 	'''
@@ -125,7 +125,7 @@ def create_redir_local(id: int, name:str, date:int, alias: str, to: str):
 		raise
 
 	
-def create_redir(name:str, alias: str, to: str) -> dict:
+async def create_redir(name:str, alias: str, to: str) -> dict:
 	'''
 		Create a new redirection (remote + local)
 		Returns the redirection id if successful
@@ -146,10 +146,12 @@ def create_redir(name:str, alias: str, to: str) -> dict:
 		raise
 
 	try:
-		create_redir_remote(alias=alias,
-							to=to)
+		await create_redir_remote(alias=alias,
+								  to=to)
 		
 		# Get ID from OVH
+		# TODO refactoriser cette fonction (create_redir) pour prendre en compte un dico d'alias
+		# à créer, et ainsi ne faire la requête qui suit qu'une seule fois
 		redirs_remote = get_redirs_remote(domain)
 
 		for k, v in redirs_remote.items():
