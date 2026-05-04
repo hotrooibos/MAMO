@@ -1,8 +1,11 @@
 # -*- encoding: utf-8 -*-
 import json
-import model
+from . import model
 import quart as qr
 from werkzeug.datastructures import MultiDict 
+
+qr.Quart.default_config = qr.Quart.default_config.copy()
+qr.Quart.default_config["PROVIDE_AUTOMATIC_OPTIONS"] = True
 
 app = qr.Quart(__name__,
                template_folder='../templates',
