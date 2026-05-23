@@ -1,33 +1,61 @@
-# MAMO
-Mail Aliases Manager for OVH
+# MAMO Desktop - Mail Aliases Manager
 
-This work in progress tool goal is to manage e-mail redirections/aliases from OVHcloud, with an additional layer of informations.
-This mini project is at a very early stage, so there will be bugs or unexpected behaviours.
+Tauri v2 desktop application for managing OVH mail aliases. Create, edit, delete, and sync mail redirections across your OVH domains.
 
-Working features :
-- List all aliases
-- Create and remove an alias
-- Edit an alias (any field including the alias address one, which is not available in OVH admin panel)
-- Generate an UUID format 
-- New alias metadatas : creation/edit date, name/description
-- Filter/sort aliases
+## Prerequisites
 
-WIP, or planned/ideas :
-- Better sort algorithm (may currently be very slow with high alias list)
-- Automatize config file initialization
-- Multi domain support
-- Secrets and configuration centralization/hosting
-- Enhanced batch input : config injection, selection removal...
-- Other hosting services support
+- [Rust](https://www.rust-lang.org/tools/install) (1.70+)
+- [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) (system libs, webkit2gtk on Linux, etc.)
 
-Under the hood :
-- Backend : Uvicorn ASGI + Quart (async Flask) framework
-- Front/view : Jinja2 templates, vanilla JS
+No Node.js or npm required — the frontend is plain HTML/JS/CSS served directly by Tauri.
 
-## Setup
-- Clone the repository localy : `git clone https://github.com/hotrooibos/MAMO.git`
-- Install dependencies : `pip install -r requirements.txt`
-- Create a config.json file based on the given template (copy and rename it)
-- Generate your OVH API token (https://api.ovh.com/createToken/index.cgi?GET=/*&PUT=/*&POST=/*&DELETE=/*)
-- In the config file, fill the token fields
-- Run : `uvicorn mamo:app`
+## Development
+
+```bash
+# Start dev server (frontend on localhost:1420, hot reload)
+cargo tauri dev
+
+# Production build
+cargo tauri build
+
+# Build Rust backend only (skip Tauri bundling)
+cargo build --manifest-path src-tauri/Cargo.toml
+```
+
+## Project Structure
+
+```
+src/                  # Frontend (static HTML/JS/CSS)
+  index.html            Single-page app shell
+  app.js                All frontend logic, IPC calls to Rust backend
+  style.css             Dark theme styles
+
+src-tauri/            # Rust backend (Tauri v2)
+  src/
+    main.rs             App init, AppState (Mutex<ConfigManager>)
+    commands.rs         #[tauri::command] handlers (get_config, save_config,
+                         get_aliases, create_alias, update_alias, delete_alias,
+                         sync_with_ovh, generate_random_name, test_ovh_connection)
+    config.rs           ConfigManager — reads/writes JSON at config dir
+    models.rs           Alias, Config, SyncResult structs
+    ovh_client.rs       OVH API client with request signing
+  tauri.conf.json       Tauri config (window size, CSP, frontendDist)
+  Cargo.toml            Rust dependencies
+```
+
+## Configuration
+
+App data is stored at `dirs::config_dir()/mamo-tauri/` (typically `~/.config/mamo-tauri/` on Linux):
+
+- **`config.json`** — OVH API credentials and domain list (`endpoint`, `app_key`, `app_secret`, `consumer_key`, `domains`, `default_dest`)
+- **`aliases.json`** — Local alias cache (`HashMap<String, Alias>`)
+
+OVH API credentials can be obtained from [OVH API console](https://api.ovh.com/console/).
+
+## Known Issues
+
+- **Broken request signing** — `ovh_client.rs` uses `std::hash::DefaultHasher` instead of SHA-1. The OVH API requires SHA-1 signatures, so all authenticated requests will fail against real endpoints.
+- **Hardcoded domain** — `sync_with_ovh` iterates over `["example.com"]` instead of `config.domains`.
+- **CSP disabled** — `tauri.conf.json` sets `"csp": null`. Acceptable for development but must be tightened before production.
+
+

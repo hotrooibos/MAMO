@@ -1,0 +1,271 @@
+:root {
+    --color-bg: rgb(11, 20, 22);
+    --color-bg-light: rgb(20, 30, 36);
+    --color-text: rgb(225, 225, 225);
+    --color-text-muted: rgb(180, 180, 180);
+    --color-accent: rgb(119, 193, 209);
+    --color-hover: rgb(25, 57, 69);
+    --color-danger: rgb(233, 108, 76);
+    --color-success: rgb(76, 175, 80);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background: var(--color-bg-light);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--color-hover);
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+header p {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+#toolbar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-hover);
+    align-items: center;
+}
+
+#toolbar button {
+    padding: 0.5rem 1rem;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+#toolbar button:hover {
+    opacity: 0.9;
+}
+
+#toolbar #btn-settings {
+    background: var(--color-hover);
+    color: var(--color-text);
+    margin-left: auto;
+}
+
+#search {
+    padding: 0.5rem 1rem;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-hover);
+    border-radius: 4px;
+    color: var(--color-text);
+    width: 200px;
+}
+
+#search::placeholder {
+    color: var(--color-text-muted);
+}
+
+main {
+    flex: 1;
+    padding: 1rem 2rem;
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-hover);
+}
+
+th {
+    color: var(--color-text-muted);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+tr:hover {
+    background: var(--color-hover);
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actions button {
+    padding: 0.25rem 0.5rem;
+    background: transparent;
+    border: 1px solid var(--color-hover);
+    color: var(--color-text);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.actions button:hover {
+    background: var(--color-bg-light);
+}
+
+.actions .btn-delete {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--color-bg-light);
+    padding: 2rem;
+    border-radius: 8px;
+    min-width: 400px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.modal-content h2 {
+    margin-bottom: 1.5rem;
+}
+
+.modal label {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.modal label > *:not(:first-child) {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.modal input, .modal select {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-hover);
+    border-radius: 4px;
+    color: var(--color-text);
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-group input {
+    flex: 1;
+}
+
+.input-group span {
+    color: var(--color-text-muted);
+}
+
+.input-group button {
+    padding: 0.5rem 0.75rem;
+    background: var(--color-hover);
+    border: none;
+    color: var(--color-text);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.form-actions button {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.form-actions button[type="submit"] {
+    background: var(--color-accent);
+    color: var(--color-bg);
+}
+
+.form-actions .btn-cancel {
+    background: var(--color-hover);
+    color: var(--color-text);
+}
+
+.btn-close {
+    padding: 0.5rem 1.5rem;
+    background: var(--color-hover);
+    border: none;
+    color: var(--color-text);
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+#sync-results {
+    margin: 1rem 0;
+}
+
+#sync-results h3 {
+    margin: 1rem 0 0.5rem;
+    font-size: 1rem;
+}
+
+#sync-results ul {
+    list-style: none;
+}
+
+#sync-results li {
+    padding: 0.5rem;
+    background: var(--color-bg);
+    margin-bottom: 0.25rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.875rem;
+}

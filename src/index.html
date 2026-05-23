@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAMO - Mail Aliases Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>MAMO</h1>
+            <p>Mail Aliases Manager for OVH</p>
+        </header>
+
+        <nav id="toolbar">
+            <button id="btn-new">+ New Alias</button>
+            <button id="btn-sync">Sync with OVH</button>
+            <button id="btn-settings">Settings</button>
+            <input type="text" id="search" placeholder="Search aliases...">
+        </nav>
+
+        <main>
+            <table id="aliases-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th>Alias</th>
+                        <th>To</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="aliases-body">
+                </tbody>
+            </table>
+        </main>
+
+        <div id="modal-settings" class="modal hidden">
+            <div class="modal-content">
+                <h2>Settings</h2>
+                <form id="settings-form">
+                    <label>
+                        Endpoint:
+                        <select id="endpoint">
+                            <option value="ovh-eu">OVH Europe</option>
+                            <option value="ovh-us">OVH US</option>
+                            <option value="ovh-ca">OVH Canada</option>
+                        </select>
+                    </label>
+                    <label>
+                        Application Key:
+                        <input type="text" id="app-key" required>
+                    </label>
+                    <label>
+                        Application Secret:
+                        <input type="password" id="app-secret" required>
+                    </label>
+                    <label>
+                        Consumer Key:
+                        <input type="text" id="consumer-key" required>
+                    </label>
+                    <label>
+                        Domains (comma-separated):
+                        <input type="text" id="domains" placeholder="example.com,example.org">
+                    </label>
+                    <label>
+                        Default Destination:
+                        <input type="email" id="default-dest" placeholder="you@example.com">
+                    </label>
+                    <div class="form-actions">
+                        <button type="submit">Save</button>
+                        <button type="button" class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-alias" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="alias-modal-title">New Alias</h2>
+                <form id="alias-form">
+                    <input type="hidden" id="alias-id">
+                    <label>
+                        Name:
+                        <input type="text" id="alias-name" placeholder="Work Email">
+                    </label>
+                    <label>
+                        Alias:
+                        <div class="input-group">
+                            <input type="text" id="alias-address" placeholder="work">
+                            <span id="alias-domain">@example.com</span>
+                            <button type="button" id="btn-random">Random</button>
+                        </div>
+                    </label>
+                    <label>
+                        To:
+                        <input type="email" id="alias-to" placeholder="destination@example.com">
+                    </label>
+                    <div class="form-actions">
+                        <button type="submit">Save</button>
+                        <button type="button" class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-sync" class="modal hidden">
+            <div class="modal-content">
+                <h2>Sync Results</h2>
+                <div id="sync-results">
+                    <p>Loading...</p>
+                </div>
+                <button class="btn-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

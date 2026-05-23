@@ -1,6 +1,16 @@
-node_modules/
-__pycache__/
-venv/
-config.json
-config_test*.json
-aliases.json
+# Rust build artifacts
+target/
+
+# Tauri auto-generated schemas
+src-tauri/gen/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
