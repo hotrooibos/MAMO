@@ -87,12 +87,11 @@ impl OvhClient {
             );
         }
 
-        let ids: Vec<i64> = res.json().await?;
+        let ids: Vec<String> = res.json().await?;
         let mut aliases = Vec::new();
 
         for id in ids {
-            let id_str = id.to_string();
-            let alias = self.get_redirection(domain, &id_str).await?;
+            let alias = self.get_redirection(domain, &id).await?;
             aliases.push(alias);
         }
 
