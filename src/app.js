@@ -1,6 +1,7 @@
 let aliases = {};
 let config = {};
 let invoke;
+let selectedDomain = '';
 
 async function loadAliases() {
     try {
@@ -23,15 +24,25 @@ async function loadConfig() {
 
 function renderAliases() {
     const tbody = document.getElementById('aliases-body');
-    const searchTerm = document.getElementById('search').value.toLowerCase();
+    const searchInput = document.getElementById('search');
+    const searchTerm = searchInput.value.toLowerCase();
     
     tbody.innerHTML = '';
+    let count = 0;
     
     Object.values(aliases).forEach(alias => {
+        if (selectedDomain) {
+            const domain = alias.alias.split('@').pop();
+            if (domain !== selectedDomain && !domain.endsWith('.' + selectedDomain)) {
+                return;
+            }
+        }
+        
         if (searchTerm && !matchesSearch(alias, searchTerm)) {
             return;
         }
         
+        count++;
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${escapeHtml(alias.name)}</td>
@@ -45,6 +56,8 @@ function renderAliases() {
         `;
         tbody.appendChild(tr);
     });
+
+    searchInput.placeholder = 'Search ' + count + ' alias' + (count !== 1 ? 'es' : '');
 }
 
 function matchesSearch(alias, term) {
@@ -103,6 +116,39 @@ function populateSettingsForm() {
     document.getElementById('default-dest').value = config.default_dest || '';
 }
 
+function populateDomainFilter() {
+    const select = document.getElementById('domain-filter');
+    const domains = config.domains || [];
+    const previousValue = selectedDomain;
+
+    select.innerHTML = '';
+
+    if (domains.length >= 2) {
+        const allOpt = document.createElement('option');
+        allOpt.value = '';
+        allOpt.textContent = 'All domains';
+        select.appendChild(allOpt);
+    }
+
+    domains.forEach(domain => {
+        const opt = document.createElement('option');
+        opt.value = domain;
+        opt.textContent = domain;
+        select.appendChild(opt);
+    });
+
+    // Preserve previous selection if still valid, otherwise default to first
+    if (domains.includes(previousValue)) {
+        selectedDomain = previousValue;
+    } else if (domains.length === 1) {
+        selectedDomain = domains[0];
+    } else {
+        selectedDomain = '';
+    }
+
+    select.value = selectedDomain;
+}
+
 function showModal(id) {
     document.getElementById(id).classList.remove('hidden');
 }
@@ -150,13 +196,21 @@ function init() {
 
     invoke = window.__TAURI__.core.invoke;
 
-    loadConfig();
-    loadAliases();
+    loadConfig().then(() => {
+        populateDomainFilter();
+        loadAliases();
+    });
+    
+    document.getElementById('domain-filter').addEventListener('change', (e) => {
+        selectedDomain = e.target.value;
+        renderAliases();
+    });
     
     document.getElementById('btn-new').addEventListener('click', () => {
         document.getElementById('alias-modal-title').textContent = 'New Alias';
         document.getElementById('alias-form').reset();
         document.getElementById('alias-id').value = '';
+        document.getElementById('alias-to').value = config.default_dest || '';
         showModal('modal-alias');
     });
     
@@ -205,6 +259,7 @@ function init() {
         try {
             await invoke('save_config', { config: newConfig });
             config = newConfig;
+            populateDomainFilter();
             hideModal('modal-settings');
         } catch (e) {
             showError('Failed to save settings: ' + e);
@@ -223,9 +278,9 @@ function init() {
         
         try {
             if (id) {
-                await invoke('update_alias', { id, name, alias_addr: aliasAddr, to });
+                await invoke('update_alias', { id, name, aliasAddr, to });
             } else {
-                await invoke('create_alias', { name, alias_addr: aliasAddr, to });
+                await invoke('create_alias', { name, aliasAddr, to });
             }
             hideModal('modal-alias');
             await loadAliases();

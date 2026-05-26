@@ -83,6 +83,15 @@ header p {
     width: 200px;
 }
 
+#domain-filter {
+    padding: 0.5rem 1rem;
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-hover);
+    border-radius: 4px;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
 #search::placeholder {
     color: var(--color-text-muted);
 }
