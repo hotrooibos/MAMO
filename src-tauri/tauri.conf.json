@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "identifier": "com.mamo.app",
   "build": {
-    "frontendDist": "../src",
-    "devUrl": "http://localhost:1420"
+    "frontendDist": "../src"
   },
   "app": {
     "withGlobalTauri": true,

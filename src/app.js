@@ -167,6 +167,7 @@ function init() {
         try {
             const result = await invoke('sync_with_ovh');
             renderSyncResults(result);
+            await loadAliases();
         } catch (e) {
             document.getElementById('sync-results').innerHTML = `<p>Error: ${e}</p>`;
         }
@@ -230,6 +231,30 @@ function init() {
             await loadAliases();
         } catch (e) {
             showError('Failed to save alias: ' + e);
+        }
+    });
+    
+    document.getElementById('btn-test-connection').addEventListener('click', async () => {
+        const statusEl = document.getElementById('connection-status');
+        statusEl.textContent = 'Testing...';
+        statusEl.className = 'connection-status testing';
+
+        const testConfig = {
+            endpoint: document.getElementById('endpoint').value,
+            app_key: document.getElementById('app-key').value,
+            app_secret: document.getElementById('app-secret').value,
+            consumer_key: document.getElementById('consumer-key').value,
+            domains: document.getElementById('domains').value.split(',').map(s => s.trim()).filter(s => s),
+            default_dest: document.getElementById('default-dest').value,
+        };
+
+        try {
+            const result = await invoke('test_ovh_connection', { config: testConfig });
+            statusEl.textContent = result;
+            statusEl.className = 'connection-status ' + (result.startsWith('Connected') ? 'success' : 'error');
+        } catch (e) {
+            statusEl.textContent = 'Error: ' + e;
+            statusEl.className = 'connection-status error';
         }
     });
     

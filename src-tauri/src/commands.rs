@@ -99,11 +99,12 @@ pub async fn sync_with_ovh(state: State<'_, AppState>) -> Result<SyncResult, Str
         manager.load_aliases().map_err(|e| e.to_string())?
     };
 
+    let domains = config.domains.clone();
     let client = OvhClient::new(config).map_err(|e| e.to_string())?;
 
     let mut remote_aliases: HashMap<String, Alias> = HashMap::new();
 
-    for domain in &["example.com"] {
+    for domain in &domains {
         match client.get_redirections(domain).await {
             Ok(aliases) => {
                 for alias in aliases {
@@ -125,6 +126,16 @@ pub async fn sync_with_ovh(state: State<'_, AppState>) -> Result<SyncResult, Str
         .filter(|a| !local_aliases.contains_key(&a.id))
         .cloned()
         .collect();
+
+    // Save remote-only aliases to local store
+    if !remote_only.is_empty() {
+        let mut all_aliases = local_aliases;
+        for alias in &remote_only {
+            all_aliases.insert(alias.id.clone(), alias.clone());
+        }
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.save_aliases(&all_aliases).map_err(|e| e.to_string())?;
+    }
 
     Ok(SyncResult {
         remote_count: remote_aliases.len(),
@@ -149,13 +160,7 @@ pub fn generate_random_name() -> String {
 }
 
 #[tauri::command]
-pub async fn test_ovh_connection(state: State<'_, AppState>) -> Result<bool, String> {
-    let config = {
-        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
-        manager.load_config().map_err(|e| e.to_string())?
-    };
-
+pub async fn test_ovh_connection(config: Config) -> Result<String, String> {
     let client = OvhClient::new(config).map_err(|e| e.to_string())?;
-
     client.test_connection().await.map_err(|e| e.to_string())
 }
