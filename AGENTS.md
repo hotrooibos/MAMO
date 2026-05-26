@@ -23,7 +23,7 @@ No tests, linter, or formatter are configured.
 - **`src-tauri/`** — Rust backend (Tauri v2 app).
   - `main.rs` — App setup, `AppState` holds `Mutex<ConfigManager>`.
   - `commands.rs` — All `#[tauri::command]` handlers invoked from JS via `window.__TAURI__.invoke()`.
-  - `config.rs` — `ConfigManager` reads/writes JSON files at `$XDG_CONFIG_HOME/mamo-tauri/`.
+  - `config.rs` — `ConfigManager` reads/writes JSON files at `$XDG_CONFIG_HOME/mamo/`.
   - `models.rs` — `Alias`, `Config`, `SyncResult` structs.
   - `ovh_client.rs` — OVH API client with request signing.
 
@@ -37,7 +37,7 @@ Frontend-to-backend IPC uses `window.__TAURI__.invoke('command_name', {args})` (
 
 ## Data Storage
 
-App data lives at `dirs::config_dir()/mamo-tauri/`:
+App data lives at `dirs::config_dir()/mamo/`:
 - `config.json` — OVH credentials and domain list
 - `aliases.json` — Local alias store (`HashMap<String, Alias>`)
 

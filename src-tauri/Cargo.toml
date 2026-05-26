@@ -1,5 +1,5 @@
 [package]
-name = "mamo-tauri"
+name = "mamo"
 version = "0.1.0"
 description = "Mail Aliases Manager for OVH - Desktop App"
 authors = ["you"]

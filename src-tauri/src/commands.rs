@@ -1,4 +1,3 @@
-use crate::config::ConfigManager;
 use crate::models::{Alias, Config, SyncResult};
 use crate::ovh_client::OvhClient;
 use crate::AppState;

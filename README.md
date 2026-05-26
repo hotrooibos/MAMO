@@ -45,7 +45,7 @@ src-tauri/            # Rust backend (Tauri v2)
 
 ## Configuration
 
-App data is stored at `dirs::config_dir()/mamo-tauri/` (typically `~/.config/mamo-tauri/` on Linux):
+App data is stored at `dirs::config_dir()/mamo/` (typically `~/.config/mamo/` on Linux):
 
 - **`config.json`** — OVH API credentials and domain list (`endpoint`, `app_key`, `app_secret`, `consumer_key`, `domains`, `default_dest`)
 - **`aliases.json`** — Local alias cache (`HashMap<String, Alias>`)

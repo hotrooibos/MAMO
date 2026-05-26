@@ -18,7 +18,7 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .manage(AppState {
             config_manager: Mutex::new(ConfigManager::new(
-                dirs::config_dir().unwrap().join("mamo-tauri"),
+                dirs::config_dir().unwrap().join("mamo"),
             )),
         })
         .invoke_handler(tauri::generate_handler![

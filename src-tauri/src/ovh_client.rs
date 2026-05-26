@@ -1,7 +1,7 @@
 use crate::models::{Alias, Config};
 use anyhow::{Context, Result};
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct OvhRedirection {
@@ -105,67 +105,6 @@ impl OvhClient {
             alias: redir.from_addr,
             to: redir.to,
         })
-    }
-
-    pub async fn create_redirection(&self, alias: &Alias) -> Result<String> {
-        let domain = alias
-            .alias
-            .split('@')
-            .nth(1)
-            .context("Invalid alias format")?;
-        let url = format!("{}/email/domain/{}/redirection", self.base_url, domain);
-
-        let body = serde_json::json!({
-            "from": alias.alias,
-            "localCopy": false,
-            "to": alias.to
-        });
-
-        let res = self
-            .client
-            .post(&url)
-            .header("X-Ovh-Application", &self.config.app_key)
-            .header("X-Ovh-Consumer", &self.config.consumer_key)
-            .header(
-                "X-Ovh-Signature",
-                self.sign_request("POST", &url, &body.to_string()),
-            )
-            .header("X-Ovh-Timestamp", chrono::Utc::now().timestamp().to_string())
-            .header("Content-Type", "application/json")
-            .json(&body)
-            .send()
-            .await
-            .context("Failed to create redirection")?;
-
-        let id: String = res.text().await?;
-        Ok(id.trim_matches('"').to_string())
-    }
-
-    pub async fn delete_redirection(&self, id: &str, alias: &str) -> Result<()> {
-        let domain = alias
-            .split('@')
-            .nth(1)
-            .context("Invalid alias format")?;
-        let url = format!(
-            "{}/email/domain/{}/redirection/{}",
-            self.base_url, domain, id
-        );
-
-        let _res = self
-            .client
-            .delete(&url)
-            .header("X-Ovh-Application", &self.config.app_key)
-            .header("X-Ovh-Consumer", &self.config.consumer_key)
-            .header(
-                "X-Ovh-Signature",
-                self.sign_request("DELETE", &url, ""),
-            )
-            .header("X-Ovh-Timestamp", chrono::Utc::now().timestamp().to_string())
-            .send()
-            .await
-            .context("Failed to delete redirection")?;
-
-        Ok(())
     }
 
     fn sign_request(&self, method: &str, url: &str, body: &str) -> String {

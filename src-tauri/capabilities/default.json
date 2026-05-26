@@ -1,0 +1,16 @@
+{
+  "identifier": "default",
+  "description": "Default capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "allow-get-config",
+    "allow-save-config",
+    "allow-get-aliases",
+    "allow-create-alias",
+    "allow-update-alias",
+    "allow-delete-alias",
+    "allow-sync-with-ovh",
+    "allow-generate-random-name",
+    "allow-test-ovh-connection"
+  ]
+}

@@ -26,6 +26,7 @@ impl ConfigManager {
     }
 
     pub fn save_config(&self, config: &Config) -> Result<()> {
+        fs::create_dir_all(&self.config_dir)?;
         let path = self.config_dir.join("config.json");
         let contents = serde_json::to_string_pretty(config)?;
         fs::write(path, contents)?;
@@ -44,6 +45,7 @@ impl ConfigManager {
     }
 
     pub fn save_aliases(&self, aliases: &HashMap<String, Alias>) -> Result<()> {
+        fs::create_dir_all(&self.config_dir)?;
         let path = self.config_dir.join("aliases.json");
         let contents = serde_json::to_string_pretty(aliases)?;
         fs::write(path, contents)?;

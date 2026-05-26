@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-create-alias"
+description = "Enables the create_alias command without any pre-configured scope."
+commands.allow = ["create_alias"]
+
+[[permission]]
+identifier = "deny-create-alias"
+description = "Denies the create_alias command without any pre-configured scope."
+commands.deny = ["create_alias"]

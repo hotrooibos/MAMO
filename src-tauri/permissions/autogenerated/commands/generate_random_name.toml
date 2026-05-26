@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-generate-random-name"
+description = "Enables the generate_random_name command without any pre-configured scope."
+commands.allow = ["generate_random_name"]
+
+[[permission]]
+identifier = "deny-generate-random-name"
+description = "Denies the generate_random_name command without any pre-configured scope."
+commands.deny = ["generate_random_name"]

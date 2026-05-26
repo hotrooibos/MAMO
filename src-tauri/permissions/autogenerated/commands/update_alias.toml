@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-alias"
+description = "Enables the update_alias command without any pre-configured scope."
+commands.allow = ["update_alias"]
+
+[[permission]]
+identifier = "deny-update-alias"
+description = "Denies the update_alias command without any pre-configured scope."
+commands.deny = ["update_alias"]

@@ -1,7 +1,6 @@
-const { invoke } = window.__TAURI__;
-
 let aliases = {};
 let config = {};
+let invoke;
 
 async function loadAliases() {
     try {
@@ -40,8 +39,8 @@ function renderAliases() {
             <td>${escapeHtml(alias.alias)}</td>
             <td>${escapeHtml(alias.to)}</td>
             <td class="actions">
-                <button onclick="editAlias('${alias.id}')">Edit</button>
-                <button class="btn-delete" onclick="deleteAlias('${alias.id}')">Delete</button>
+                <button data-action="edit" data-id="${escapeHtml(alias.id)}">Edit</button>
+                <button data-action="delete" data-id="${escapeHtml(alias.id)}" class="btn-delete">Delete</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -116,7 +115,41 @@ function showError(message) {
     alert(message);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function renderSyncResults(result) {
+    const container = document.getElementById('sync-results');
+    let html = `<p>Remote aliases: ${result.remote_count}</p>`;
+    
+    if (result.local_only.length > 0) {
+        html += `<h3>Local only (${result.local_only.length})</h3><ul>`;
+        result.local_only.forEach(alias => {
+            html += `<li>${alias.alias} → ${alias.to}</li>`;
+        });
+        html += '</ul>';
+    }
+    
+    if (result.remote_only.length > 0) {
+        html += `<h3>Remote only (${result.remote_only.length})</h3><ul>`;
+        result.remote_only.forEach(alias => {
+            html += `<li>${alias.alias} → ${alias.to}</li>`;
+        });
+        html += '</ul>';
+    }
+    
+    if (result.local_only.length === 0 && result.remote_only.length === 0) {
+        html += '<p>In sync!</p>';
+    }
+    
+    container.innerHTML = html;
+}
+
+function init() {
+    if (!window.__TAURI__) {
+        document.body.innerHTML = '<h1 style="color:red;padding:2rem;">Error: Tauri API not available. Make sure withGlobalTauri is set to true in tauri.conf.json and rebuild the app.</h1>';
+        return;
+    }
+
+    invoke = window.__TAURI__.core.invoke;
+
     loadConfig();
     loadAliases();
     
@@ -145,6 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.getElementById('search').addEventListener('input', renderAliases);
+    
+    // Event delegation for Edit/Delete buttons in the aliases table
+    document.getElementById('aliases-body').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        if (action === 'edit') editAlias(id);
+        else if (action === 'delete') deleteAlias(id);
+    });
     
     document.getElementById('settings-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -179,9 +222,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             if (id) {
-                await invoke('update_alias', { id, name, aliasAddr, to });
+                await invoke('update_alias', { id, name, alias_addr: aliasAddr, to });
             } else {
-                await invoke('create_alias', { name, aliasAddr, to });
+                await invoke('create_alias', { name, alias_addr: aliasAddr, to });
             }
             hideModal('modal-alias');
             await loadAliases();
@@ -212,31 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.add('hidden');
         });
     });
-});
+}
 
-function renderSyncResults(result) {
-    const container = document.getElementById('sync-results');
-    let html = `<p>Remote aliases: ${result.remote_count}</p>`;
-    
-    if (result.local_only.length > 0) {
-        html += `<h3>Local only (${result.local_only.length})</h3><ul>`;
-        result.local_only.forEach(alias => {
-            html += `<li>${alias.alias} → ${alias.to}</li>`;
-        });
-        html += '</ul>';
-    }
-    
-    if (result.remote_only.length > 0) {
-        html += `<h3>Remote only (${result.remote_only.length})</h3><ul>`;
-        result.remote_only.forEach(alias => {
-            html += `<li>${alias.alias} → ${alias.to}</li>`;
-        });
-        html += '</ul>';
-    }
-    
-    if (result.local_only.length === 0 && result.remote_only.length === 0) {
-        html += '<p>In sync!</p>';
-    }
-    
-    container.innerHTML = html;
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
 }
