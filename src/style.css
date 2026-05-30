@@ -300,6 +300,31 @@ tr:hover {
     margin: 1rem 0;
 }
 
+.sync-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn-sync-action {
+    padding: 0.5rem 1rem;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-sync-action:hover {
+    opacity: 0.9;
+}
+
+.btn-sync-action.btn-delete {
+    background: var(--color-danger);
+    color: var(--color-text);
+}
+
 #sync-results h3 {
     margin: 1rem 0 0.5rem;
     font-size: 1rem;
@@ -316,4 +341,78 @@ tr:hover {
     border-radius: 4px;
     font-family: monospace;
     font-size: 0.875rem;
+}
+
+.btn-secondary {
+    padding: 0.5rem 1rem;
+    background: var(--color-hover);
+    border: 1px solid var(--color-accent);
+    color: var(--color-text);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.btn-secondary:hover {
+    background: var(--color-accent);
+    color: var(--color-bg);
+}
+
+.credential-info {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--color-bg);
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.credential-info.hidden {
+    display: none;
+}
+
+.credential-info h4 {
+    margin: 0.5rem 0 0.25rem;
+    font-size: 0.875rem;
+}
+
+.credential-info ul {
+    list-style: none;
+    padding: 0;
+}
+
+.credential-info li {
+    padding: 0.25rem 0;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.rule-method {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    background: var(--color-hover);
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+.text-warning {
+    color: var(--color-danger);
+}
+
+.text-success {
+    color: var(--color-success);
+}
+
+.credential-info a {
+    color: var(--color-accent);
+}
+
+.credential-info code {
+    background: var(--color-hover);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    word-break: break-all;
 }

@@ -1,4 +1,4 @@
-# MAMO-tauri
+# MAMO
 
 Tauri v2 desktop app for managing OVH mail aliases. Rust backend, plain HTML/JS/CSS frontend (no bundler, no Node.js).
 
@@ -29,17 +29,15 @@ No tests, linter, or formatter are configured.
 
 Frontend-to-backend IPC uses `window.__TAURI__.invoke('command_name', {args})` (not `@tauri-apps/api` npm package — there is no npm).
 
-## Known Issues
-
-- **`ovh_client.rs:187-193`**: `sign_request` uses `std::hash::DefaultHasher` which is **not SHA-1**. OVH API requires SHA-1 signatures. This will produce auth failures against real OVH endpoints.
-- **`commands.rs:107`**: `sync_with_ovh` hardcodes `["example.com"]` instead of using `config.domains`.
-- **`tauri.conf.json`**: CSP is disabled (`"csp": null`). Fine for dev, should be tightened for production.
-
 ## Data Storage
 
 App data lives at `dirs::config_dir()/mamo/`:
 - `config.json` — OVH credentials and domain list
 - `aliases.json` — Local alias store (`HashMap<String, Alias>`)
+
+## Known Issues
+
+- **`tauri.conf.json`**: CSP is disabled (`"csp": null`). Fine for dev, should be tightened for production.
 
 ## Tauri v2 Notes
 

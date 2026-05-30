@@ -38,3 +38,40 @@ pub struct SyncResult {
     pub local_only: Vec<Alias>,
     pub remote_only: Vec<Alias>,
 }
+
+#[derive(Debug, Serialize)]
+pub struct PushResult {
+    pub pushed: Vec<Alias>,
+    pub failed: Vec<AliasError>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DeleteResult {
+    pub deleted: Vec<String>,
+    pub failed: Vec<AliasError>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AliasError {
+    pub alias: String,
+    pub error: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CredentialInfo {
+    pub connected: bool,
+    pub rules: Vec<AccessRule>,
+    pub missing_rules: Vec<AccessRule>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AccessRule {
+    pub method: String,
+    pub path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CredentialRequest {
+    pub consumer_key: String,
+    pub validation_url: String,
+}

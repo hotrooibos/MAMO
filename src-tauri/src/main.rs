@@ -29,8 +29,11 @@ fn main() {
             update_alias,
             delete_alias,
             sync_with_ovh,
+            push_to_ovh,
+            delete_from_ovh,
             generate_random_name,
-            test_ovh_connection
+            test_ovh_connection,
+            request_ovh_credential
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

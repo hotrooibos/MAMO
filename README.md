@@ -33,9 +33,7 @@ src/                  # Frontend (static HTML/JS/CSS)
 src-tauri/            # Rust backend (Tauri v2)
   src/
     main.rs             App init, AppState (Mutex<ConfigManager>)
-    commands.rs         #[tauri::command] handlers (get_config, save_config,
-                         get_aliases, create_alias, update_alias, delete_alias,
-                         sync_with_ovh, generate_random_name, test_ovh_connection)
+    commands.rs         #[tauri::command] handlers
     config.rs           ConfigManager — reads/writes JSON at config dir
     models.rs           Alias, Config, SyncResult structs
     ovh_client.rs       OVH API client with request signing
@@ -54,8 +52,4 @@ OVH API credentials can be obtained from [OVH API console](https://api.ovh.com/c
 
 ## Known Issues
 
-- **Broken request signing** — `ovh_client.rs` uses `std::hash::DefaultHasher` instead of SHA-1. The OVH API requires SHA-1 signatures, so all authenticated requests will fail against real endpoints.
-- **Hardcoded domain** — `sync_with_ovh` iterates over `["example.com"]` instead of `config.domains`.
-- **CSP disabled** — `tauri.conf.json` sets `"csp": null`. Acceptable for development but must be tightened before production.
-
-
+- **`tauri.conf.json`**: CSP is disabled (`"csp": null`). Fine for dev, should be tightened for production.

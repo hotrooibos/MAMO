@@ -71,8 +71,10 @@
                     </label>
                     <div class="connection-test">
                         <button type="button" id="btn-test-connection">Test Connection</button>
+                        <button type="button" id="btn-request-credential" class="btn-secondary">Request Credentials</button>
                         <span id="connection-status"></span>
                     </div>
+                    <div id="credential-info" class="credential-info hidden"></div>
                     <div class="form-actions">
                         <button type="submit">Save</button>
                         <button type="button" class="btn-cancel">Cancel</button>
@@ -112,9 +114,14 @@
 
         <div id="modal-sync" class="modal hidden">
             <div class="modal-content">
-                <h2>Sync Results</h2>
+                <h2>Sync with OVH</h2>
+                <div id="sync-actions" class="sync-actions">
+                    <button id="btn-pull" class="btn-sync-action">Pull from OVH</button>
+                    <button id="btn-push" class="btn-sync-action">Push to OVH</button>
+                    <button id="btn-delete-remote" class="btn-sync-action btn-delete">Delete from OVH</button>
+                </div>
                 <div id="sync-results">
-                    <p>Loading...</p>
+                    <p>Choose an action above.</p>
                 </div>
                 <button class="btn-close">Close</button>
             </div>

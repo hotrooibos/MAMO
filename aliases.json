@@ -1,0 +1,837 @@
+{
+    "general": {
+        "alias_file": "aliases.json",
+        "default_dest_addr": [
+            "antoine@marzin.org"
+        ],
+        "domains": [
+            "tical.fr",
+            "lesaintececile.com",
+            "nofois-foiz-dunz.io"
+        ]
+    },
+    "token": {
+        "endpoint": "ovh-eu",
+        "app_key": "be8f3e8d07b96e3e",
+        "app_secret": "a512927a463cbef0c90efa952f412bb2",
+        "consumer_key": "49a174506472dc5653bb5edeef1a726b"
+    },
+    "redirection": {
+        "222067052": {
+            "name": "",
+            "date": "",
+            "alias": "geneanet.org@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222067056": {
+            "name": "",
+            "date": "",
+            "alias": "tda24@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222067053": {
+            "name": "",
+            "date": "",
+            "alias": "petition_sren_mozilla.org@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222067055": {
+            "name": "",
+            "date": "",
+            "alias": "battle.net_fernand@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222067060": {
+            "name": "",
+            "date": "",
+            "alias": "traderie.com@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222067057": {
+            "name": "",
+            "date": "",
+            "alias": "tda2023@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203967": {
+            "name": "",
+            "date": "",
+            "alias": "parsec.app@20231211.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203138": {
+            "name": "",
+            "date": "",
+            "alias": "zalando.com@20231018.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203352": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "horecashop.net@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203243": {
+            "name": "",
+            "date": "1700438400",
+            "alias": "igraal.com@20231120.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204129": {
+            "name": "",
+            "date": "1694131200",
+            "alias": "journeespatrimoine@20230908.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204044": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "achat-or-et-argent.fr@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203477": {
+            "name": "",
+            "date": "1695686400",
+            "alias": "badoo.com@20230926.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203149": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "leroymerlin.fr@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204266": {
+            "name": "",
+            "date": "1694736000",
+            "alias": "linkedin.com@20230915.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203907": {
+            "name": "",
+            "date": "",
+            "alias": "bouyguestelecom.fr@20231128.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204039": {
+            "name": "",
+            "date": "",
+            "alias": "enviedeplus.com@20231201.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203153": {
+            "name": "Veolia",
+            "date": "",
+            "alias": "eau-services.com@20231016.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203128": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "alpiniste.fr@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203368": {
+            "name": "",
+            "date": "",
+            "alias": "elderscrollsonline.com@20231121.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204191": {
+            "name": "",
+            "date": "",
+            "alias": "free.fr@20231211.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204286": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "cdiscount.com@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204161": {
+            "name": "",
+            "date": "",
+            "alias": "choualbox.com@20231121.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203215": {
+            "name": "",
+            "date": "1695168000",
+            "alias": "doctolib.fr@20230920.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203919": {
+            "name": "",
+            "date": "",
+            "alias": "ldlc.com@20231115.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204090": {
+            "name": "",
+            "date": "",
+            "alias": "coursera.org@20231009.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204294": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "hollisterco.com@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203443": {
+            "name": "",
+            "date": "",
+            "alias": "fnac.com@20231106.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203355": {
+            "name": "",
+            "date": "",
+            "alias": "boulanger.com@20231121.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204101": {
+            "name": "",
+            "date": "",
+            "alias": "alepia.com@20231125.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15301876544": {
+            "name": "",
+            "date": "",
+            "alias": "ea.com@20240207.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203338": {
+            "name": "",
+            "date": "1694131200",
+            "alias": "europcar@20230908.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203892": {
+            "name": "",
+            "date": "",
+            "alias": "leetchi.com@20231101.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203927": {
+            "name": "",
+            "date": "1694131200",
+            "alias": "nexusmods.com@20230908.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203997": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "auto-doc.fr@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204304": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "darty.com@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204276": {
+            "name": "",
+            "date": "",
+            "alias": "ralphlauren.fr@20231124.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203256": {
+            "name": "",
+            "date": "",
+            "alias": "beautycoiffure.com@20231207.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204053": {
+            "name": "",
+            "date": "1694908800",
+            "alias": "apple.com@20230917.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204007": {
+            "name": "",
+            "date": "",
+            "alias": "ubaldi.com@20231121.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204082": {
+            "name": "",
+            "date": "",
+            "alias": "vintedfr@20230910.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204308": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "sfr.fr@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203372": {
+            "name": "",
+            "date": "",
+            "alias": "notion.so@20230911.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204243": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "billetreduc.com@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203482": {
+            "name": "",
+            "date": "",
+            "alias": "d2mods.info@20231225.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203977": {
+            "name": "",
+            "date": "",
+            "alias": "cdkeys.com@20240109.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204212": {
+            "name": "",
+            "date": "",
+            "alias": "flexispot.fr@20231119.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204022": {
+            "name": "",
+            "date": "",
+            "alias": "laposte.fr@20231115.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204290": {
+            "name": "",
+            "date": "",
+            "alias": "sncf.com@20231228.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203462": {
+            "name": "",
+            "date": "",
+            "alias": "groupe-uneo.fr@20231101.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204062": {
+            "name": "",
+            "date": "",
+            "alias": "edf.fr@20230614.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204097": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "decathlon.com@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204033": {
+            "name": "",
+            "date": "",
+            "alias": "inmac-wstore.com@20230923.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203399": {
+            "name": "",
+            "date": "",
+            "alias": "materiel.net@20231101.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204111": {
+            "name": "",
+            "date": "",
+            "alias": "microsoft.com@del20231101.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204002": {
+            "name": "",
+            "date": "1695340800",
+            "alias": "amazon.com@20230922.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203943": {
+            "name": "",
+            "date": "1695686400",
+            "alias": "teamviewer.com@20230926.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203381": {
+            "name": "",
+            "date": "1694131200",
+            "alias": "maisondumonde.com@20230908.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203495": {
+            "name": "",
+            "date": "",
+            "alias": "timberland.fr@20240112.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299203180": {
+            "name": "",
+            "date": "",
+            "alias": "veepee.fr@20230914.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299222175": {
+            "name": "",
+            "date": "",
+            "alias": "github.com@20240116.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "15299204328": {
+            "name": "",
+            "date": "1695945600",
+            "alias": "rasage-classique.com@20230929.tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222187602": {
+            "name": "Twitch",
+            "date": 1708546881,
+            "alias": "058f60c0654840238926fda4e15a35f7@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222195473": {
+            "name": "Reglo mobile",
+            "date": 1708727966,
+            "alias": "d18eb7531fe14390b7b186745521576d@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222292279": {
+            "name": "Cosy Pizza\n",
+            "date": 1711473081,
+            "alias": "53b121ed-830d-441b-81d5-b19bea2767d6@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222382857": {
+            "name": "ui.com G4 Instant camera\n",
+            "date": 1714064122,
+            "alias": "opal-box@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222382874": {
+            "name": "ui.com G4 Instant camera(2nd email for 2FA)\n",
+            "date": 1714064413,
+            "alias": "opal-box2@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "999": {
+            "name": "TEST",
+            "date": "",
+            "alias": "test2@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222433144": {
+            "name": "Project Diablo2\n",
+            "date": 1715719560,
+            "alias": "our-elephant@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222468028": {
+            "name": "La poste\n",
+            "date": 1716828319,
+            "alias": "rainbow-pigeon@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222468503": {
+            "name": "k2s.cc downloads\n",
+            "date": 1716846863,
+            "alias": "macabre-grapefruit@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222472435": {
+            "name": "Happn",
+            "date": 1716969741,
+            "alias": "frigid-mandrill@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222481838": {
+            "name": "Carrefour (Aur\u00e9lie)\n",
+            "date": 1717225419,
+            "alias": "blaring-carrot@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222487424": {
+            "name": "AliExpress",
+            "date": 1717440020,
+            "alias": "terminal-horse@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222547713": {
+            "name": "PoE2 beta",
+            "date": 1719350046,
+            "alias": "ornate-peafowl@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222572110": {
+            "name": "DJI account (action cam)\n",
+            "date": 1720099228,
+            "alias": "utter-lemon@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222589616": {
+            "name": "VMware / Broadcom\n",
+            "date": 1720689767,
+            "alias": "c6fd97bf-6315-4ad0-bf58-85c892aeb16e@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222614266": {
+            "name": "Wawacity",
+            "date": 1721476603,
+            "alias": "different-lyrebird@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222697149": {
+            "name": "Chemises Charles Tyrwhitt (charlestyrwhitt.com)",
+            "date": 1724439589,
+            "alias": "raucous-dogbane@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222732448": {
+            "name": "simplelogin.io",
+            "date": 1725563149,
+            "alias": "wobbly-quetzal@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222737102": {
+            "name": "Carrefour",
+            "date": 1725779082,
+            "alias": "considerate-fern@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222750307": {
+            "name": "Picard",
+            "date": 1726084864,
+            "alias": "peaceful-bean@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222760548": {
+            "name": "[TEMP] tel.fr suppr num maman\n",
+            "date": 1726417352,
+            "alias": "33efac8e-ab60-4c7f-8ac9-4c8e4c187975@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222780335": {
+            "name": "Zooplus croquettes\n",
+            "date": 1726935356,
+            "alias": "descriptive-redbud@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222780833": {
+            "name": "GMF assurances\n",
+            "date": 1726992881,
+            "alias": "renewable-zebra@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222781675": {
+            "name": "Contact Chtatrap (adoption Capuchon=\n",
+            "date": 1727022996,
+            "alias": "capuchon@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222803550": {
+            "name": "Veolia",
+            "date": 1727552563,
+            "alias": "cantankerous-zebra@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222804320": {
+            "name": "Ryanair",
+            "date": 1727619143,
+            "alias": "determined-salamander@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222804336": {
+            "name": "Trainline (SNCF)\n",
+            "date": 1727619564,
+            "alias": "budget-berry@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222836891": {
+            "name": "OkCupid\n",
+            "date": 1728420449,
+            "alias": "popular-cattle@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222868384": {
+            "name": "New alias",
+            "date": 1729260255,
+            "alias": "fluffy-apple@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222908560": {
+            "name": "M\u00e9diath\u00e8que Chalucet Toulon\n",
+            "date": 1730548593,
+            "alias": "palatable-cod@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222918506": {
+            "name": "Reddit fake\n",
+            "date": 1730824930,
+            "alias": "candid-charybdis@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222979661": {
+            "name": "Lyc\u00e9e h\u00f4telier Anne-Sophie PIC\n",
+            "date": 1732559063,
+            "alias": "cerulean-porpoise@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "222980151": {
+            "name": "La Redoute\n",
+            "date": 1732568208,
+            "alias": "buoyant-behemoth@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223077833": {
+            "name": "privatesportshop.fr",
+            "date": 1734807898,
+            "alias": "cerebral-snowdrop@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223114095": {
+            "name": "tda25\n",
+            "date": 1736198608,
+            "alias": "tda25@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223114099": {
+            "name": "Th\u00e9\u00e2tre Libert\u00e9 Toulon\n",
+            "date": 1736198696,
+            "alias": "opal-jaguar@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223127035": {
+            "name": "Harmonie mutuelle\n",
+            "date": 1736501965,
+            "alias": "opal-pistachio@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223134751": {
+            "name": "Segway Ninebot (trottinette)\n",
+            "date": 1736779881,
+            "alias": "incorruptable-harpy@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223141919": {
+            "name": "Conciergerie DGA TN\n",
+            "date": 1736949693,
+            "alias": "sepia-lemon@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223159330": {
+            "name": "Yuka app\n",
+            "date": 1737451482,
+            "alias": "plump-catoblepas@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223202260": {
+            "name": "Filen.io",
+            "date": 1738657659,
+            "alias": "glacial-guanaco@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223202383": {
+            "name": "Bitwarden",
+            "date": 1738659430,
+            "alias": "cantankerous-sugarplum@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223225665": {
+            "name": "Kinguin.net (cl\u00e9 NordVPN)",
+            "date": 1739272508,
+            "alias": "fireproof-warlock@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223246471": {
+            "name": "Showroomprive",
+            "date": 1739823109,
+            "alias": "patchy-grasshopper@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223247661": {
+            "name": "Gensdeconfiance",
+            "date": 1739869229,
+            "alias": "geologic-echidna@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223248133": {
+            "name": "GOG",
+            "date": 1739874055,
+            "alias": "onyx-apricot@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223285533": {
+            "name": "IGESA",
+            "date": 1740991721,
+            "alias": "elaborate-inkberry@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223325930": {
+            "name": "staterabikes.fr",
+            "date": 1742162100,
+            "alias": "microscopic-wanderer@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223333326": {
+            "name": "Spotify",
+            "date": 1742370295,
+            "alias": "ornery-parsnip@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223337604": {
+            "name": "Newsletter St Louis",
+            "date": 1742467195,
+            "alias": "nlfsl@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223338701": {
+            "name": "ETAM",
+            "date": 1742482871,
+            "alias": "amiable-bearberry@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223387967": {
+            "name": "Europcar",
+            "date": 1743960766,
+            "alias": "binary-corea@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223447444": {
+            "name": "Etsy",
+            "date": 1745879187,
+            "alias": "tight-chough@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223505301": {
+            "name": "Instagram",
+            "date": 1747754012,
+            "alias": "bothered-gopher@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223521983": {
+            "name": "Pathe Gaumont",
+            "date": 1748022114,
+            "alias": "salty-ibex@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223749247": {
+            "name": "Tommy Hilfiger",
+            "date": 1752302388,
+            "alias": "sandy-crocus@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "223755160": {
+            "name": "Anytime.io",
+            "date": 1752487355,
+            "alias": "hospitable-seagull@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224178422": {
+            "name": "Conforama",
+            "date": 1761680304,
+            "alias": "medium-emu@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224212885": {
+            "name": "BUT",
+            "date": 1762362296,
+            "alias": "comfortable-felonwort@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224229386": {
+            "name": "AGPM",
+            "date": 1762762265,
+            "alias": "outrageous-beaver@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224345955": {
+            "name": "Voyage priv\u00e9",
+            "date": 1764965323,
+            "alias": "eminent-buffalo@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224390817": {
+            "name": "Nespresso",
+            "date": 1765908571,
+            "alias": "nifty-quercus@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224419392": {
+            "name": "Darkiworld",
+            "date": 1766514292,
+            "alias": "clueless-polkweed@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224452562": {
+            "name": "latabledarc.com",
+            "date": 1767467203,
+            "alias": "sophisticated-alder@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224518281": {
+            "name": "Hytale",
+            "date": 1768846539,
+            "alias": "lost-parrot@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224592612": {
+            "name": "Capfile (\u00e9lectricit\u00e9 / EDF)",
+            "date": 1770300008,
+            "alias": "venutian-louse@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224592711": {
+            "name": "Gaz De Bordeaux (\u00e9lectricit\u00e9 / EDF)",
+            "date": 1770301275,
+            "alias": "oafish-wanderer@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224593919": {
+            "name": "CIC banque",
+            "date": 1770322535,
+            "alias": "gray-cod@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224598029": {
+            "name": "Wyylde",
+            "date": 1770398930,
+            "alias": "jumbo-ivy@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224708050": {
+            "name": "C411",
+            "date": 1772659257,
+            "alias": "summer-cucumber@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224708065": {
+            "name": "torr9.xyz",
+            "date": 1772659630,
+            "alias": "aggravating-keek@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224943377": {
+            "name": "Free mobile",
+            "date": 1777500449,
+            "alias": "formal-chicken@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "224972441": {
+            "name": "Github / Opencode Go",
+            "date": 1778112603,
+            "alias": "spherical-boar@tical.fr",
+            "to": "antoine@marzin.org"
+        },
+        "225010622": {
+            "name": "IONOS",
+            "date": 1778757275,
+            "alias": "celebrated-blade@tical.fr",
+            "to": "antoine@marzin.org"
+        }
+    }
+}

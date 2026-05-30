@@ -1,0 +1,19 @@
+{
+    "general": {
+        "alias_file": "aliases.json",
+        "default_dest_addr": [
+            "antoine@marzin.org"
+        ],
+        "domains": [
+            "tical.fr",
+            "lesaintececile.com",
+            "nofois-foiz-dunz.io"
+        ]
+    },
+    "token": {
+        "endpoint": "ovh-eu",
+        "app_key": "be8f3e8d07b96e3e",
+        "app_secret": "a512927a463cbef0c90efa952f412bb2",
+        "consumer_key": "49a174506472dc5653bb5edeef1a726b"
+    }
+}
