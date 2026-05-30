@@ -190,7 +190,7 @@ function renderApplications(applications) {
 async function deleteCredential(credentialId) {
     if (!confirm('Are you sure you want to delete this consumer key?')) return;
     try {
-        await invoke('delete_ovh_credential', { credential_id: credentialId });
+        await invoke('delete_ovh_credential', { credentialId });
         await loadCredentials();
     } catch (e) {
         console.error('Failed to delete credential:', e);
@@ -201,7 +201,7 @@ async function deleteCredential(credentialId) {
 async function deleteApplication(applicationId) {
     if (!confirm('Are you sure you want to delete this application?')) return;
     try {
-        await invoke('delete_ovh_application', { application_id: applicationId });
+        await invoke('delete_ovh_application', { applicationId });
         await loadApplications();
     } catch (e) {
         console.error('Failed to delete application:', e);
@@ -212,7 +212,7 @@ async function deleteApplication(applicationId) {
 async function switchCredential(consumerKey) {
     if (!confirm('Switch to this consumer key?')) return;
     try {
-        await invoke('switch_ovh_credential', { consumer_key: consumerKey });
+        await invoke('switch_ovh_credential', { consumerKey });
         config.consumer_key = consumerKey;
         populateSettingsForm();
         await loadCredentials();
@@ -569,14 +569,14 @@ function init() {
         if (!btn) return;
         const action = btn.dataset.action;
         if (action === 'switch') switchCredential(btn.dataset.key);
-        else if (action === 'delete') deleteCredential(btn.dataset.id);
+        else if (action === 'delete') deleteCredential(Number(btn.dataset.id));
     });
 
     document.getElementById('applications-list').addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-action]');
         if (!btn) return;
         const action = btn.dataset.action;
-        if (action === 'delete-app') deleteApplication(btn.dataset.id);
+        if (action === 'delete-app') deleteApplication(Number(btn.dataset.id));
     });
 
     document.getElementById('search').addEventListener('input', renderAliases);

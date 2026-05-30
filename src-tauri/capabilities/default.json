@@ -10,7 +10,16 @@
     "allow-update-alias",
     "allow-delete-alias",
     "allow-sync-with-ovh",
+    "allow-push-to-ovh",
+    "allow-delete-from-ovh",
     "allow-generate-random-name",
-    "allow-test-ovh-connection"
+    "allow-test-ovh-connection",
+    "allow-request-ovh-credential",
+    "allow-list-ovh-credentials",
+    "allow-delete-ovh-credential",
+    "allow-list-ovh-applications",
+    "allow-delete-ovh-application",
+    "allow-request-ovh-credential-with-rules",
+    "allow-switch-ovh-credential"
   ]
 }

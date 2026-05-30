@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-delete-from-ovh"
+description = "Enables the delete_from_ovh command without any pre-configured scope."
+commands.allow = ["delete_from_ovh"]
+
+[[permission]]
+identifier = "deny-delete-from-ovh"
+description = "Denies the delete_from_ovh command without any pre-configured scope."
+commands.deny = ["delete_from_ovh"]

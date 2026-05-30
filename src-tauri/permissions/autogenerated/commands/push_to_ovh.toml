@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-push-to-ovh"
+description = "Enables the push_to_ovh command without any pre-configured scope."
+commands.allow = ["push_to_ovh"]
+
+[[permission]]
+identifier = "deny-push-to-ovh"
+description = "Denies the push_to_ovh command without any pre-configured scope."
+commands.deny = ["push_to_ovh"]

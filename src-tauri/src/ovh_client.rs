@@ -758,12 +758,14 @@ struct OvhApplicationDetailResponse {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct OvhCredentialAppResponse {
-    #[serde(rename = "applicationId")]
+    #[serde(rename = "applicationId", default)]
     application_id: u64,
     name: String,
     #[serde(default)]
     description: String,
+    #[serde(default)]
     status: String,
 }
 
