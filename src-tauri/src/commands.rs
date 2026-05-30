@@ -1,4 +1,4 @@
-use crate::models::{Alias, AliasError, Config, CredentialInfo, CredentialRequest, DeleteResult, PushResult, SyncResult};
+use crate::models::{AccessRule, Alias, AliasError, ApplicationDetail, Config, CredentialDetail, CredentialInfo, CredentialRequest, DeleteResult, PushResult, SyncResult};
 use crate::ovh_client::OvhClient;
 use crate::AppState;
 use anyhow::Result;
@@ -319,7 +319,138 @@ pub async fn test_ovh_connection(config: Config) -> Result<CredentialInfo, Strin
 }
 
 #[tauri::command]
-pub async fn request_ovh_credential(config: Config) -> Result<CredentialRequest, String> {
+pub async fn request_ovh_credential(config: Config, state: State<'_, AppState>) -> Result<CredentialRequest, String> {
     let client = OvhClient::new(config).map_err(|e| e.to_string())?;
-    client.request_credential().await.map_err(|e| e.to_string())
+    let result = client.request_credential().await.map_err(|e| e.to_string())?;
+
+    let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+    let mut keys = manager.load_known_consumer_keys().map_err(|e| e.to_string())?;
+    if !keys.contains(&result.consumer_key) {
+        keys.push(result.consumer_key.clone());
+        manager.save_known_consumer_keys(&keys).map_err(|e| e.to_string())?;
+    }
+
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn list_ovh_credentials(state: State<'_, AppState>) -> Result<Vec<CredentialDetail>, String> {
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let known_keys = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_known_consumer_keys().map_err(|e| e.to_string())?
+    };
+
+    let client = OvhClient::new(config.clone()).map_err(|e| e.to_string())?;
+    let mut credentials = client.list_credentials().await.map_err(|e| e.to_string())?;
+
+    // Build mapping of credential_id -> consumer_key by trying each known key
+    let mut credential_map: std::collections::HashMap<u64, String> = std::collections::HashMap::new();
+    for key in &known_keys {
+        if key == &config.consumer_key {
+            // Current config key — use existing client
+            match client.get_current_credential_id().await {
+                Ok(id) => { credential_map.insert(id, key.clone()); }
+                Err(e) => eprintln!("Failed to resolve current credential: {}", e),
+            }
+        } else {
+            // Try with a temporary client using this key
+            let mut test_config = config.clone();
+            test_config.consumer_key = key.clone();
+            match OvhClient::new(test_config) {
+                Ok(test_client) => {
+                    match test_client.get_current_credential_id().await {
+                        Ok(id) => { credential_map.insert(id, key.clone()); }
+                        Err(e) => eprintln!("Failed to resolve credential for key {}: {}", key, e),
+                    }
+                }
+                Err(e) => eprintln!("Failed to create client for key {}: {}", key, e),
+            }
+        }
+    }
+
+    for cred in &mut credentials {
+        if let Some(key) = credential_map.get(&cred.credential_id) {
+            cred.consumer_key = Some(key.clone());
+        }
+    }
+
+    Ok(credentials)
+}
+
+#[tauri::command]
+pub async fn delete_ovh_credential(credential_id: u64, state: State<'_, AppState>) -> Result<(), String> {
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+    client.delete_credential(credential_id).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn list_ovh_applications(state: State<'_, AppState>) -> Result<Vec<ApplicationDetail>, String> {
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+    client.list_applications().await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn delete_ovh_application(application_id: u64, state: State<'_, AppState>) -> Result<(), String> {
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+    client.delete_application(application_id).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn request_ovh_credential_with_rules(
+    rules: Vec<AccessRule>,
+    redirection: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<CredentialRequest, String> {
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+    let result = client.request_credential_with_rules(rules, redirection).await.map_err(|e| e.to_string())?;
+
+    let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+    let mut keys = manager.load_known_consumer_keys().map_err(|e| e.to_string())?;
+    if !keys.contains(&result.consumer_key) {
+        keys.push(result.consumer_key.clone());
+        manager.save_known_consumer_keys(&keys).map_err(|e| e.to_string())?;
+    }
+
+    Ok(result)
+}
+
+#[tauri::command]
+pub fn switch_ovh_credential(consumer_key: String, state: State<AppState>) -> Result<Config, String> {
+    let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+    let mut config = manager.load_config().map_err(|e| e.to_string())?;
+    config.consumer_key = consumer_key.clone();
+    manager.save_config(&config).map_err(|e| e.to_string())?;
+
+    let mut keys = manager.load_known_consumer_keys().map_err(|e| e.to_string())?;
+    if !keys.contains(&consumer_key) {
+        keys.push(consumer_key);
+        manager.save_known_consumer_keys(&keys).map_err(|e| e.to_string())?;
+    }
+
+    Ok(config)
 }

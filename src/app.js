@@ -2,6 +2,8 @@ let aliases = {};
 let config = {};
 let invoke;
 let selectedDomain = '';
+let apiKeysVisible = false;
+let currentTab = 'credentials';
 
 async function loadAliases() {
     try {
@@ -75,6 +77,223 @@ function escapeHtml(text) {
 function formatDate(timestamp) {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString();
+}
+
+function formatIsoDate(isoString) {
+    if (!isoString) return '—';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+async function loadCredentials() {
+    try {
+        const credentials = await invoke('list_ovh_credentials');
+        renderCredentials(credentials);
+    } catch (e) {
+        console.error('Failed to load credentials:', e);
+        showError('Failed to load credentials: ' + e);
+    }
+}
+
+async function loadApplications() {
+    try {
+        const applications = await invoke('list_ovh_applications');
+        renderApplications(applications);
+    } catch (e) {
+        console.error('Failed to load applications:', e);
+        showError('Failed to load applications: ' + e);
+    }
+}
+
+function renderCredentials(credentials) {
+    const container = document.getElementById('credentials-list');
+    if (!credentials || credentials.length === 0) {
+        container.innerHTML = '<p class="key-item">No consumer keys found.</p>';
+        return;
+    }
+
+    container.innerHTML = '';
+    credentials.forEach(cred => {
+        const isActive = config.consumer_key && cred.consumer_key === config.consumer_key;
+        const statusClass = cred.status === 'validated' ? 'validated' :
+                           cred.status === 'expired' ? 'expired' : 'pending';
+        const item = document.createElement('div');
+        item.className = 'key-item' + (isActive ? ' active' : '');
+
+        let rulesHtml = '';
+        if (cred.rules && cred.rules.length > 0) {
+            rulesHtml = '<div class="access-rules">';
+            cred.rules.forEach(rule => {
+                rulesHtml += `<div class="rule-item"><span class="rule-badge">${escapeHtml(rule.method)}</span><span>${escapeHtml(rule.path)}</span></div>`;
+            });
+            rulesHtml += '</div>';
+        }
+
+        const switchBtn = cred.consumer_key
+            ? `<button class="btn-switch" data-action="switch" data-key="${escapeHtml(cred.consumer_key)}">Switch</button>`
+            : '';
+
+        item.innerHTML = `
+            <div class="key-header">
+                <div class="key-id">${escapeHtml(cred.credential_id)}</div>
+                <div class="key-status">
+                    <span class="status-badge ${statusClass}">${escapeHtml(cred.status)}</span>
+                    ${isActive ? '<span class="status-badge validated">Active</span>' : ''}
+                </div>
+                <div class="key-actions">
+                    ${switchBtn}
+                    <button class="btn-delete" data-action="delete" data-id="${escapeHtml(cred.credential_id)}">Delete</button>
+                </div>
+            </div>
+            <div class="key-details">
+                <div><span class="detail-label">Created</span><span class="detail-value">${formatIsoDate(cred.creation)}</span></div>
+                <div><span class="detail-label">Expiration</span><span class="detail-value">${formatIsoDate(cred.expiration)}</span></div>
+                <div><span class="detail-label">Last Use</span><span class="detail-value">${formatIsoDate(cred.last_use)}</span></div>
+                <div><span class="detail-label">Application</span><span class="detail-value">${escapeHtml(cred.application_name || '—')}</span></div>
+            </div>
+            ${rulesHtml}
+        `;
+        container.appendChild(item);
+    });
+}
+
+function renderApplications(applications) {
+    const container = document.getElementById('applications-list');
+    if (!applications || applications.length === 0) {
+        container.innerHTML = '<p class="key-item">No applications found.</p>';
+        return;
+    }
+
+    container.innerHTML = '';
+    applications.forEach(app => {
+        const item = document.createElement('div');
+        item.className = 'key-item';
+        item.innerHTML = `
+            <div class="key-header">
+                <div class="key-id">${escapeHtml(app.application_id)}</div>
+                <div class="key-actions">
+                    <button class="btn-delete" data-action="delete-app" data-id="${escapeHtml(app.application_id)}">Delete</button>
+                </div>
+            </div>
+            <div class="key-details">
+                <div><span class="detail-label">Name</span><span class="detail-value">${escapeHtml(app.name || '—')}</span></div>
+                <div><span class="detail-label">Description</span><span class="detail-value">${escapeHtml(app.description || '—')}</span></div>
+                <div><span class="detail-label">Application Key</span><span class="detail-value">${escapeHtml(app.application_key || '—')}</span></div>
+                <div><span class="detail-label">Status</span><span class="detail-value">${escapeHtml(app.status || '—')}</span></div>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+async function deleteCredential(credentialId) {
+    if (!confirm('Are you sure you want to delete this consumer key?')) return;
+    try {
+        await invoke('delete_ovh_credential', { credential_id: credentialId });
+        await loadCredentials();
+    } catch (e) {
+        console.error('Failed to delete credential:', e);
+        showError('Failed to delete credential: ' + e);
+    }
+}
+
+async function deleteApplication(applicationId) {
+    if (!confirm('Are you sure you want to delete this application?')) return;
+    try {
+        await invoke('delete_ovh_application', { application_id: applicationId });
+        await loadApplications();
+    } catch (e) {
+        console.error('Failed to delete application:', e);
+        showError('Failed to delete application: ' + e);
+    }
+}
+
+async function switchCredential(consumerKey) {
+    if (!confirm('Switch to this consumer key?')) return;
+    try {
+        await invoke('switch_ovh_credential', { consumer_key: consumerKey });
+        config.consumer_key = consumerKey;
+        populateSettingsForm();
+        await loadCredentials();
+    } catch (e) {
+        console.error('Failed to switch credential:', e);
+        showError('Failed to switch credential: ' + e);
+    }
+}
+
+function addRuleRow(method = 'GET', path = '') {
+    const container = document.getElementById('rules-container');
+    const row = document.createElement('div');
+    row.className = 'rule-row';
+    row.innerHTML = `
+        <select>
+            <option value="GET" ${method === 'GET' ? 'selected' : ''}>GET</option>
+            <option value="POST" ${method === 'POST' ? 'selected' : ''}>POST</option>
+            <option value="PUT" ${method === 'PUT' ? 'selected' : ''}>PUT</option>
+            <option value="DELETE" ${method === 'DELETE' ? 'selected' : ''}>DELETE</option>
+        </select>
+        <input type="text" placeholder="/domain/zone/*/redirection" value="${escapeHtml(path)}">
+        <button type="button" onclick="removeRuleRow(this)">Remove</button>
+    `;
+    container.appendChild(row);
+}
+
+function removeRuleRow(btn) {
+    const row = btn.closest('.rule-row');
+    if (row) row.remove();
+}
+
+function showCreateCredentialPanel() {
+    document.getElementById('create-credential-panel').classList.remove('hidden');
+    document.getElementById('credential-result').classList.add('hidden');
+    document.getElementById('rules-container').innerHTML = '';
+    // Add default rules
+    addRuleRow('GET', '/domain/zone/*/redirection');
+    addRuleRow('POST', '/domain/zone/*/redirection');
+    addRuleRow('PUT', '/domain/zone/*/redirection/*');
+    addRuleRow('DELETE', '/domain/zone/*/redirection/*');
+}
+
+function hideCreateCredentialPanel() {
+    document.getElementById('create-credential-panel').classList.add('hidden');
+    document.getElementById('credential-result').classList.add('hidden');
+}
+
+async function createCredentialWithRules() {
+    const rows = document.querySelectorAll('#rules-container .rule-row');
+    const rules = [];
+    rows.forEach(row => {
+        const method = row.querySelector('select').value;
+        const path = row.querySelector('input').value.trim();
+        if (path) {
+            rules.push({ method, path });
+        }
+    });
+
+    if (rules.length === 0) {
+        showError('Please add at least one access rule.');
+        return;
+    }
+
+    const redirection = document.getElementById('credential-redirection').value.trim() || null;
+    const resultEl = document.getElementById('credential-result');
+
+    try {
+        const result = await invoke('request_ovh_credential_with_rules', { rules, redirection });
+        let html = '<h4>New Consumer Key</h4>';
+        html += `<p><strong>Consumer Key:</strong> <code>${escapeHtml(result.consumer_key)}</code></p>`;
+        if (result.validation_url) {
+            html += `<p><a href="${escapeHtml(result.validation_url)}" target="_blank" rel="noopener">Click here to approve the key</a></p>`;
+        }
+        html += '<p class="text-warning">After approving, you can switch to this key from the list above.</p>';
+        resultEl.innerHTML = html;
+        resultEl.classList.remove('hidden');
+        await loadCredentials();
+    } catch (e) {
+        console.error('Failed to create credential:', e);
+        showError('Failed to create credential: ' + e);
+    }
 }
 
 async function editAlias(id) {
@@ -310,7 +529,56 @@ function init() {
         populateSettingsForm();
         showModal('modal-settings');
     });
-    
+
+    document.getElementById('btn-api-keys').addEventListener('click', () => {
+        apiKeysVisible = true;
+        currentTab = 'credentials';
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === 'credentials');
+        });
+        document.getElementById('tab-credentials').classList.remove('hidden');
+        document.getElementById('tab-applications').classList.add('hidden');
+        hideCreateCredentialPanel();
+        showModal('modal-api-keys');
+        loadCredentials();
+    });
+
+    document.querySelectorAll('#modal-api-keys .tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            currentTab = tab;
+            document.querySelectorAll('#modal-api-keys .tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-credentials').classList.toggle('hidden', tab !== 'credentials');
+            document.getElementById('tab-applications').classList.toggle('hidden', tab !== 'applications');
+            if (tab === 'credentials') {
+                loadCredentials();
+            } else {
+                loadApplications();
+            }
+        });
+    });
+
+    document.getElementById('btn-create-credential').addEventListener('click', showCreateCredentialPanel);
+    document.getElementById('btn-cancel-credential').addEventListener('click', hideCreateCredentialPanel);
+    document.getElementById('btn-add-rule').addEventListener('click', () => addRuleRow());
+    document.getElementById('btn-submit-credential').addEventListener('click', createCredentialWithRules);
+
+    document.getElementById('credentials-list').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        if (action === 'switch') switchCredential(btn.dataset.key);
+        else if (action === 'delete') deleteCredential(btn.dataset.id);
+    });
+
+    document.getElementById('applications-list').addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        if (action === 'delete-app') deleteApplication(btn.dataset.id);
+    });
+
     document.getElementById('search').addEventListener('input', renderAliases);
     
     // Event delegation for Edit/Delete buttons in the aliases table

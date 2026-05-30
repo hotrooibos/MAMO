@@ -51,4 +51,23 @@ impl ConfigManager {
         fs::write(path, contents)?;
         Ok(())
     }
+
+    pub fn load_known_consumer_keys(&self) -> Result<Vec<String>> {
+        let path = self.config_dir.join("known_consumer_keys.json");
+        if path.exists() {
+            let contents = fs::read_to_string(path)?;
+            let keys: Vec<String> = serde_json::from_str(&contents)?;
+            Ok(keys)
+        } else {
+            Ok(Vec::new())
+        }
+    }
+
+    pub fn save_known_consumer_keys(&self, keys: &[String]) -> Result<()> {
+        fs::create_dir_all(&self.config_dir)?;
+        let path = self.config_dir.join("known_consumer_keys.json");
+        let contents = serde_json::to_string_pretty(keys)?;
+        fs::write(path, contents)?;
+        Ok(())
+    }
 }

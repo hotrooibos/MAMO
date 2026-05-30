@@ -33,7 +33,13 @@ fn main() {
             delete_from_ovh,
             generate_random_name,
             test_ovh_connection,
-            request_ovh_credential
+            request_ovh_credential,
+            list_ovh_credentials,
+            delete_ovh_credential,
+            list_ovh_applications,
+            delete_ovh_application,
+            request_ovh_credential_with_rules,
+            switch_ovh_credential
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

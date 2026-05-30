@@ -9,7 +9,7 @@ pub struct Alias {
     pub to: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub endpoint: String,
     pub app_key: String,
@@ -74,4 +74,27 @@ pub struct AccessRule {
 pub struct CredentialRequest {
     pub consumer_key: String,
     pub validation_url: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CredentialDetail {
+    pub credential_id: u64,
+    pub consumer_key: Option<String>,
+    pub creation: String,
+    pub expiration: String,
+    pub last_use: Option<String>,
+    pub ovh_support: bool,
+    pub status: String,
+    pub rules: Vec<AccessRule>,
+    pub application_id: Option<u64>,
+    pub application_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ApplicationDetail {
+    pub application_id: u64,
+    pub application_key: String,
+    pub name: String,
+    pub description: String,
+    pub status: String,
 }

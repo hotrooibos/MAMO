@@ -1,4 +1,4 @@
-use crate::models::{AccessRule, Alias, Config, CredentialInfo, CredentialRequest};
+use crate::models::{AccessRule, Alias, ApplicationDetail, Config, CredentialDetail, CredentialInfo, CredentialRequest};
 use anyhow::{Context, Result};
 use reqwest::Client;
 use serde::Deserialize;
@@ -294,6 +294,394 @@ impl OvhClient {
         Ok(())
     }
 
+    // --- API Key Management ---
+
+    pub async fn list_credentials(&self) -> Result<Vec<CredentialDetail>> {
+        let url = format!("{}/me/api/credential", self.base_url);
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .get(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("GET", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context("Failed to list credentials from OVH")?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error listing credentials (HTTP {}): {}",
+                status.as_u16(),
+                body
+            );
+        }
+
+        let ids: Vec<u64> = res.json().await?;
+        let mut details = Vec::new();
+
+        for id in ids {
+            match self.get_credential_detail(id).await {
+                Ok(detail) => details.push(detail),
+                Err(e) => eprintln!("Failed to fetch credential {}: {}", id, e),
+            }
+        }
+
+        Ok(details)
+    }
+
+    async fn get_credential_detail(&self, credential_id: u64) -> Result<CredentialDetail> {
+        let url = format!(
+            "{}/me/api/credential/{}",
+            self.base_url, credential_id
+        );
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .get(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("GET", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context(format!("Failed to fetch credential {}", credential_id))?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error fetching credential {} (HTTP {}): {}",
+                credential_id,
+                status.as_u16(),
+                body
+            );
+        }
+
+        let cred: OvhCredentialDetailResponse = res.json().await?;
+
+        // Fetch associated application name if available
+        let application_name = if let Some(_app_id) = cred.application_id {
+            self.get_credential_app_name(credential_id).await.ok()
+        } else {
+            None
+        };
+
+        Ok(CredentialDetail {
+            credential_id: cred.credential_id,
+            consumer_key: None,
+            creation: cred.creation,
+            expiration: cred.expiration,
+            last_use: cred.last_use,
+            ovh_support: cred.ovh_support,
+            status: cred.status,
+            rules: cred
+                .rules
+                .into_iter()
+                .map(|r| AccessRule {
+                    method: r.method,
+                    path: r.path,
+                })
+                .collect(),
+            application_id: cred.application_id,
+            application_name,
+        })
+    }
+
+    async fn get_credential_app_name(&self, credential_id: u64) -> Result<String> {
+        let url = format!(
+            "{}/me/api/credential/{}/application",
+            self.base_url, credential_id
+        );
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .get(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("GET", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context(format!(
+                "Failed to fetch application for credential {}",
+                credential_id
+            ))?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error fetching credential app (HTTP {}): {}",
+                status.as_u16(),
+                body
+            );
+        }
+
+        let app: OvhCredentialAppResponse = res.json().await?;
+        Ok(app.name)
+    }
+
+    pub async fn get_current_credential_id(&self) -> Result<u64> {
+        let url = format!("{}/auth/currentCredential", self.base_url);
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .get(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("GET", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context("Failed to get current credential from OVH")?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error getting current credential (HTTP {}): {}",
+                status.as_u16(),
+                body
+            );
+        }
+
+        let cred: OvhCurrentCredentialResponse = res.json().await?;
+        Ok(cred.credential_id)
+    }
+
+    pub async fn delete_credential(&self, credential_id: u64) -> Result<()> {
+        let url = format!(
+            "{}/me/api/credential/{}",
+            self.base_url, credential_id
+        );
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .delete(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("DELETE", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context("Failed to delete credential from OVH")?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error deleting credential {} (HTTP {}): {}",
+                credential_id,
+                status.as_u16(),
+                body
+            );
+        }
+
+        Ok(())
+    }
+
+    pub async fn list_applications(&self) -> Result<Vec<ApplicationDetail>> {
+        let url = format!("{}/me/api/application", self.base_url);
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .get(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("GET", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context("Failed to list applications from OVH")?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error listing applications (HTTP {}): {}",
+                status.as_u16(),
+                body
+            );
+        }
+
+        let ids: Vec<u64> = res.json().await?;
+        let mut details = Vec::new();
+
+        for id in ids {
+            match self.get_application_detail(id).await {
+                Ok(detail) => details.push(detail),
+                Err(e) => eprintln!("Failed to fetch application {}: {}", id, e),
+            }
+        }
+
+        Ok(details)
+    }
+
+    async fn get_application_detail(&self, application_id: u64) -> Result<ApplicationDetail> {
+        let url = format!(
+            "{}/me/api/application/{}",
+            self.base_url, application_id
+        );
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .get(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("GET", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context(format!("Failed to fetch application {}", application_id))?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error fetching application {} (HTTP {}): {}",
+                application_id,
+                status.as_u16(),
+                body
+            );
+        }
+
+        let app: OvhApplicationDetailResponse = res.json().await?;
+
+        Ok(ApplicationDetail {
+            application_id: app.application_id,
+            application_key: app.application_key,
+            name: app.name,
+            description: app.description,
+            status: app.status,
+        })
+    }
+
+    pub async fn delete_application(&self, application_id: u64) -> Result<()> {
+        let url = format!(
+            "{}/me/api/application/{}",
+            self.base_url, application_id
+        );
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .delete(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header("X-Ovh-Consumer", &self.config.consumer_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("DELETE", &url, "", timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .send()
+            .await
+            .context("Failed to delete application from OVH")?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error deleting application {} (HTTP {}): {}",
+                application_id,
+                status.as_u16(),
+                body
+            );
+        }
+
+        Ok(())
+    }
+
+    pub async fn request_credential_with_rules(
+        &self,
+        rules: Vec<AccessRule>,
+        redirection: Option<String>,
+    ) -> Result<CredentialRequest> {
+        let url = format!("{}/auth/credential", self.base_url);
+        let rules_json: Vec<serde_json::Value> = rules
+            .iter()
+            .map(|r| {
+                serde_json::json!({
+                    "method": r.method,
+                    "path": r.path
+                })
+            })
+            .collect();
+
+        let mut body = serde_json::json!({
+            "accessRules": rules_json
+        });
+
+        if let Some(ref redir) = redirection {
+            body["redirection"] = serde_json::Value::String(redir.clone());
+        }
+
+        let body_str = serde_json::to_string(&body)?;
+        let timestamp = chrono::Utc::now().timestamp();
+
+        let res = self
+            .client
+            .post(&url)
+            .header("X-Ovh-Application", &self.config.app_key)
+            .header(
+                "X-Ovh-Signature",
+                self.sign_request("POST", &url, &body_str, timestamp),
+            )
+            .header("X-Ovh-Timestamp", timestamp.to_string())
+            .header("Content-Type", "application/json")
+            .body(body_str)
+            .send()
+            .await
+            .context("Failed to request credential from OVH")?;
+
+        let status = res.status();
+        if !status.is_success() {
+            let body = res.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "OVH API error requesting credential (HTTP {}): {}",
+                status.as_u16(),
+                body
+            );
+        }
+
+        let result: OvhCredentialRequest = res.json().await?;
+        Ok(CredentialRequest {
+            consumer_key: result.consumer_key,
+            validation_url: result.validation_url,
+        })
+    }
+
     fn sign_request(&self, method: &str, url: &str, body: &str, timestamp: i64) -> String {
         let to_sign = format!(
             "{}+{}+{}+{}+{}+{}",
@@ -333,6 +721,50 @@ struct OvhAccessRule {
 struct OvhCredentialRequest {
     consumer_key: String,
     validation_url: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OvhCurrentCredentialResponse {
+    #[serde(rename = "credentialId")]
+    credential_id: u64,
+}
+
+#[derive(Debug, Deserialize)]
+struct OvhCredentialDetailResponse {
+    #[serde(rename = "credentialId")]
+    credential_id: u64,
+    creation: String,
+    expiration: String,
+    #[serde(rename = "lastUse", default)]
+    last_use: Option<String>,
+    #[serde(rename = "ovhSupport", default)]
+    ovh_support: bool,
+    #[serde(rename = "applicationId", default)]
+    application_id: Option<u64>,
+    status: String,
+    rules: Vec<OvhAccessRule>,
+}
+
+#[derive(Debug, Deserialize)]
+struct OvhApplicationDetailResponse {
+    #[serde(rename = "applicationId")]
+    application_id: u64,
+    #[serde(rename = "applicationKey")]
+    application_key: String,
+    name: String,
+    #[serde(default)]
+    description: String,
+    status: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct OvhCredentialAppResponse {
+    #[serde(rename = "applicationId")]
+    application_id: u64,
+    name: String,
+    #[serde(default)]
+    description: String,
+    status: String,
 }
 
 fn required_rules() -> Vec<AccessRule> {

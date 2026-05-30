@@ -18,6 +18,7 @@
             <button id="btn-sync">Sync with OVH</button>
             <select id="domain-filter"></select>
             <input type="text" id="search" placeholder="Search aliases...">
+            <button id="btn-api-keys">API Keys</button>
             <button id="btn-settings">Settings</button>
         </nav>
 
@@ -123,6 +124,43 @@
                 <div id="sync-results">
                     <p>Choose an action above.</p>
                 </div>
+                <button class="btn-close">Close</button>
+            </div>
+        </div>
+
+        <div id="modal-api-keys" class="modal hidden">
+            <div class="modal-content">
+                <h2>API Keys</h2>
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="credentials">Consumer Keys</button>
+                    <button class="tab-btn" data-tab="applications">Application Keys</button>
+                </div>
+
+                <div id="tab-credentials" class="tab-content">
+                    <div class="tab-toolbar">
+                        <button id="btn-create-credential" class="btn-sync-action">Create New Key</button>
+                    </div>
+                    <div id="credentials-list" class="key-list"></div>
+                    <div id="create-credential-panel" class="create-credential-panel hidden">
+                        <h3>Create New Consumer Key</h3>
+                        <div id="rules-container"></div>
+                        <button type="button" id="btn-add-rule" class="btn-secondary">Add Rule</button>
+                        <label>
+                            Redirection URL (optional):
+                            <input type="text" id="credential-redirection" placeholder="https://localhost/callback">
+                        </label>
+                        <div class="form-actions">
+                            <button type="button" id="btn-submit-credential" class="btn-sync-action">Create</button>
+                            <button type="button" id="btn-cancel-credential" class="btn-cancel">Cancel</button>
+                        </div>
+                        <div id="credential-result" class="credential-info hidden"></div>
+                    </div>
+                </div>
+
+                <div id="tab-applications" class="tab-content hidden">
+                    <div id="applications-list" class="key-list"></div>
+                </div>
+
                 <button class="btn-close">Close</button>
             </div>
         </div>
