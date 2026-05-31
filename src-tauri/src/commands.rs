@@ -41,7 +41,7 @@ pub fn create_alias(
         id: id.clone(),
         name,
         date: Utc::now().timestamp(),
-        alias: alias_addr,
+        alias: alias_addr.to_lowercase(),
         to,
     };
 
@@ -66,7 +66,7 @@ pub fn update_alias(
         id: id.clone(),
         name,
         date: Utc::now().timestamp(),
-        alias: alias_addr,
+        alias: alias_addr.to_lowercase(),
         to,
     };
 
@@ -115,15 +115,20 @@ pub async fn sync_with_ovh(state: State<'_, AppState>) -> Result<SyncResult, Str
         }
     }
 
+    let remote_addresses: std::collections::HashSet<&str> =
+        remote_aliases.values().map(|a| a.alias.as_str()).collect();
+    let local_addresses: std::collections::HashSet<&str> =
+        local_aliases.values().map(|a| a.alias.as_str()).collect();
+
     let local_only: Vec<Alias> = local_aliases
         .values()
-        .filter(|a| !remote_aliases.contains_key(&a.id))
+        .filter(|a| !remote_aliases.contains_key(&a.id) && !remote_addresses.contains(a.alias.as_str()))
         .cloned()
         .collect();
 
     let remote_only: Vec<Alias> = remote_aliases
         .values()
-        .filter(|a| !local_aliases.contains_key(&a.id))
+        .filter(|a| !local_aliases.contains_key(&a.id) && !local_addresses.contains(a.alias.as_str()))
         .cloned()
         .collect();
 
@@ -161,11 +166,13 @@ pub async fn push_to_ovh(state: State<'_, AppState>) -> Result<PushResult, Strin
 
     // Fetch remote aliases to find which are local-only
     let mut remote_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut remote_addresses: std::collections::HashSet<String> = std::collections::HashSet::new();
     for domain in &domains {
         match client.get_redirections(domain).await {
             Ok(aliases) => {
                 for alias in aliases {
                     remote_ids.insert(alias.id.clone());
+                    remote_addresses.insert(alias.alias.to_lowercase());
                 }
             }
             Err(e) => eprintln!("Failed to fetch from {}: {}", domain, e),
@@ -174,7 +181,7 @@ pub async fn push_to_ovh(state: State<'_, AppState>) -> Result<PushResult, Strin
 
     let local_only: Vec<Alias> = local_aliases
         .values()
-        .filter(|a| !remote_ids.contains(&a.id))
+        .filter(|a| !remote_ids.contains(&a.id) && !remote_addresses.contains(&a.alias.to_lowercase()))
         .cloned()
         .collect();
 
@@ -203,11 +210,9 @@ pub async fn push_to_ovh(state: State<'_, AppState>) -> Result<PushResult, Strin
             }
         };
 
-        // Extract local part from alias address
-        let local_part = alias.alias.rsplit_once('@').map(|(l, _)| l.to_string()).unwrap_or_default();
-
-        match client.create_redirection(&domain, &local_part, &alias.to).await {
-            Ok(new_alias) => {
+        match client.create_redirection(&domain, &alias.alias.to_lowercase(), &alias.to).await {
+            Ok(mut new_alias) => {
+                new_alias.name = alias.name.clone();
                 // Remove old UUID-keyed entry and insert with OVH ID
                 updated_aliases.remove(&alias.id);
                 updated_aliases.insert(new_alias.id.clone(), new_alias.clone());
@@ -259,9 +264,12 @@ pub async fn delete_from_ovh(state: State<'_, AppState>) -> Result<DeleteResult,
         }
     }
 
+    let local_addresses: std::collections::HashSet<&str> =
+        local_aliases.values().map(|a| a.alias.as_str()).collect();
+
     let remote_only: Vec<Alias> = remote_aliases
         .values()
-        .filter(|a| !local_aliases.contains_key(&a.id))
+        .filter(|a| !local_aliases.contains_key(&a.id) && !local_addresses.contains(a.alias.as_str()))
         .cloned()
         .collect();
 
@@ -437,6 +445,83 @@ pub async fn request_ovh_credential_with_rules(
     }
 
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn delete_alias_remote(
+    alias_id: String,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let alias = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        let aliases = manager.load_aliases().map_err(|e| e.to_string())?;
+        aliases.get(&alias_id).cloned().ok_or_else(|| "Alias not found".to_string())?
+    };
+
+    let domain = alias.alias.rsplit_once('@').map(|(_, d)| d.to_string());
+    if let Some(ref domain) = domain {
+        if config.domains.contains(domain) {
+            let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+            match client.delete_redirection(domain, &alias_id).await {
+                Ok(()) => {},
+                Err(e) => {
+                    if !e.to_string().contains("HTTP 404") {
+                        return Err(format!("Failed to delete from OVH: {}", e));
+                    }
+                }
+            }
+        }
+    }
+
+    {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        let mut aliases = manager.load_aliases().map_err(|e| e.to_string())?;
+        aliases.remove(&alias_id);
+        manager.save_aliases(&aliases).map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn push_single_alias(
+    name: String,
+    alias_addr: String,
+    to: String,
+    state: State<'_, AppState>,
+) -> Result<Alias, String> {
+    let alias_addr = alias_addr.to_lowercase();
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let domain = alias_addr.rsplit_once('@').map(|(_, d)| d.to_string());
+    let domain = match domain {
+        Some(d) if config.domains.contains(&d) => d,
+        _ => return Err("Domain not in configured domains".to_string()),
+    };
+
+    let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+    let mut new_alias = client.create_redirection(&domain, &alias_addr, &to)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    new_alias.name = name;
+
+    {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        let mut aliases = manager.load_aliases().map_err(|e| e.to_string())?;
+        aliases.insert(new_alias.id.clone(), new_alias.clone());
+        manager.save_aliases(&aliases).map_err(|e| e.to_string())?;
+    }
+
+    Ok(new_alias)
 }
 
 #[tauri::command]

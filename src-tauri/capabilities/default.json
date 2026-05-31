@@ -20,6 +20,8 @@
     "allow-list-ovh-applications",
     "allow-delete-ovh-application",
     "allow-request-ovh-credential-with-rules",
-    "allow-switch-ovh-credential"
+    "allow-switch-ovh-credential",
+    "allow-push-single-alias",
+    "allow-delete-alias-remote"
   ]
 }

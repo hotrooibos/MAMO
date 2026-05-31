@@ -7,7 +7,7 @@ use serde::Deserialize;
 struct OvhRedirection {
     id: String,
     #[serde(rename = "from")]
-    from_addr: String,
+    from_addr: Option<String>,
     to: String,
 }
 
@@ -207,7 +207,7 @@ impl OvhClient {
             id: redir.id,
             name: String::new(),
             date: chrono::Utc::now().timestamp(),
-            alias: redir.from_addr,
+            alias: redir.from_addr.unwrap_or_default(),
             to: redir.to,
         })
     }
@@ -254,7 +254,7 @@ impl OvhClient {
             id: redir.id,
             name: String::new(),
             date: chrono::Utc::now().timestamp(),
-            alias: redir.from_addr,
+            alias: redir.from_addr.unwrap_or_else(|| from.to_string()),
             to: redir.to,
         })
     }

@@ -309,6 +309,10 @@ async function editAlias(id) {
     document.getElementById('alias-domain').textContent = '@' + domain;
     document.getElementById('alias-to').value = alias.to;
     
+    document.getElementById('alias-push-log').classList.add('hidden');
+    document.getElementById('push-log-entries').innerHTML = '';
+    document.querySelectorAll('#alias-form input, #alias-form button[type="submit"]').forEach(el => el.disabled = false);
+    
     showModal('modal-alias');
 }
 
@@ -318,11 +322,11 @@ async function deleteAlias(id) {
     }
     
     try {
-        await invoke('delete_alias', { id });
+        await invoke('delete_alias_remote', { aliasId: id });
         await loadAliases();
     } catch (e) {
         console.error('Failed to delete alias:', e);
-        showError('Failed to delete alias');
+        showError('Failed to delete alias: ' + e);
     }
 }
 
@@ -378,6 +382,93 @@ function hideModal(id) {
 
 function showError(message) {
     alert(message);
+}
+
+function addLogEntry(message, type = 'pending') {
+    const container = document.getElementById('push-log-entries');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry log-' + type;
+    const icons = { pending: '\u2192', success: '\u2713', error: '\u2717' };
+    entry.innerHTML = '<span class="log-icon">' + icons[type] + '</span><span class="log-msg">' + escapeHtml(message) + '</span>';
+    container.appendChild(entry);
+    entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return entry;
+}
+
+function updateLogEntry(entry, message, type) {
+    entry.className = 'log-entry log-' + type;
+    const icons = { pending: '\u2192', success: '\u2713', error: '\u2717' };
+    entry.querySelector('.log-icon').textContent = icons[type];
+    entry.querySelector('.log-msg').textContent = message;
+}
+
+function addSyncLogEntry(message, type) {
+    const container = document.getElementById('sync-log-entries');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry log-' + (type || 'pending');
+    const icons = { pending: '\u2192', success: '\u2713', error: '\u2717' };
+    entry.innerHTML = '<span class="log-icon">' + icons[type || 'pending'] + '</span><span class="log-msg">' + escapeHtml(message) + '</span>';
+    container.appendChild(entry);
+    entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return entry;
+}
+
+function updateSyncLogEntry(entry, message, type) {
+    entry.className = 'log-entry log-' + type;
+    const icons = { pending: '\u2192', success: '\u2713', error: '\u2717' };
+    entry.querySelector('.log-icon').textContent = icons[type];
+    entry.querySelector('.log-msg').textContent = message;
+}
+
+async function openSyncModal() {
+    const logContainer = document.getElementById('sync-log');
+    const logEntries = document.getElementById('sync-log-entries');
+    const actionsArea = document.getElementById('sync-actions-area');
+    const resultsEl = document.getElementById('sync-results');
+
+    logEntries.innerHTML = '';
+    logContainer.classList.remove('hidden');
+    actionsArea.classList.add('hidden');
+    resultsEl.innerHTML = '';
+
+    showModal('modal-sync');
+
+    let entry = addSyncLogEntry('Connecting to OVH...');
+    try {
+        const result = await invoke('test_ovh_connection', { config });
+        if (result.connected) {
+            updateSyncLogEntry(entry, 'Connected to OVH', 'success');
+        } else {
+            updateSyncLogEntry(entry, 'Connected \u2014 some permissions missing', 'pending');
+        }
+    } catch (e) {
+        updateSyncLogEntry(entry, 'Connection failed: ' + e, 'error');
+        logContainer.classList.add('hidden');
+        actionsArea.classList.remove('hidden');
+        return;
+    }
+
+    entry = addSyncLogEntry('Fetching remote aliases...');
+    try {
+        const result = await invoke('sync_with_ovh');
+        updateSyncLogEntry(entry, 'Remote aliases fetched', 'success');
+
+        if (result.local_only.length > 0 || result.remote_only.length > 0) {
+            addSyncLogEntry(result.remote_count + ' remote aliases, ' + result.local_only.length + ' local-only, ' + result.remote_only.length + ' remote-only', 'pending');
+            addSyncLogEntry('Use the actions below to synchronize.', 'pending');
+        } else {
+            addSyncLogEntry('All ' + result.remote_count + ' aliases are in sync', 'success');
+        }
+
+        logContainer.classList.add('hidden');
+        actionsArea.classList.remove('hidden');
+        renderSyncResults(result);
+        await loadAliases();
+    } catch (e) {
+        updateSyncLogEntry(entry, 'Failed to fetch: ' + e, 'error');
+        logContainer.classList.add('hidden');
+        actionsArea.classList.remove('hidden');
+    }
 }
 
 function renderSyncResults(result) {
@@ -472,7 +563,12 @@ function init() {
     loadConfig().then(() => {
         populateDomainFilter();
         loadAliases();
+        if (config.app_key && config.app_secret && config.consumer_key && config.domains && config.domains.length > 0) {
+            openSyncModal();
+        }
     });
+    
+    document.getElementById('btn-sync').addEventListener('click', openSyncModal);
     
     document.getElementById('domain-filter').addEventListener('change', (e) => {
         selectedDomain = e.target.value;
@@ -484,6 +580,11 @@ function init() {
         document.getElementById('alias-form').reset();
         document.getElementById('alias-id').value = '';
         document.getElementById('alias-to').value = config.default_dest || '';
+        const domain = selectedDomain || (config.domains && config.domains[0]) || '';
+        document.getElementById('alias-domain').textContent = domain ? '@' + domain : '';
+        document.getElementById('alias-push-log').classList.add('hidden');
+        document.getElementById('push-log-entries').innerHTML = '';
+        document.querySelectorAll('#alias-form input, #alias-form button[type="submit"]').forEach(el => el.disabled = false);
         showModal('modal-alias');
     });
     
@@ -623,16 +724,35 @@ function init() {
         const aliasAddr = local + '@' + domain;
         const to = document.getElementById('alias-to').value;
         
-        try {
-            if (id) {
+        // Edit existing alias: just save locally, no push
+        if (id) {
+            try {
                 await invoke('update_alias', { id, name, aliasAddr, to });
-            } else {
-                await invoke('create_alias', { name, aliasAddr, to });
+                hideModal('modal-alias');
+                await loadAliases();
+            } catch (e) {
+                showError('Failed to save alias: ' + e);
             }
-            hideModal('modal-alias');
+            return;
+        }
+        
+        // New alias: push to OVH first, save locally only on success
+        const inputs = document.querySelectorAll('#alias-form input, #alias-form button[type="submit"]');
+        inputs.forEach(el => el.disabled = true);
+        
+        const logContainer = document.getElementById('alias-push-log');
+        const logEntries = document.getElementById('push-log-entries');
+        logEntries.innerHTML = '';
+        logContainer.classList.remove('hidden');
+        
+        const entry = addLogEntry('Creating alias on OVH...');
+        try {
+            const pushedAlias = await invoke('push_single_alias', { name, aliasAddr, to });
+            updateLogEntry(entry, pushedAlias.alias + ' \u2192 ' + pushedAlias.to, 'success');
             await loadAliases();
         } catch (e) {
-            showError('Failed to save alias: ' + e);
+            updateLogEntry(entry, 'Failed: ' + e, 'error');
+            inputs.forEach(el => el.disabled = false);
         }
     });
     

@@ -110,19 +110,25 @@
                         <button type="button" class="btn-cancel">Cancel</button>
                     </div>
                 </form>
+                <div id="alias-push-log" class="push-log hidden">
+                    <div id="push-log-entries"></div>
+                </div>
             </div>
         </div>
 
         <div id="modal-sync" class="modal hidden">
             <div class="modal-content">
                 <h2>Sync with OVH</h2>
-                <div id="sync-actions" class="sync-actions">
-                    <button id="btn-pull" class="btn-sync-action">Pull from OVH</button>
-                    <button id="btn-push" class="btn-sync-action">Push to OVH</button>
-                    <button id="btn-delete-remote" class="btn-sync-action btn-delete">Delete from OVH</button>
+                <div id="sync-log" class="push-log">
+                    <div id="sync-log-entries"></div>
                 </div>
-                <div id="sync-results">
-                    <p>Choose an action above.</p>
+                <div id="sync-actions-area" class="hidden">
+                    <div class="sync-actions">
+                        <button id="btn-pull" class="btn-sync-action">Pull from OVH</button>
+                        <button id="btn-push" class="btn-sync-action">Push to OVH</button>
+                        <button id="btn-delete-remote" class="btn-sync-action btn-delete">Delete from OVH</button>
+                    </div>
+                    <div id="sync-results"></div>
                 </div>
                 <button class="btn-close">Close</button>
             </div>

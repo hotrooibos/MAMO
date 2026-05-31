@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-push-single-alias"
+description = "Enables the push_single_alias command without any pre-configured scope."
+commands.allow = ["push_single_alias"]
+
+[[permission]]
+identifier = "deny-push-single-alias"
+description = "Denies the push_single_alias command without any pre-configured scope."
+commands.deny = ["push_single_alias"]
