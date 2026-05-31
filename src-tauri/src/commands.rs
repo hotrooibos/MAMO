@@ -448,6 +448,78 @@ pub async fn request_ovh_credential_with_rules(
 }
 
 #[tauri::command]
+pub async fn update_alias_remote(
+    id: String,
+    name: String,
+    alias_addr: String,
+    to: String,
+    state: State<'_, AppState>,
+) -> Result<Alias, String> {
+    let alias_addr = alias_addr.to_lowercase();
+
+    let config = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        manager.load_config().map_err(|e| e.to_string())?
+    };
+
+    let (old_alias, is_uuid) = {
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        let aliases = manager.load_aliases().map_err(|e| e.to_string())?;
+        let old = aliases.get(&id).cloned().ok_or_else(|| "Alias not found".to_string())?;
+        (old, Uuid::parse_str(&id).is_ok())
+    };
+
+    if is_uuid {
+        let alias = Alias {
+            id: id.clone(),
+            name,
+            date: old_alias.date,
+            alias: alias_addr,
+            to,
+        };
+        let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+        let mut aliases = manager.load_aliases().map_err(|e| e.to_string())?;
+        aliases.insert(id, alias.clone());
+        manager.save_aliases(&aliases).map_err(|e| e.to_string())?;
+        Ok(alias)
+    } else {
+        let domain = old_alias.alias.rsplit_once('@').map(|(_, d)| d.to_string());
+        let domain = match domain {
+            Some(ref d) if config.domains.contains(d) => d.clone(),
+            _ => return Err("Domain not in configured domains".to_string()),
+        };
+
+        let client = OvhClient::new(config).map_err(|e| e.to_string())?;
+
+        match client.delete_redirection(&domain, &id).await {
+            Ok(()) => {},
+            Err(e) => {
+                if !e.to_string().contains("HTTP 404") {
+                    return Err(format!("Failed to update alias: {}", e));
+                }
+            }
+        }
+
+        let mut new_alias = client.create_redirection(&domain, &alias_addr, &to)
+            .await
+            .map_err(|e| format!("Failed to update alias: {}", e))?;
+
+        new_alias.name = name;
+        new_alias.date = old_alias.date;
+
+        {
+            let manager = state.config_manager.lock().map_err(|e| e.to_string())?;
+            let mut aliases = manager.load_aliases().map_err(|e| e.to_string())?;
+            aliases.remove(&id);
+            aliases.insert(new_alias.id.clone(), new_alias.clone());
+            manager.save_aliases(&aliases).map_err(|e| e.to_string())?;
+        }
+
+        Ok(new_alias)
+    }
+}
+
+#[tauri::command]
 pub async fn delete_alias_remote(
     alias_id: String,
     state: State<'_, AppState>,

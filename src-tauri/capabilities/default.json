@@ -22,6 +22,7 @@
     "allow-request-ovh-credential-with-rules",
     "allow-switch-ovh-credential",
     "allow-push-single-alias",
-    "allow-delete-alias-remote"
+    "allow-delete-alias-remote",
+    "allow-update-alias-remote"
   ]
 }

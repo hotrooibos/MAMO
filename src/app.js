@@ -724,10 +724,10 @@ function init() {
         const aliasAddr = local + '@' + domain;
         const to = document.getElementById('alias-to').value;
         
-        // Edit existing alias: just save locally, no push
+        // Edit existing alias: updates OVH (delete+recreate if pushed) and local store
         if (id) {
             try {
-                await invoke('update_alias', { id, name, aliasAddr, to });
+                await invoke('update_alias_remote', { id, name, aliasAddr, to });
                 hideModal('modal-alias');
                 await loadAliases();
             } catch (e) {
