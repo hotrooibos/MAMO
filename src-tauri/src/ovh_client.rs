@@ -8,7 +8,7 @@ struct OvhRedirection {
     id: String,
     #[serde(rename = "from")]
     from_addr: Option<String>,
-    to: String,
+    to: Option<String>,
 }
 
 pub struct OvhClient {
@@ -208,7 +208,7 @@ impl OvhClient {
             name: String::new(),
             date: chrono::Utc::now().timestamp(),
             alias: redir.from_addr.unwrap_or_default(),
-            to: redir.to,
+            to: redir.to.unwrap_or_default(),
         })
     }
 
@@ -255,7 +255,7 @@ impl OvhClient {
             name: String::new(),
             date: chrono::Utc::now().timestamp(),
             alias: redir.from_addr.unwrap_or_else(|| from.to_string()),
-            to: redir.to,
+            to: redir.to.unwrap_or_else(|| to.to_string()),
         })
     }
 
