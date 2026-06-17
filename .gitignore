@@ -1,6 +1,9 @@
 node_modules/
-__pycache__/
-venv/
-config.json
-config_test*.json
-aliases.json
+bmad/
+.opencode/
+.env
+data/aliases.json
+data/aliases.json.tmp
+data/aliases.json.bak.*
+data/.locks/
+public/css/style.css

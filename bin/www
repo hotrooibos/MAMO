@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+// Augmente le nombre max de listeners pour les sockets TLS
+// Évite MaxListenersExceededWarning avec le client OVH (timeout listeners)
+import https from 'node:https';
+https.globalAgent.setMaxListeners(20);
+
+import app from '../app.js';
+import { config } from '../config/index.js';
+import { logger } from '../config/logger.js';
+import { syncStartup, syncPeriodic } from '../services/sync.service.js';
+
+const server = app.listen(config.port, '127.0.0.1', () => {
+  logger.info(`MAM server listening on http://127.0.0.1:${config.port}`, { module: 'server' });
+  logger.info(`Dry-run mode: ${config.dryRun}`, { module: 'server' });
+  logger.info(`Domains: ${config.domains.join(', ')}`, { module: 'server' });
+
+  // Sync startup asynchrone — ne bloque pas le démarrage du serveur
+  // La première requête peut arriver avant la fin de la sync
+  syncStartup().catch((err) => {
+    logger.error(`Sync startup failed: ${err.message}`, { module: 'startup', stack: err.stack });
+  });
+
+  // Sync périodique — toutes les 5 minutes (configurable via SYNC_INTERVAL env en ms)
+  const syncInterval = parseInt(process.env.SYNC_INTERVAL, 10) || 300000;
+  setInterval(() => {
+    syncPeriodic().catch((err) => {
+      logger.error(`Periodic sync failed: ${err.message}`, { module: 'periodic', stack: err.stack });
+    });
+  }, syncInterval);
+  logger.info(`Periodic sync scheduled every ${syncInterval / 1000}s`, { module: 'server' });
+});
+
+export { server };

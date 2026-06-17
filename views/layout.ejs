@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html class="theme-light" lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAM — Mail Alias Manager</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* Safeguard: apply theme variables immediately to prevent FOUC */
+    html.theme-dark { --tw-bg-opacity: 1; }
+  </style>
+  <script>
+    /* Blocking script to apply saved theme before first paint */
+    (function() {
+      var theme = localStorage.getItem('mam-theme');
+      if (theme === 'dark') {
+        document.documentElement.className = 'theme-dark';
+      }
+    })();
+  </script>
+</head>
+<body class="bg-surface-base text-text-primary antialiased min-h-screen flex flex-col">
+  <!-- Skip link — premier élément focusable -->
+  <a href="#alias-table" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-surface-base focus:text-blue focus:rounded focus:border focus:border-blue focus:text-sm">
+    Aller au tableau
+  </a>
+
+  <!-- Top bar -->
+  <header class="sticky top-0 z-50 h-14 bg-surface-muted border-b border-border flex items-center px-4 sm:px-6 gap-2 sm:gap-4">
+    <div class="flex items-baseline gap-2 shrink-0">
+      <h1 class="text-lg font-bold tracking-tight select-none">MAM</h1>
+      <span class="text-xs text-text-secondary hidden sm:inline">Mail Alias Manager</span>
+    </div>
+
+    <% if (domains && domains.length > 0) { %>
+      <!-- Domain filter -->
+      <select id="domain-filter" class="h-8 text-xs rounded border border-border bg-surface-base px-2 focus:outline-none focus:ring-2 focus:ring-blue/40 cursor-pointer" aria-label="Filtrer par domaine">
+        <option value="">Tous</option>
+        <% domains.forEach(function(d) { %>
+          <option value="<%= d %>"><%= d %></option>
+        <% }); %>
+      </select>
+
+      <!-- Search -->
+      <div class="relative max-w-[180px]">
+        <svg class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+        </svg>
+        <input id="search-input" type="search" class="w-full h-8 pl-7 pr-7 text-xs rounded border border-border bg-surface-base text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-blue/40" placeholder="Rechercher…" aria-label="Rechercher un alias">
+        <button id="search-clear-btn" class="hidden absolute right-0.5 top-1/2 -translate-y-1/2 w-5 h-5 items-center justify-center text-text-muted hover:text-text-primary cursor-pointer rounded-sm" aria-label="Effacer la recherche">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Compteur -->
+      <span id="alias-count" class="text-xs text-text-muted shrink-0 w-14 text-right" title="Alias affichés / total">—</span>
+
+      <!-- Actions centrées -->
+      <div class="flex-1 flex justify-center gap-2">
+        <button id="btn-new-alias" class="h-8 px-3 flex items-center gap-1 rounded bg-blue text-white hover:bg-blue/90 transition-colors cursor-pointer text-xs font-semibold whitespace-nowrap" title="Create new alias">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span class="hidden sm:inline">Create new alias</span>
+        </button>
+
+        <div id="quick-alias-container" class="relative">
+          <button id="btn-quick-alias" class="h-8 px-2 flex items-center gap-1 rounded border border-border bg-surface-base hover:bg-surface-muted transition-colors cursor-pointer text-xs text-text-secondary whitespace-nowrap" title="Quick alias — generate alias in 2 clicks">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span class="hidden sm:inline">Quick alias</span>
+          </button>
+          <div id="quick-alias-form" class="hidden absolute top-full right-0 mt-1 w-72 p-3 bg-surface-base rounded-lg border border-border shadow-lg z-50">
+            <label class="block text-xs font-semibold text-text-secondary mb-1">Destination</label>
+            <div class="flex gap-2">
+              <input id="quick-alias-to" type="email" class="flex-1 px-2 py-1.5 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40" placeholder="email@example.com">
+              <button id="quick-alias-submit" class="px-3 py-1.5 text-xs rounded bg-blue text-white hover:bg-blue/90 transition-colors cursor-pointer">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="ml-auto flex items-center gap-3">
+      <!-- Sync button (désactivé si pas de domaine) -->
+      <button
+        id="btn-sync"
+        class="h-8 px-2 flex items-center gap-1.5 rounded hover:bg-surface-base/50 transition-colors cursor-pointer text-xs text-text-secondary <%= (domains && domains.length > 0) ? '' : 'opacity-40 cursor-not-allowed' %>"
+        aria-label="Synchroniser avec OVH"
+        title="Synchroniser avec OVH"
+        <%= (domains && domains.length > 0) ? '' : 'disabled' %>
+      >
+        <svg id="sync-icon" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span id="sync-label" class="hidden sm:inline">Sync</span>
+      </button>
+      <span id="sync-time" class="text-xs text-text-muted hidden" title="Dernière synchronisation">—</span>
+
+      <!-- Theme toggle -->
+      <button
+        id="theme-toggle"
+        class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-base/50 transition-colors cursor-pointer"
+        aria-label="Basculer le thème"
+        title="Basculer le thème"
+      >
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 p-4 sm:p-6" id="main-content">
+    <%- body %>
+  </main>
+
+  <!-- Sync progress bar -->
+  <div id="sync-progress" class="hidden fixed bottom-0 left-0 right-0 h-1 z-50 bg-surface-base" role="progressbar" aria-label="Synchronisation en cours" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+    <div class="h-full bg-blue rounded-full animate-pulse" style="width: 60%"></div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

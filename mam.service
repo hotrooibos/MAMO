@@ -1,0 +1,26 @@
+[Unit]
+Description=MAM — Mail Alias Manager
+Documentation=https://github.com/user/mam
+After=network.target
+
+[Service]
+Type=simple
+User=mam
+Group=mam
+WorkingDirectory=/opt/mam
+EnvironmentFile=/opt/mam/.env
+ExecStart=/usr/bin/node bin/www
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mam
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

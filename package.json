@@ -1,23 +1,25 @@
 {
-  "name": "mamo",
-  "description": "Mail Aliases Manager for OVH",
-  "version": "0.3",
-  "devDependencies": {
-    "tailwindcss": "^3.4.1"
-  },
+  "name": "mam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mail Alias Manager — Gestion d'alias email OVH",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx tailwindcss -i ./static/input.css -o ./static/output.css --watch=always"
+    "prestart": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css",
+    "start": "node bin/www",
+    "dev": "concurrently \"node --watch bin/www\" \"tailwindcss -i ./public/css/input.css -o ./public/css/style.css --watch\"",
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/style.css"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hotrooibos/MAMO.git"
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "ovh": "^2.0.2"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hotrooibos/MAMO/issues"
-  },
-  "homepage": "https://github.com/hotrooibos/MAMO#readme"
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.4",
+    "concurrently": "^9.1.2",
+    "tailwindcss": "^4.1.4"
+  }
 }

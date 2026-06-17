@@ -1,0 +1,31 @@
+# MAM — Reverse proxy Caddy
+# Remplacer mam.domain.tld par votre domaine réel
+# Déposer dans /etc/caddy/Caddyfile ou utiliser un import
+
+mam.domain.tld {
+  # API endpoint (protégé par X-Api-Key, ne pas logguer la clé)
+  handle /api/* {
+    reverse_proxy localhost:3000 {
+      header_up Host {host}
+    }
+  }
+
+  # UI (localhost only — pas d'accès public)
+  handle / {
+    @denied {
+      not remote_ip 127.0.0.1 ::1
+    }
+    respond @denied 404
+    reverse_proxy localhost:3000 {
+      header_up Host {host}
+    }
+  }
+
+  # Logs — masquer X-Api-Key
+  log {
+    output file /var/log/caddy/mam.log {
+      roll_size 10mb
+      roll_keep 5
+    }
+  }
+}

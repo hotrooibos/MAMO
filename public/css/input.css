@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+/* ===== Class-based dark mode (Tailwind v4) ===== */
+@custom-variant dark (&:where(.theme-dark, .theme-dark *));
+
+/* ===== Solarized Theme ===== */
+:root,
+.theme-light {
+  /* Surfaces */
+  --surface-base: #fdf6e3;
+  --surface-muted: #eee8d5;
+  --surface-highlight: #e0dbc8;
+
+  /* Text */
+  --text-primary: #586e75;
+  --text-secondary: #657b83;
+  --text-muted: #93a1a1;
+
+  /* Accents */
+  --blue: #268bd2;
+  --cyan: #2aa198;
+  --green: #859900;
+  --orange: #cb4b16;
+  --red: #dc322f;
+  --magenta: #d33682;
+  --violet: #6c71c4;
+  --yellow: #b58900;
+
+  /* Borders */
+  --border: #d5cfbe;
+}
+
+.theme-dark {
+  --surface-base: #002b36;
+  --surface-muted: #073642;
+  --surface-highlight: #0a4a5a;
+
+  --text-primary: #839496;
+  --text-secondary: #93a1a1;
+  --text-muted: #586e75;
+
+  --blue: #268bd2;
+  --cyan: #2aa198;
+  --green: #859900;
+  --orange: #cb4b16;
+  --red: #dc322f;
+  --magenta: #d33682;
+  --violet: #6c71c4;
+  --yellow: #b58900;
+
+  --border: #0a3a48;
+}
+
+@theme {
+  --color-surface-base: var(--surface-base);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-highlight: var(--surface-highlight);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-blue: var(--blue);
+  --color-cyan: var(--cyan);
+  --color-green: var(--green);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+  --color-magenta: var(--magenta);
+  --color-violet: var(--violet);
+  --color-yellow: var(--yellow);
+  --color-border: var(--border);
+}
+
+/* ===== Base ===== */
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.font-mono {
+  font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+  font-size: 13px;
+}
+
+/* ===== Scrollbar (Solarized-friendly) ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: var(--blue);
+  color: var(--surface-base);
+}
+
+/* ===== prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

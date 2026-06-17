@@ -1,0 +1,262 @@
+<%
+// Helper de formatage de date sécurisé
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('fr-FR');
+  } catch {
+    return '—';
+  }
+}
+
+// Helper pour le badge temporaire avec jours restants
+function renderStatusBadge(alias) {
+  if (alias.tempExpires) {
+    var daysLeft = Math.ceil((new Date(alias.tempExpires) - new Date()) / (1000 * 60 * 60 * 24));
+    if (daysLeft <= 0) {
+      return '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-red/10 text-red">Expiré</span>';
+    } else if (daysLeft <= 7) {
+      return '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-orange/10 text-orange">Temp. ' + daysLeft + 'j</span>';
+    } else {
+      return '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-green/10 text-green">Temp. ' + daysLeft + 'j</span>';
+    }
+  } else if (alias.active) {
+    return '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-green/10 text-green">Actif</span>';
+  } else {
+    return '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-red/10 text-red">Inactif</span>';
+  }
+}
+
+function renderTags(tags) {
+  if (!Array.isArray(tags) || tags.length === 0) return '<span class="text-text-secondary text-xs">—</span>';
+  return tags.map(function(t) {
+    return '<span class="inline-block px-1.5 py-0.5 text-xs rounded bg-blue/10 text-blue">' + escapeHtml(t) + '</span>';
+  }).join(' ');
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+const aliasList = Array.isArray(aliases) ? aliases : [];
+const domainList = typeof domains !== 'undefined' && Array.isArray(domains) ? domains : [];
+
+// Vérifier si des domaines sont configurés
+const hasDomains = domainList.length > 0;
+
+// Dictionnaire pour le générateur (uniquement les paires fr/en/es)
+const dict = (typeof dictionary !== 'undefined' && dictionary && typeof dictionary.prefixes !== 'undefined')
+  ? { prefixes: dictionary.prefixes, suffixes: dictionary.suffixes }
+  : { prefixes: [], suffixes: [] };
+%>
+
+<% if (!hasDomains) { %>
+  <!-- Aucun domaine configuré -->
+  <div class="flex flex-col items-center justify-center py-20 text-center">
+    <p class="text-text-secondary text-sm">Aucun domaine OVH configuré.</p>
+    <p class="text-text-muted text-xs mt-1">Vérifiez votre fichier <code class="text-blue text-xs">.env</code> et la variable <code class="text-blue text-xs">OVH_DOMAINS</code>.</p>
+  </div>
+<% } else { %>
+
+<!-- Données initiales JS -->
+<script>
+window.__INITIAL_DATA__ = <%- JSON.stringify({ aliases: aliasList, domains: domainList, dictionary: dict, defaultTo: defaultTo || null }).replace(/</g, '\\u003c') %>;
+</script>
+
+<!-- ===== Tableau ===== -->
+<div class="overflow-x-auto rounded border border-border" style="max-height: calc(100vh - 80px); overflow-y: auto;">
+  <table class="w-full text-sm" id="alias-table">
+    <thead class="sticky top-0 z-10">
+      <tr class="bg-surface-muted text-text-secondary uppercase text-xs tracking-wider">
+        <th data-sort="description" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50" aria-sort="none" tabindex="0" role="columnheader">Description <span class="sort-indicator"></span></th>
+        <th data-sort="from" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50" aria-sort="none" tabindex="0" role="columnheader">From <span class="sort-indicator"></span></th>
+        <th data-sort="to" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50 hidden sm:table-cell" aria-sort="none" tabindex="0" role="columnheader">To <span class="sort-indicator"></span></th>
+        <th data-sort="tags" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50 hidden md:table-cell" aria-sort="none" tabindex="0" role="columnheader">Tags <span class="sort-indicator"></span></th>
+        <th data-sort="status" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50" aria-sort="none" tabindex="0" role="columnheader">Status <span class="sort-indicator"></span></th>
+        <th data-sort="createdAt" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50 hidden lg:table-cell" aria-sort="none" tabindex="0" role="columnheader">Création <span class="sort-indicator"></span></th>
+        <th data-sort="updatedAt" class="px-3 py-2.5 text-left font-semibold cursor-pointer select-none hover:bg-surface-base/50 hidden lg:table-cell" aria-sort="none" tabindex="0" role="columnheader">Modification <span class="sort-indicator"></span></th>
+      </tr>
+    </thead>
+    <tbody id="alias-tbody">
+      <% if (aliasList.length > 0) { %>
+        <% aliasList.forEach(function(a) { %>
+          <tr class="border-t border-border hover:bg-surface-muted/50 transition-colors cursor-pointer alias-row" data-alias='<%- JSON.stringify(a).replace(/</g, "\\u003c") %>'>
+            <td class="px-3 py-2.5 max-w-[200px] truncate"><%= escapeHtml(a.description) || '—' %></td>
+            <td class="px-3 py-2.5 font-mono text-xs"><%= escapeHtml(a.from) %><span class="text-text-secondary">@<%= escapeHtml(a.domain) %></span></td>
+            <td class="px-3 py-2.5 font-mono text-xs hidden sm:table-cell max-w-[200px] truncate"><%= escapeHtml(a.to) %></td>
+            <td class="px-3 py-2.5 hidden md:table-cell"><%- renderTags(a.tags) %></td>
+            <td class="px-3 py-2.5"><%- renderStatusBadge(a) %></td>
+            <td class="px-3 py-2.5 text-text-secondary text-xs hidden lg:table-cell"><%= formatDate(a.createdAt) %></td>
+            <td class="px-3 py-2.5 text-text-secondary text-xs hidden lg:table-cell"><%= formatDate(a.updatedAt) %></td>
+          </tr>
+        <% }); %>
+      <% } else { %>
+        <tr id="empty-state-row">
+          <td colspan="7" class="px-3 py-16 text-center">
+            <div class="flex flex-col items-center gap-3">
+              <p class="text-text-secondary">Aucun alias pour ce domaine</p>
+              <button id="empty-create-btn" class="inline-flex items-center gap-1 text-blue hover:underline text-sm cursor-pointer bg-transparent border-none">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Créer un alias
+              </button>
+            </div>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== Modal (création / édition) ===== -->
+<div id="alias-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="absolute inset-0 bg-black/40" id="modal-overlay"></div>
+  <div class="relative z-10 flex items-center justify-center min-h-full p-4">
+    <div class="bg-surface-base rounded-lg shadow-xl w-full max-w-lg border border-border">
+      <div class="p-6 space-y-4">
+        <h2 id="modal-title" class="text-lg font-bold">Nouvel alias</h2>
+
+        <!-- Zone d'erreur -->
+        <div id="modal-error" class="text-red text-sm hidden"></div>
+
+        <!-- From -->
+        <div>
+          <label for="field-from" class="block text-xs font-semibold text-text-secondary mb-1">From</label>
+          <div class="flex gap-2">
+            <input id="field-from" type="text" class="flex-1 px-3 py-2 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40" placeholder="mon-alias" maxlength="64" required>
+            <button id="btn-generate" type="button" class="px-3 py-2 text-xs rounded border border-border bg-surface-muted text-text-secondary hover:bg-surface-base transition-colors cursor-pointer whitespace-nowrap" title="Générer un alias aléatoire">Générer</button>
+          </div>
+          <div class="flex items-center gap-2 mt-1.5">
+            <p id="from-readonly-hint" class="text-xs text-text-muted hidden">Supprimez et recréez l'alias pour changer le From</p>
+            <select id="gen-lang" class="ml-auto text-xs rounded border border-border bg-surface-base px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue/40 cursor-pointer">
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="mashup" selected>Mashup</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Domain -->
+        <div>
+          <label for="field-domain" class="block text-xs font-semibold text-text-secondary mb-1">Domaine</label>
+          <select id="field-domain" class="w-full px-3 py-2 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40">
+            <% domainList.forEach(function(d) { %>
+              <option value="<%= d %>"><%= d %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- To -->
+        <div>
+          <label for="field-to" class="block text-xs font-semibold text-text-secondary mb-1">Destination</label>
+          <input id="field-to" type="email" class="w-full px-3 py-2 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40" placeholder="destinataire@email.com" required>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="field-description" class="block text-xs font-semibold text-text-secondary mb-1">Description</label>
+          <input id="field-description" type="text" class="w-full px-3 py-2 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40" placeholder="Optionnelle" maxlength="500">
+        </div>
+
+        <!-- Tags -->
+        <div>
+          <label for="field-tags" class="block text-xs font-semibold text-text-secondary mb-1">Tags</label>
+          <input id="field-tags" type="text" class="w-full px-3 py-2 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40" placeholder="tag1, tag2, tag3 (max 10, séparés par des virgules)">
+        </div>
+
+        <!-- Statut -->
+        <div>
+          <label class="block text-xs font-semibold text-text-secondary mb-2">Statut</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input type="radio" name="status" value="active" checked class="text-blue accent-blue"> Actif
+            </label>
+            <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input type="radio" name="status" value="inactive" class="text-blue accent-blue"> Inactif
+            </label>
+            <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+              <input type="radio" name="status" value="temporary" class="text-blue accent-blue"> Temporaire
+            </label>
+          </div>
+        </div>
+
+        <!-- Durée temporaire (caché par défaut) -->
+        <div id="temp-duration-group" class="hidden">
+          <label for="field-temp-duration" class="block text-xs font-semibold text-text-secondary mb-1">Durée</label>
+          <select id="field-temp-duration" class="w-full px-3 py-2 text-sm rounded border border-border bg-surface-base text-text-primary focus:outline-none focus:ring-2 focus:ring-blue/40">
+            <option value="7">7 jours</option>
+            <option value="14">14 jours</option>
+            <option value="30" selected>30 jours</option>
+          </select>
+        </div>
+
+        <!-- Actions normales (create / edit) -->
+        <div id="modal-actions" class="flex justify-end gap-3 pt-2">
+          <button id="modal-cancel" class="px-4 py-2 text-sm rounded border border-border bg-surface-base text-text-primary hover:bg-surface-muted transition-colors cursor-pointer">Annuler</button>
+          <button id="modal-save" class="px-4 py-2 text-sm rounded bg-blue text-white hover:bg-blue/90 transition-colors cursor-pointer">Sauvegarder</button>
+        </div>
+
+        <!-- Actions édition (visible seulement en mode edit) -->
+        <div id="modal-actions-edit" class="hidden flex justify-between items-center pt-2">
+          <button id="modal-delete" class="px-4 py-2 text-sm rounded bg-red text-white hover:bg-red/80 transition-colors cursor-pointer">Supprimer</button>
+          <div class="flex gap-3">
+            <button id="modal-cancel-edit" class="px-4 py-2 text-sm rounded border border-border bg-surface-base text-text-primary hover:bg-surface-muted transition-colors cursor-pointer">Annuler</button>
+            <button id="modal-save-edit" class="px-4 py-2 text-sm rounded bg-blue text-white hover:bg-blue/90 transition-colors cursor-pointer">Sauvegarder</button>
+          </div>
+        </div>
+
+        <!-- Confirmation suppression -->
+        <div id="modal-delete-confirm" class="hidden space-y-3 pt-2">
+          <p class="text-sm text-text-primary">Supprimer cet alias définitivement ?</p>
+          <p class="text-xs text-text-muted">L'alias sera supprimé côté OVH et son adresse sera bloquée (blacklist).</p>
+          <div class="flex justify-end gap-3">
+            <button id="modal-delete-cancel" class="px-4 py-2 text-sm rounded border border-border bg-surface-base text-text-primary hover:bg-surface-muted transition-colors cursor-pointer">Annuler</button>
+            <button id="modal-delete-confirm-btn" class="px-4 py-2 text-sm rounded bg-red text-white hover:bg-red/80 transition-colors cursor-pointer">Confirmer la suppression</button>
+          </div>
+        </div>
+
+        <!-- Confirmation force delete (OVH failure) -->
+        <div id="modal-force-delete" class="hidden space-y-3 pt-2">
+          <p class="text-sm text-orange font-semibold">Échec de la suppression sur OVH</p>
+          <p class="text-xs text-text-muted">L'alias peut toujours être supprimé localement (blacklist + retrait du tableau).</p>
+          <div class="flex justify-end gap-3">
+            <button id="modal-force-cancel" class="px-4 py-2 text-sm rounded border border-border bg-surface-base text-text-primary hover:bg-surface-muted transition-colors cursor-pointer">Annuler</button>
+            <button id="modal-force-confirm-btn" class="px-4 py-2 text-sm rounded bg-orange text-white hover:bg-orange/80 transition-colors cursor-pointer">Forcer la suppression locale</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal de discrepancy (sync) ===== -->
+<div id="discrepancy-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="discrepancy-title">
+  <div class="absolute inset-0 bg-black/40" id="discrepancy-overlay"></div>
+  <div class="relative z-10 flex items-center justify-center min-h-full p-4">
+    <div class="bg-surface-base rounded-lg shadow-xl w-full max-w-2xl border border-border max-h-[80vh] flex flex-col">
+      <div class="p-5 border-b border-border shrink-0">
+        <div class="flex items-center justify-between">
+          <h2 id="discrepancy-title" class="text-lg font-bold">Résultat de la synchronisation</h2>
+          <span id="discrepancy-time" class="text-xs text-text-muted"></span>
+        </div>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-5 flex-1" id="discrepancy-body">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="p-5 border-t border-border flex justify-end gap-3 shrink-0">
+        <button id="discrepancy-close" class="px-4 py-2 text-sm rounded border border-border bg-surface-base text-text-primary hover:bg-surface-muted transition-colors cursor-pointer">Fermer</button>
+        <button id="discrepancy-sync-all" class="px-4 py-2 text-sm rounded bg-blue text-white hover:bg-blue/90 transition-colors cursor-pointer">Sync tout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Toast container ===== -->
+<div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none" aria-live="polite"></div>
+
+<% } /* fin du if hasDomains */ %>
